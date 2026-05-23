@@ -1,0 +1,145 @@
+% CREATED BY MAGNUS GUSTAVER, 2020
+
+\ifx\ThesisType\undefined
+Undefined Thesis type in settings.tex
+\else
+  \if\ThesisType M
+    \else
+    \if\ThesisType B
+    \else
+    Define \textbackslash ThesisType as M for master's thesis or B for bachelor thesis in settings.tex
+    \fi
+  \fi
+\fi
+
+% COVER PAGE
+\begin{titlepage}
+\newgeometry{top=3cm, bottom=1cm,
+			left=2.25 cm, right=2.25cm}	% Temporarily change margins		
+			
+%Header Front Page
+\ifx\ThesisType\undefined
+\else
+    \vtop{
+        \null\vspace{-25mm}
+        
+        \if\ThesisType M   %Defined in settings.tex
+        \centerline{\includegraphics[width=1.18\textwidth]{figure/auxiliary/GrayHeaderPattern.jpg}}
+        \fi
+        \if\ThesisType B
+        \centerline{\includegraphics[width=1.18\textwidth,height=80pt]{figure/auxiliary/GreenHeaderPattern.jpg}}
+        \fi
+        \vspace{-2.3cm}
+        
+        \if\InstitutionLocation C   %Defined in settings.tex
+        \hbox{\hspace{0mm}\includegraphics[height=18mm]{figure/auxiliary/AvancezChalmersU_white_right.eps}}
+        \fi
+        \if\InstitutionLocation G
+        \vspace{2.5mm}
+        \hbox{\hspace{0mm}\includegraphics[height=13mm]{figure/auxiliary/chalmers_gu_white_eng.eps}}
+        \vspace{2.5mm}
+        \fi
+        
+        \centerline{\textcolor{headerBrown}{\rule{1.18\textwidth}{4pt}}}
+        \vspace{\paperheight}\vspace{-85mm}
+        \centerline{\textcolor{thesisHeaderColor}{\rule{1.1\textwidth}{0.8pt}}} % Rule after Department
+        \vspace{-\paperheight}\vspace{85mm}
+    }
+\fi
+
+% Cover picture (replace with your own or delete)		
+\begin{figure}[H]
+\centering
+\vspace{1cm}	% Adjust vertical spacing here
+\includegraphics[width=0.9\linewidth]{figure/Wind.png}
+\end{figure}
+
+% Cover text
+\mbox{}
+\vfill
+\renewcommand{\familydefault}{\sfdefault} \normalfont % Set cover page font
+\textbf{{\Huge 	A Chalmers University of Technology 	\\[0.2cm] 
+				Degree project report template for \LaTeX}} 	\\[0.5cm]
+{\Large A Subtitle that can be Very Much Longer if Necessary}\\[0.5cm]
+Degree project report in Programme Name \setlength{\parskip}{1cm}
+
+\noindent
+{\Large NAME FAMILYNAME} \setlength{\parskip}{1.5cm}
+
+\noindent
+\textcolor{thesisHeaderColor}{\small\textbf{DEPARTMENT OF SOME SUBJECT OR TECHNOLOGY}}
+\setlength{\parskip}{1mm}
+
+\textsc{Chalmers University of Technology} \\
+{\small Gothenburg, Sweden \the\year \\
+\href{www.chalmers.se}{www.chalmers.se}}\vspace{1.7cm}
+
+\renewcommand{\familydefault}{\rmdefault} \normalfont % Reset standard font
+\end{titlepage}
+
+
+% BACK OF COVER PAGE (BLANK PAGE)
+\newpage
+\restoregeometry
+\thispagestyle{empty}
+\mbox{}
+
+
+% TITLE PAGE
+\newpage
+\thispagestyle{empty}
+\begin{center}
+    \textsc{\large Degree project report \the\year}\\[4cm]
+    \textbf{\Large An Informative Headline describing\\ the Content of the Report} \\[1cm]
+    {\large A Subtitle that can be Very Much Longer if Necessary}\\[1cm]
+    {\large NAME FAMILYNAME}
+    
+    \vfill	
+    % Logotype on titlepage	
+    \begin{figure}[H]
+        \centering
+        % Remove this figure to remove the titlepage logotype
+        \if\InstitutionLocation C   %Defined in settings.tex
+        \includegraphics[width=0.2\pdfpagewidth]{figure/auxiliary/AvancezChalmersU_black_centered.eps} \\
+        \fi
+        \if\InstitutionLocation G
+        \includegraphics[width=0.3\pdfpagewidth]{figure/auxiliary/chalmers_gu_black_centered_eng.eps} \\
+        \fi
+    \end{figure}
+    \vspace{5mm}
+    Department of Some Subject or Technology \\
+    \textsc{Chalmers University of Technology} \\
+    \if\InstitutionLocation G
+    \textsc{University of Gothenburg} \\
+    \fi
+    Gothenburg, Sweden \the\year \\
+\end{center}
+
+
+% IMPRINT PAGE (BACK OF TITLE PAGE)
+\newpage
+\thispagestyle{plain}
+\vspace*{4.5cm}
+An Informative Headline describing the Content of the Report\\
+A Subtitle that can be Very Much Longer if Necessary\\
+NAME FAMILYNAME \setlength{\parskip}{1cm}
+
+\copyright ~ NAME FAMILYNAME, \the\year. \setlength{\parskip}{1cm}
+
+Supervisor: Name, Company or Department\\
+Examiner: Name, Department \setlength{\parskip}{1cm}
+
+Degree project report \the\year\\	
+Department of Some Subject or Technology\\
+Chalmers University of Technology\\
+SE-412 96 Gothenburg\\
+Sweden\\
+Telephone +46 31 772 1000 \setlength{\parskip}{0.5cm}
+
+\vfill
+% Caption for cover page figure if used, possibly with reference to further information in the report
+Cover: Wind visualization constructed in Matlab showing a surface of constant wind speed along with streamlines of the flow. \setlength{\parskip}{0.5cm}
+
+Typeset in \LaTeX \tagtemp\\
+%Printed by Chalmers Reproservice\\
+Gothenburg, Sweden \the\year

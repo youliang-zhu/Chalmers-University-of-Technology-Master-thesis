@@ -1,0 +1,20 @@
+paper/build/
+paper/build-*/
+paper/*.synctex.gz
+paper/Main.aux
+paper/Main.bbl
+paper/Main.blg
+paper/Main.d
+paper/Main.fdb_latexmk
+paper/Main.fls
+paper/Main.log
+paper/Main.out
+paper/Main.toc
+paper/Main.xdv
+paper/Main.lof
+paper/Main.lot
+
+# Local editor and OS files
+.DS_Store
+*.swp
+*.swo

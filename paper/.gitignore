@@ -1,0 +1,21 @@
+build/
+build-*/
+*.synctex.gz
+
+# Root-level LaTeX build artifacts; keep generated files under build/.
+/Main.aux
+/Main.bbl
+/Main.blg
+/Main.d
+/Main.fdb_latexmk
+/Main.fls
+/Main.log
+/Main.out
+/Main.pdf
+/Main.toc
+/Main.xdv
+/Main.lof
+/Main.lot
+
+# Generated source packages
+/*-source.tar.gz
