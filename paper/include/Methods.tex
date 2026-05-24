@@ -195,20 +195,27 @@ information visible to lexical and embedding retrieval. If a session and a
 query use different relative expressions for the same time interval, both can
 still become searchable through a shared absolute span.
 
-Temporal information is used as a hint rather than as a universal hard filter.
-A hard filter on session time is risky because the answer-bearing event may be
-mentioned outside the target event interval. The implementation contains
-retrieval paths with temporal span metadata and top-$k$ pruning, and the final
-thesis should keep the distinction clear: event-time reasoning is meant to
-improve search and synthesis, not to discard all sessions whose timestamps do
-not match the query.
+Temporal information has two distinct roles in the implementation. It remains
+a hint for the Synthesizer: temporal spans are rendered in the prompt so that
+the model can decide whether retrieved sessions support the query and whether a
+new temporal cue should be searched in a later round. In the GRPO and
+\texttt{search\_expr} retrieval path, however, parseable cue-level temporal
+spans are also used as a targeted hard mention filter. The index search first
+scores sessions with lexical and dense signals, with the default combined score
+using normalized BM25 and dense embedding similarity. For the training rollout
+path, temporal boost is disabled, reranking is disabled, and only the top seven
+pre-reranker sessions per cue are kept by default. When a cue contains
+temporal spans, \texttt{temporal\_filter\_mode=hard\_mention} then retains
+candidate sessions whose session timestamp overlaps the cue span.
 
-\textcolor{red}{TODO: Reconcile this paragraph with the final retrieval
-configuration before thesis submission. One GRPO rollout path currently passes
-\texttt{temporal\_filter\_mode} as \texttt{hard\_mention} and disables the
-reranker, while the paper-level method describes temporal information as a soft
-retrieval and synthesis hint. The final text should name the exact behavior used
-for the reported experiments.}
+This choice is narrower than a universal session-time filter. The system does
+not discard sessions by the original query time before cue generation, and the
+Synthesizer still reasons over event time separately from session time. The
+hard mention filter is used after the Planner has produced a cue with an
+explicit temporal span, mainly to reduce candidate noise in temporal-bridge
+rollouts. Its risk is recall loss: an answer-bearing event may be mentioned
+outside the target interval even when its event time lies inside it. Chapter 4
+therefore has to interpret retrieval failures with this trade-off in mind.
 
 \begin{figure}[H]
   \centering
@@ -238,7 +245,7 @@ for the reported experiments.}
     \hline
     Resolve simple relative expressions & Deterministic parser anchored to session or query timestamp & Reduces brittle date arithmetic for the Synthesizer & Rule coverage is incomplete \\
     Preserve original phrase and span & Keep phrase-level temporal metadata & Lets the model see both wording and resolved date & Extra prompt complexity \\
-    Treat time as retrieval hint & Prefer hints over universal session-time filtering & Event time and session time can differ & Some implementations may still use task-specific filters \\
+    Treat time as retrieval signal & Use temporal hints in the Synthesizer and cue-level \texttt{hard\_mention} filtering in GRPO retrieval & Reduces candidate noise after the Planner exposes a time span & May drop sessions whose mention time differs from event time \\
     Let event time enter later search & Use Synthesizer event times as loop state & Makes indirect evidence addressable & Wrong event time can drift search \\
     Unknown time & Preserve text and use \texttt{unknown} when needed & Avoids fabricating precision & Downstream reasoning receives weaker evidence \\
     \hline\hline
@@ -264,11 +271,15 @@ the form of cue text and temporal phrase annotations.
 The Retriever searches the indexed memory database for each cue. The NanoMem
 codebase supports dense embeddings, query preprocessing, stateful retrieval,
 index search, reranking, and budget-based pruning. In the GRPO rollout path,
-per-cue results are merged, duplicate sessions are removed, and sessions are
-trimmed to fit the Synthesizer input budget. The phase-1 plan describes this as
-hybrid dense/BM25 retrieval; the final thesis should report exact weights,
-reranker settings, and top-$k$ values only after checking the final experiment
-configuration.
+the active L0 index search combines normalized BM25 and dense retrieval scores
+with weights $0.25$ and $0.75$, respectively. The training path disables
+temporal boost and reranking, applies cue-level hard mention filtering when
+temporal spans are available, keeps the top seven pre-reranker sessions per
+cue, merges results across cues, removes duplicate sessions, and trims complete
+sessions until the Synthesizer input fits the token budget. These details are
+method choices for the reported training/evaluation interface, not merely
+appendix hyperparameters, because they define which evidence the Synthesizer can
+see.
 
 The Synthesizer then receives the query, temporal hints, retrieved sessions, and
 the current state. It emits XML in the following shape:
@@ -282,10 +293,15 @@ the current state. It emits XML in the following shape:
 Each event has a single \texttt{session\_id}, a \texttt{session\_time}, an
 \texttt{event\_time}, and text. The verdict is binary:
 \texttt{sufficient} stops the loop and passes the evidence to the answer model;
-\texttt{insufficient} continues retrieval. This binary schema is the final
-method-level schema used by the current parser. Earlier design variants with an
-\texttt{inferred} attribute and an \texttt{indicative} verdict were removed
-because they complicated supervision without changing downstream behavior.
+\texttt{insufficient} continues retrieval. This binary schema is the
+method-level schema used by the current parser. Earlier design variants exposed
+an \texttt{inferred} event attribute and an \texttt{indicative} verdict. In the
+current method, the inference boundary is represented differently: event
+records are treated as source-grounded claims tied to one cited session, while
+cross-session or uncertain reasoning should remain in the \texttt{reasoning}
+field or be decomposed into separate source-grounded events. Thus RQ1's concern
+with inference markers is addressed as an attribution and reasoning-boundary
+requirement rather than as a separate XML attribute in the final parser.
 
 \[
   (r_t,\mathcal{E}_t,v_t)
@@ -393,8 +409,12 @@ environment.
 \label{sec:methods-reward}
 
 The reward is designed for evidence construction rather than direct answer
-generation. It combines four signals: format validity, verdict correctness,
-outcome usefulness, and compactness.
+generation. The checked GRPO reward implementation combines four weighted
+signals: format validity, event faithfulness, outcome usefulness, and length.
+The verdict remains central to the method, but it is not a separate additive
+reward component in the active reward total. Instead, it controls whether a
+trajectory is terminal and therefore whether terminal outcome evaluation is
+available.
 
 \textbf{Format reward.} The Synthesizer output must be parseable XML with
 \texttt{reasoning}, \texttt{events}, required event attributes, non-empty event
@@ -402,24 +422,16 @@ text, and a valid binary verdict. Format validity is necessary because the rest
 of the pipeline depends on structured evidence. A malformed output cannot be
 reliably attributed, evaluated, or passed downstream.
 
-\textbf{Verdict reward.} The verdict supervises the stop-or-continue decision.
-Let $\mathcal{G}_q$ denote the gold evidence session set for query $q$, and let
-$\mathcal{S}^{\mathrm{ret}}_{\le t}$ denote the sessions retrieved up to round
-$t$. The desired verdict is \texttt{sufficient} when the retrieved sessions
-cover the gold evidence sessions, and \texttt{insufficient} otherwise:
-\[
-R_{\mathrm{ver}}(v_t)=
-\begin{cases}
-1, & \mathcal{G}_q\subseteq\mathcal{S}^{\mathrm{ret}}_{\le t}
-\ \mathrm{and}\ v_t=\texttt{sufficient},\\
-1, & \mathcal{G}_q\not\subseteq\mathcal{S}^{\mathrm{ret}}_{\le t}
-\ \mathrm{and}\ v_t=\texttt{insufficient},\\
-0, & \mathrm{otherwise}.
-\end{cases}
-\]
-This signal is evaluated at the process level. It teaches the Synthesizer not
-to stop after finding only a temporal anchor, while also discouraging needless
-search when the evidence has already been retrieved.
+\textbf{Event faithfulness reward.} Each emitted event is supposed to be
+directly supported by its cited session. The faithfulness component checks
+event text against the corresponding session with a frozen verifier and rewards
+the proportion of supported events. This signal is needed because a compact
+evidence pool is useful only if compression preserves attribution. Since the
+current parser does not expose an \texttt{inferred} field, the method-level
+contract is stricter than the earlier design: every emitted event should be
+source-grounded. Evidence that depends on cross-session inference should be
+expressed through separate cited events and the \texttt{reasoning} field rather
+than as a single unsupported event.
 
 \textbf{Outcome reward.} When the loop terminates, the evidence is provided to
 a frozen answer model. A judge compares the answer to the gold answer. This
@@ -437,20 +449,17 @@ A representative total reward is
 \[
   R(\tau)=
   w_f R_{\mathrm{fmt}}(\tau)
-  + w_v \overline{R}_{\mathrm{ver}}(\tau)
+  + w_s R_{\mathrm{faith}}(\tau)
   + w_o R_{\mathrm{out}}(\tau)
   + w_l R_{\mathrm{len}}(\tau),
 \]
-where $\overline{R}_{\mathrm{ver}}$ aggregates the verdict reward over rounds.
-The intended priority is outcome usefulness first, then process correctness,
-then compactness.
-
-\textcolor{red}{TODO: Before final submission, align this reward description
-with the final training code and ablation tables. The current paper draft
-describes format, verdict, outcome, and length rewards, while one training
-module still contains an older faithfulness-reward path that references the
-removed \texttt{inferred} field. The thesis should describe only the reward
-version used for the reported checkpoint.}
+with default MVP weights $w_f=0.2$, $w_s=0.2$, $w_o=0.5$, and $w_l=0.1$ in the
+configuration artifact. The intended priority is outcome usefulness first, then
+parseability and source support, then compactness. Verdict quality is evaluated
+through loop behavior and downstream outcome: a premature \texttt{sufficient}
+verdict exposes incomplete evidence to the answer model, while repeated
+\texttt{insufficient} verdicts can terminate by maximum-round or no-new-evidence
+conditions and receive no terminal outcome reward.
 
 \begin{figure}[H]
   \centering
@@ -458,14 +467,15 @@ version used for the reported checkpoint.}
     \centering
     \vspace{0.8em}
     \textcolor{red}{TODO: Replace this placeholder with the planned reward
-    signal figure. It should mark format and verdict at each Synthesizer round,
-    outcome at terminal answer evaluation, and compactness on Synthesizer output
-    length.}
+    signal figure. It should mark format and faithfulness on the Synthesizer
+    artifact, outcome at terminal answer evaluation, compactness on Synthesizer
+    output length, and the verdict as the terminal gate.}
     \vspace{0.8em}
   \end{minipage}}
-  \caption{Reward signals in a NanoMem trajectory. Format and verdict supervise
-  intermediate evidence construction, while outcome and length connect terminal
-  evidence to downstream usefulness and compactness.}
+  \caption{Reward signals in a NanoMem trajectory. Format and faithfulness
+  supervise the structured evidence artifact, while outcome and length connect
+  terminal evidence to downstream usefulness and compactness. The verdict gates
+  whether terminal outcome evaluation is reached.}
   \label{fig:methods-rewards}
 \end{figure}
 
@@ -479,7 +489,7 @@ version used for the reported checkpoint.}
     Component & Measures & Timing & Failure mode addressed & Risk \\
     \hline
     Format & XML parseability and required fields & Each Synthesizer output & Unusable evidence artifact & Models may learn shallow formatting \\
-    Verdict & Correct stop-or-continue decision & Each round or trajectory aggregate & Premature stopping or unnecessary search & Depends on quality of gold evidence-session labels \\
+    Faithfulness & Direct support between event text and cited session & Parsed events in the terminal reward path & Unsupported compressed evidence & Requires parser and verifier assumptions to stay aligned \\
     Outcome & Answer correctness from terminal evidence & Terminal only & Evidence that is well formed but not useful & Can hide which component failed \\
     Length & Compactness of Synthesizer output & Usually terminal or trajectory aggregate & Passing bloated evidence to answer model & Must not reward empty evidence \\
     \hline\hline
@@ -573,11 +583,19 @@ masking, and reward computation inside a GRPO agent loop. Evaluation code under
 \texttt{evals} provides benchmark-specific runners for LoCoMo, LongMemEval,
 ChainMem, and related baselines.
 
-The method description intentionally avoids hard-coding unverified
-hyperparameters. Exact dense/BM25 weighting, top-$k$ values, reranker settings,
-maximum rounds, answer model, judge model, training group size, reward weights,
-and checkpoint selection should be reported in Chapter 4 or an appendix after
-the final experiment configuration is frozen.
+The implementation boundary used in this chapter is therefore concrete. The
+reported GRPO retrieval path uses BM25/dense index search with the $0.25/0.75$
+combined score, cue-level \texttt{hard\_mention} temporal filtering when cue
+spans exist, disabled reranking, top-seven pre-reranker session retention per
+cue, complete-session token-budget pruning, and up to three retrieval rounds by
+default. The active reward total uses format, faithfulness, length, and outcome
+weights. Because the current event parser no longer exposes the older
+\texttt{inferred} attribute, any reported training run must keep the
+faithfulness reward path synchronized with the parser and treat emitted events
+as directly source-grounded claims. Chapter 4 should still report run-specific
+model identities, data splits, group size, checkpoint selection, and any
+configuration overrides, but the retrieval and reward behavior above is part of
+the method definition.
 
 \begin{table}[H]
   \centering
@@ -586,14 +604,14 @@ the final experiment configuration is frozen.
   \scriptsize
   \begin{tabular}{p{0.22\textwidth}p{0.27\textwidth}p{0.20\textwidth}p{0.21\textwidth}}
     \hline\hline
-    Method component & Main implementation area & Input/output & Final checks before submission \\
+    Method component & Main implementation area & Input/output & Method-relevant setting or check \\
     \hline
     Temporal normalization & \texttt{src/nanomem/time\_utils.py} & Text plus timestamp to resolved spans & Phrase coverage and date format \\
-    Query cues & \texttt{src/nanomem/operators/query.py}; prompt cue schema & Query to structured cues & Whether cues or raw query supply temporal hints \\
-    Retrieval & \texttt{src/nanomem/operators/read\_path.py}; vector stores & Cues to candidate sessions & Dense/BM25, reranker, and top-$k$ settings \\
-    Synthesizer schema & \texttt{training/grpo/trainer/schemas.py} & XML to structured events and verdict & Final fields and terminal verdicts \\
-    GRPO rollout & \texttt{training/grpo/trainer/rollout.py} & Query trajectory to masked policy tokens & Maximum rounds and termination reasons \\
-    Reward pipeline & \texttt{training/grpo/trainer/rewards.py}; paper reward notes & XML and terminal answer to scalar reward & Remove or document stale reward variants \\
+    Query cues & \texttt{src/nanomem/operators/query.py}; prompt cue schema & Query to structured cues & Planner cues are enriched with temporal spans before retrieval \\
+    Retrieval & \texttt{src/nanomem/operators/read\_path.py}; vector stores & Cues to candidate sessions & BM25/dense $0.25/0.75$, \texttt{hard\_mention}, reranker off, top-seven per cue \\
+    Synthesizer schema & \texttt{training/grpo/trainer/schemas.py} & XML to structured events and verdict & \texttt{session\_id}, \texttt{session\_time}, \texttt{event\_time}, text, binary verdict \\
+    GRPO rollout & \texttt{training/grpo/trainer/rollout.py} & Query trajectory to masked policy tokens & Maximum three rounds by default; terminal on \texttt{sufficient} \\
+    Reward pipeline & \texttt{training/grpo/trainer/rewards.py}; reward weights config & XML and terminal answer to scalar reward & Format, faithfulness, length, and outcome components \\
     Benchmarks & \texttt{evals/locomo}, \texttt{evals/longmemeval}, \texttt{evals/chainmem} & Dataset records to evaluation results & Split sizes and filtering rules \\
     \hline\hline
   \end{tabular}
