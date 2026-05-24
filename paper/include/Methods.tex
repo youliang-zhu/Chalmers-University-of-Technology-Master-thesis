@@ -410,18 +410,26 @@ environment.
 
 The reward is designed for evidence construction rather than direct answer
 generation. The design separates four desired signals: format validity, source
-faithfulness, outcome usefulness, and length. However, the current code
-artifact does not yet support all four as a synchronized, executable reward
-contract. The parser schema exposes event fields for \texttt{session\_id},
-\texttt{session\_time}, \texttt{event\_time}, and text, while the faithfulness
-reward path still expects the older \texttt{inferred} attribute when selecting
-direct events. Consequently, this chapter treats source faithfulness as a
-method requirement and planned reward component, not as a verified active
-component for reported GRPO training unless the implementation is first
-synchronized. \textcolor{red}{TODO: Before reporting GRPO training results,
-either update the reward path so faithfulness checks all parsed source-grounded
-events under the current schema, or report the run as using only the executable
-format, outcome, and length components.}
+faithfulness, outcome usefulness, and length. \textcolor{red}{NOTSURE: The
+final thesis reward contract remains unresolved at this escalation point. The
+current text cannot yet make a single defensible claim about whether reported
+GRPO training optimizes format/outcome/length only, or a synchronized
+format/faithfulness/outcome/length objective. This must be decided from the
+final implementation and experiment records before Chapter~4 reports GRPO
+results.} The current code artifact does not yet support all four as a
+synchronized, executable reward contract. The parser schema exposes event
+fields for \texttt{session\_id}, \texttt{session\_time},
+\texttt{event\_time}, and text, while the faithfulness reward path still
+expects the older \texttt{inferred} attribute when selecting direct events.
+Consequently, this chapter treats source faithfulness as a method requirement
+and planned reward component, not as a verified active component for reported
+GRPO training unless the implementation is first synchronized.
+\textcolor{red}{TODO: Before reporting GRPO training results, choose one final
+reward version and make Methods and Results use only that version: either
+update the reward path so faithfulness checks parsed source-grounded events
+under the current schema and report its active weight, or report the run as
+using only the executable format, outcome, and length components and move
+faithfulness/verdict supervision to diagnostics or limitations.}
 
 The verdict remains central to the method, but it is not a separate additive
 reward component in the active reward total. Instead, it controls whether a
@@ -461,7 +469,8 @@ weight encourages shorter Synthesizer outputs. It must not dominate outcome or
 verdict quality, because a trivially short but uninformative evidence pool is
 not useful memory.
 
-The intended full reward, after the faithfulness path is synchronized, is
+The unresolved planned full reward, after the faithfulness path is synchronized,
+would be
 \[
   R(\tau)=
   w_f R_{\mathrm{fmt}}(\tau)
@@ -478,7 +487,7 @@ verdict exposes incomplete evidence to the answer model, while repeated
 conditions and receive no terminal outcome reward.
 
 For any result reported before that synchronization, the faithful description
-is the executable reward subset:
+would instead be the executable reward subset:
 \[
   R_{\mathrm{exec}}(\tau)=
   w_f R_{\mathrm{fmt}}(\tau)
@@ -489,7 +498,9 @@ with source faithfulness evaluated, at most, as a post-hoc diagnostic rather
 than as an optimization signal. This constraint is important for Chapter 4:
 claims about learned source faithfulness or a faithfulness--compactness
 trade-off require a run whose reward implementation and parser schema are
-aligned.
+aligned. \textcolor{red}{NOTSURE: These two formulas are left here only to
+expose the unresolved method fork. The final thesis should keep exactly one
+reported reward objective and delete the alternative before submission.}
 
 \begin{figure}[H]
   \centering
@@ -621,7 +632,11 @@ reported GRPO retrieval path uses BM25/dense index search with the $0.25/0.75$
 combined score, cue-level \texttt{hard\_mention} temporal filtering when cue
 spans exist, disabled reranking, top-seven pre-reranker session retention per
 cue, complete-session token-budget pruning, and up to three retrieval rounds by
-default. The reward boundary is less settled. Format, outcome, and length are
+default. \textcolor{red}{TODO: Resolve the reward boundary before writing
+Chapter~4. The implementation boundary must name the exact active reward
+objective used by the reported GRPO run, including whether faithfulness was
+fixed and enabled or excluded from optimization.} The reward boundary is less
+settled. Format, outcome, and length are
 traceable in the current reward pipeline, with length implemented as a negative
 token-ratio penalty. The source-faithfulness reward is not yet a reliable
 active method claim because the parser no longer exposes the older
@@ -664,6 +679,10 @@ one round to guide retrieval in the next round. GRPO training and the reward
 design align the Synthesizer with parseable, compact, useful, and
 sufficiency-aware evidence construction, while source faithfulness remains a
 required evidence property that must be either synchronized in the reward
-implementation or evaluated diagnostically. Chapter 4 evaluates whether these
-design choices improve answer quality, temporal grounding, compactness, and
-hidden-dependency retrieval on public memory benchmarks and ChainMem.
+implementation or evaluated diagnostically. \textcolor{red}{NOTSURE: The
+Chapter~4 interface is not final until the reward contract is fixed; Results
+must not claim learned source faithfulness, verdict correctness, or a reward
+ablation unless the corresponding active objective is verified from the final
+training run.} Chapter 4 evaluates whether these design choices improve answer
+quality, temporal grounding, compactness, and hidden-dependency retrieval on
+public memory benchmarks and ChainMem.
