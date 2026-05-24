@@ -1,11 +1,9 @@
-round_id: 12
+round_id: 13
 phase: 2
-section: introduction
-section_round: 2
-status: ready_for_review
+section: related_work
+section_round: 1
+status: drafting
 artifacts:
-  - paper/include/Introduction.tex
-  - paper/include/settings/Settings.tex
-  - paper/include/backmatter/References.tex
+  - paper/include/Theory.tex
 commit_hash: "35092580578dbb57fb4d2f2d73531c1a0907c2b5"
-updated_at: "2026-05-24T01:58:39Z"
+updated_at: "2026-05-24T02:01:35Z"
