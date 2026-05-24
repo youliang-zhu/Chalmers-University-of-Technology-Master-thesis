@@ -8,9 +8,9 @@ a Chalmers master's thesis.
 
 ## Goal
 
-The task is to convert the completed NanoMem research project and its NeurIPS
-paper into a master's thesis that follows the Chalmers University of Technology
-LaTeX template currently stored in:
+The task is to convert the completed NanoMem research project into a master's
+thesis that follows the Chalmers University of Technology LaTeX template
+currently stored in:
 
 ```text
 /mnt/models/youliang/master_thesis/paper
@@ -22,16 +22,12 @@ The source project is:
 /mnt/models/yupan/llm/nanomem
 ```
 
-The source NeurIPS paper is:
-
-```text
-/mnt/models/yupan/llm/nanomem/paper
-```
-
-The thesis should not merely copy the NeurIPS paper. It should use the NeurIPS
-paper as the core technical contribution, then expand and reshape it into a
-master's thesis with more background, design rationale, implementation detail,
-experimental methodology, limitations, and appendix material.
+The thesis should not merely mirror any earlier conference-paper framing. It
+should use the NanoMem implementation, experiment artifacts, accepted planning
+documents, and already written thesis chapters as the source of truth, then
+shape them into a master's thesis with more background, design rationale,
+implementation detail, experimental methodology, limitations, and appendix
+material.
 
 ## Current Writer Source Override
 
@@ -63,7 +59,7 @@ agent memory system should return compact, faithful, source-grounded evidence
 for a downstream agent, rather than returning only raw retrieved sessions or
 directly answering the user query.
 
-The main project is NanoMem. The paper title in the NeurIPS draft is:
+The main project is NanoMem. The working thesis title is:
 
 ```text
 NanoMem: Iterative Evidence Synthesis for Temporal-Causal Reasoning in Agent Memory
@@ -91,9 +87,9 @@ Future writing should preserve these contributions:
 2. Propose a Planner-Synthesizer loop for iterative retrieval and evidence
    construction.
 3. Introduce structured evidence events with explicit `session_time`,
-   `event_time`, `inferred`, and source/session identifiers.
-4. Use a `verdict` signal to decide whether the current evidence is sufficient,
-   indicative, or insufficient, and to drive further retrieval.
+   `event_time`, and source/session identifiers.
+4. Use a `verdict` signal to decide whether the current evidence is sufficient
+   or insufficient and to drive further retrieval.
 5. Train or evaluate the system using reward signals aligned with evidence
    quality, including temporal grounding, faithfulness, sufficiency/verdict
    accuracy, and final downstream answer quality.
@@ -103,47 +99,11 @@ Future writing should preserve these contributions:
    MemOS, MemSifter, Memory-T1, Memory-R1, MemR3, and related RAG-style memory
    systems where applicable.
 
-## Important Source Materials
+## Important Source Materials For Writer
 
-Use the following source files first when writing or revising thesis content.
-
-### NeurIPS Paper Source
-
-```text
-/mnt/models/yupan/llm/nanomem/paper/neurips_2026.tex
-/mnt/models/yupan/llm/nanomem/paper/sections/abstract.tex
-/mnt/models/yupan/llm/nanomem/paper/sections/introduction_v2.tex
-/mnt/models/yupan/llm/nanomem/paper/sections/relw.tex
-/mnt/models/yupan/llm/nanomem/paper/sections/arch_v3.tex
-/mnt/models/yupan/llm/nanomem/paper/sections/eval_v2.tex
-/mnt/models/yupan/llm/nanomem/paper/sections/conclusion_limitations.tex
-/mnt/models/yupan/llm/nanomem/paper/sections/appendix/
-/mnt/models/yupan/llm/nanomem/paper/refs.bib
-```
-
-These files contain the most polished paper text. The thesis should translate
-their arguments into a longer report structure, not preserve the NeurIPS section
-structure verbatim.
-
-### Agent Context From The NeurIPS Writing Process
-
-```text
-/mnt/models/yupan/llm/nanomem/paper/agents/outline_en.md
-/mnt/models/yupan/llm/nanomem/paper/agents/outline_zh.md
-/mnt/models/yupan/llm/nanomem/paper/agents/draft.md
-/mnt/models/yupan/llm/nanomem/paper/agents/related_work.md
-/mnt/models/yupan/llm/nanomem/paper/agents/arch_design_idea.md
-/mnt/models/yupan/llm/nanomem/paper/agents/reward.md
-/mnt/models/yupan/llm/nanomem/paper/agents/reward_provement.md
-/mnt/models/yupan/llm/nanomem/paper/agents/data_exp.md
-/mnt/models/yupan/llm/nanomem/paper/agents/contrast_paper.md
-/mnt/models/yupan/llm/nanomem/paper/agents/reframe_and_reward_test.md
-```
-
-These files contain design notes, Chinese drafts, English outlines, reward
-design notes, experiment descriptions, related work notes, and unresolved
-questions. They are useful for expanding the thesis beyond the compressed
-conference-paper version.
+Use the following sources first when writing or revising thesis content. Do not
+use old conference-paper prose, old paper-agent notes, or the historical commit
+summary as Writer evidence.
 
 ### Code And Experiment Artifacts
 
@@ -168,7 +128,8 @@ chapters:
 
 Do not invent implementation details. If a method, prompt, dataset split,
 baseline, metric, or hyperparameter is described in the thesis, verify it
-against these files or the NeurIPS paper first.
+against NanoMem code, experiment artifacts, accepted phase-1 plans, current
+thesis chapters, or direct Expert feedback.
 
 ## Current Thesis Template
 
@@ -218,11 +179,9 @@ Settings:
 /mnt/models/youliang/master_thesis/paper/include/settings/Settings.tex
 ```
 
-The template currently uses `report` class and a manual `thebibliography`
-environment. A later setup step should decide whether to keep this or migrate to
-BibTeX using the existing NanoMem `refs.bib`. Since the source NeurIPS paper
-already has a substantial BibTeX database, using BibTeX is likely preferable for
-the thesis.
+The template currently uses `report` class. The repository now also has
+`paper/refs.bib`; Writer may use existing verified bib entries from that file
+or add entries only when the source can be verified.
 
 Important template setting to update early:
 
@@ -238,25 +197,19 @@ This should be changed to:
 
 because the target document is a master's thesis.
 
-## Environment To Mimic From NanoMem Paper
+## Thesis Build Environment
 
-The NanoMem paper uses a simple and robust LaTeX workflow:
-
-```text
-/mnt/models/yupan/llm/nanomem/paper/Makefile
-/mnt/models/yupan/llm/nanomem/paper/prerequisites.sh
-```
-
-The important build behavior is:
+The thesis uses a simple `latexmk` build workflow. The important build behavior
+is:
 
 ```bash
 latexmk -xelatex -shell-escape -interaction=nonstopmode -halt-on-error -file-line-error -outdir=build MAIN_TEX
 ```
 
-The thesis repository should get a similar setup:
+The thesis repository has this setup:
 
-- Add a `paper/Makefile` with targets such as `pdf`, `watch`, `clean`,
-  `distclean`, and optionally `pack`.
+- `paper/Makefile` with targets such as `pdf`, `watch`, `clean`,
+  `distclean`, and `pack`.
 - Use `latexmk` as the primary build tool.
 - Prefer an output directory such as `paper/build`.
 - Keep generated files ignored by Git.
@@ -428,12 +381,12 @@ works, but also why the problem matters, how the project was scoped, how the
 method was designed and implemented, how the evaluation was conducted, what the
 results mean, and what limitations remain.
 
-## NeurIPS-To-Thesis Writing Decision
+## Research-To-Thesis Writing Decision
 
-The completed NanoMem NeurIPS paper should be treated as the technical core, not
-as the final structure. The thesis should not be a direct expansion of the
-conference paper section by section. Instead, it should reorganize the same work
-into a thesis narrative:
+The completed NanoMem research project should be treated as the technical core,
+not as the final thesis structure. The thesis should not be a direct expansion
+of a conference paper section by section. Instead, it should reorganize the same
+work into a thesis narrative:
 
 ```text
 Introduction
@@ -444,13 +397,6 @@ Experimental Setup / Results
 Discussion
 Conclusion
 Appendices
-```
-
-The NeurIPS paper currently follows the compressed research-paper logic:
-
-```text
-Introduction -> Related Work -> Methodology -> Experiments ->
-Conclusion and Limitations -> Appendix
 ```
 
 The thesis should add:
@@ -489,8 +435,8 @@ Future agents should follow these principles:
   a design motivation, hypothesis, limitation, or future work.
 - Keep the distinction between raw sessions, retrieved chunks, synthesized
   evidence, and final answers explicit.
-- Keep the distinction between directly supported facts and inferred evidence
-  explicit.
+- Keep the distinction between directly supported facts, reasoning over
+  multiple cited events, and unsupported claims explicit.
 - Use `event_time` and `session_time` consistently.
 - Use the term "downstream answer model" or "downstream agent" when discussing
   the component that consumes memory evidence.
@@ -499,10 +445,10 @@ Future agents should follow these principles:
 - Prefer structured LaTeX chapters over large monolithic files.
 - After edits, compile the thesis and fix LaTeX errors immediately.
 
-## Migration Notes From NeurIPS To Thesis
+## Migration Notes From Research Project To Thesis
 
-The NeurIPS paper is short and contribution-focused. The master's thesis should
-expand it in these ways:
+The original conference-format presentation was short and contribution-focused.
+The master's thesis should expand the project in these ways:
 
 - Add a longer background chapter that teaches the reader the problem area.
 - Add a more explicit problem formulation and research-question section.
@@ -525,8 +471,7 @@ The core local writing environment has now been initialized. Completed setup:
 - `paper/prerequisites.sh` exists and is executable.
 - Root and paper-level `.gitignore` files ignore LaTeX build artifacts.
 - `\ThesisType` has been changed from `B` to `M`.
-- `paper/refs.bib` has been copied from the NanoMem NeurIPS paper for future
-  bibliography migration.
+- `paper/refs.bib` exists for bibliography entries.
 - `make pdf` has been tested successfully and produces `paper/build/Main.pdf`.
 
 Remaining setup tasks before or during substantial writing:
@@ -538,21 +483,14 @@ Remaining setup tasks before or during substantial writing:
 
 ## Current Known Commands
 
-The NanoMem source paper can be compiled with:
-
-```bash
-cd /mnt/models/yupan/llm/nanomem/paper
-make pdf
-```
-
-The target thesis should eventually compile with:
+The target thesis compiles with:
 
 ```bash
 cd /mnt/models/youliang/master_thesis/paper
 make pdf
 ```
 
-Until the thesis Makefile exists, compile manually with:
+If needed, compile manually with:
 
 ```bash
 cd /mnt/models/youliang/master_thesis/paper
