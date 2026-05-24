@@ -1,11 +1,11 @@
-round_id: 11
+round_id: 12
 phase: 2
 section: introduction
-section_round: 1
+section_round: 2
 status: ready_for_review
 artifacts:
   - paper/include/Introduction.tex
   - paper/include/settings/Settings.tex
   - paper/include/backmatter/References.tex
-commit_hash: "84e7a45370efa1025651a43208bc5ea6f3883621"
-updated_at: "2026-05-24T01:54:26Z"
+commit_hash: "35092580578dbb57fb4d2f2d73531c1a0907c2b5"
+updated_at: "2026-05-24T01:58:39Z"
