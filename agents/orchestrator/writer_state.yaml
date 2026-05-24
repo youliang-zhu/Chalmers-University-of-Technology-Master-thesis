@@ -1,9 +1,9 @@
-round_id: 0
+round_id: 1
 phase: 1
 section: introduction
 section_round: 1
-status: drafting
+status: ready_for_review
 artifacts:
   - paper/sections_drafts/01_introduction.md
-commit_hash: ""
-updated_at: "2026-05-24T00:38:49Z"
+commit_hash: "091fcce6550b28502c8523368464dfe99c24898d"
+updated_at: "2026-05-24T01:07:43Z"
