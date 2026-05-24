@@ -94,9 +94,12 @@ Baselines are grouped by the stage at which they operate. Full-context
 baselines give the complete history directly to GPT-5.1 or Qwen3.5-9B and
 represent strong long-context references. Write-time memory baselines such as
 Mem0 and A-Mem store extracted or organized memory records before the future
-query is known \cite{chhikara2025mem0,xu2025amem}. Search-time baselines such
-as MemR$^3$ and Search-R1 adapt retrieval after the query arrives
-\cite{du2025memr3,jin2025searchr1}. Memory-T1 is included as a temporal memory
+query is known \cite{chhikara2025mem0,xu2025amem}. MemR$^3$ is the local
+search-time retrieval baseline reported in the benchmark tables
+\cite{du2025memr3}. Search-R1 is relevant prior work for search-time reasoning
+\cite{jin2025searchr1}, but no comparable local Search-R1 rerun is present in
+the synchronized experiment artifacts; it is therefore not used as evidence for
+the quantitative claims below. Memory-T1 is included as a temporal memory
 baseline because it explicitly targets temporal evidence selection
 \cite{du2026memoryt1}. NanoMem is reported in two versions: NanoMem-Vanilla,
 which uses the same framework without the GRPO-trained Synthesizer, and
@@ -131,7 +134,9 @@ address.
 
 \begin{table}[H]
   \centering
-  \caption{Main benchmark summary. Accuracy is reported as percentage points.}
+  \caption{Main benchmark summary. Accuracy is reported as percentage points.
+  Dashes mark cells without a directly comparable local rerun in the synchronized
+  artifacts; MemR$^3$ LongMemEval TR is a 20-example audit cell.}
   \label{tab:results-main-summary}
   \scriptsize
   \resizebox{\textwidth}{!}{%
@@ -141,7 +146,10 @@ address.
     \hline
     GPT-5.1 full context & 88.7 & 76.0 & 87.7 & 39.8 & 44.4 & 63.6 & 25.0 & 7.0 & 16.0 \\
     Qwen3.5-9B full context & 84.0 & 55.5 & 80.8 & 39.8 & 45.1 & 63.6 & 25.0 & 16.0 & 20.5 \\
-    Mem0 & 79.3 & 43.0 & 71.0 & 54.2 & 46.2 & 59.2 & 2.0 & 1.0 & 1.5 \\
+    Mem0 & 79.3 & 43.0 & 71.0 & 18.0 & 30.8 & 28.1 & 2.0 & 1.0 & 1.5 \\
+    A-Mem & 78.4 & 65.1 & 76.1 & -- & -- & -- & -- & -- & -- \\
+    MemR$^3$ & 67.4 & 64.8 & 73.4 & 55.0 & 47.4 & 66.9 & 13.0 & 11.0 & 12.0 \\
+    Memory-T1-Qwen & 75.2 & 52.6 & 74.7 & 27.1 & 24.8 & 39.4 & 3.0 & 4.0 & 3.5 \\
     NanoMem-Vanilla & 84.0 & 76.6 & 85.0 & 75.8 & 70.7 & 78.7 & 47.0 & 39.0 & 43.0 \\
     NanoMem-GRPO & \textbf{89.0} & \textbf{87.5} & \textbf{88.6} & \textbf{86.4} & \textbf{71.4} & \textbf{83.8} & \textbf{57.0} & \textbf{47.0} & \textbf{51.5} \\
     \hline\hline
@@ -171,6 +179,9 @@ rather than on a single directly named fact.
     GPT-5.1 full context & 94.2 & 25 & 88.7 & 32 & 76.0 & 27 & 67.7 & 36 & 87.7 & 27 \\
     Qwen3.5-9B full context & 92.2 & 18 & 84.0 & 24 & 55.5 & 16 & 56.2 & 39 & 80.8 & 20 \\
     Mem0 & 79.5 & 675 & 79.3 & 650 & 43.0 & 650 & 67.1 & 675 & 71.0 & 650 \\
+    A-Mem & 81.0 & -- & 78.4 & -- & 65.1 & -- & 63.5 & -- & 76.1 & -- \\
+    MemR$^3$ & 82.5 & 95 & 67.4 & 118 & 64.8 & 183 & 41.7 & 168 & 73.4 & 122 \\
+    Memory-T1-Qwen & 86.3 & 45 & 75.2 & 49 & 52.6 & 43 & 44.8 & 49 & 74.7 & 45 \\
     NanoMem-Vanilla & 90.5 & 234 & 84.0 & 364 & 76.6 & 225 & 67.4 & 375 & 85.0 & 264 \\
     NanoMem-GRPO & \textbf{91.4} & 99 & \textbf{89.0} & 138 & \textbf{87.5} & 88 & 65.2 & 152 & \textbf{88.6} & 107 \\
     \hline\hline
@@ -201,6 +212,9 @@ NanoMem-GRPO reaches 86.4\%, while NanoMem-Vanilla reaches 75.8\%.
     \hline
     GPT-5.1 full context & 95.7 & 31 & 96.4 & 48 & 84.6 & 29 & 39.8 & 52 & 44.4 & 52 & 63.6 & 42 \\
     Qwen3.5-9B full context & 97.1 & 76 & 100.0 & 74 & 79.5 & 148 & 39.8 & 255 & 45.1 & 189 & 63.6 & 172 \\
+    Mem0 & 41.4 & -- & 1.8 & -- & 47.4 & -- & 18.0 & -- & 30.8 & -- & 28.1 & -- \\
+    MemR$^3$ & 90.0 & 56 & 92.9 & 78 & 64.1 & 113 & 55.0 & 175 & 47.4 & 137 & 66.9 & 104 \\
+    Memory-T1-Qwen & 64.3 & 50 & 64.3 & 55 & 44.9 & 50 & 27.1 & 62 & 24.8 & 64 & 39.4 & 58 \\
     NanoMem-Vanilla & 94.3 & 104 & 94.6 & 245 & 71.8 & 357 & 75.8 & 417 & 70.7 & 462 & 78.7 & 353 \\
     NanoMem-GRPO & 95.7 & 81 & 98.2 & 94 & 79.5 & 109 & \textbf{86.4} & 124 & \textbf{71.4} & 149 & \textbf{83.8} & 119 \\
     \hline\hline
@@ -228,6 +242,10 @@ original query.
     \hline\hline
     Method & Norm. & Tok. & Hard & Tok. & Ent. & Tok. & Cond. & Tok. & Time & Tok. & All & Tok. \\
     \hline
+    Qwen3.5-9B full context & 25.0 & 405 & 16.0 & 707 & 26.3 & 500 & 11.7 & 432 & 21.7 & 753 & 20.5 & 557 \\
+    Mem0 & 2.0 & 176 & 1.0 & 170 & 2.5 & 175 & 1.7 & 162 & 0.0 & 177 & 1.5 & 172 \\
+    MemR$^3$ & 13.0 & 689 & 11.0 & 639 & 18.8 & 684 & 8.3 & 430 & 6.7 & 871 & 12.0 & 664 \\
+    Memory-T1-Qwen & 3.0 & 41 & 4.0 & 36 & 5.0 & 35 & 3.3 & 44 & 1.7 & 39 & 3.5 & 39 \\
     NanoMem-Vanilla & 42.5 & 318 & 53.3 & 312 & 46.7 & 267 & 40.0 & 258 & 33.3 & 239 & 43.0 & 287 \\
     NanoMem-GRPO & \textbf{52.5} & 221 & \textbf{66.7} & 266 & \textbf{53.3} & 226 & \textbf{47.5} & 216 & \textbf{46.7} & 256 & \textbf{51.5} & 234 \\
     \hline\hline
@@ -320,21 +338,25 @@ more than directly addressable questions.
     Variant & LoCoMo-MH & LoCoMo-Temp & LME-TR & ChainMem & Avg. rounds \\
     \hline
     Full NanoMem-Vanilla & 84.0 & 76.6 & 75.8 & 43.0 & 1.25 \\
-    w/o text normalization & \textcolor{red}{TODO} & \textcolor{red}{TODO} & \textcolor{red}{TODO} & \textcolor{red}{TODO} & \textcolor{red}{TODO} \\
-    w/o Temporal Evidence Pool & \textcolor{red}{TODO} & \textcolor{red}{TODO} & \textcolor{red}{TODO} & \textcolor{red}{TODO} & \textcolor{red}{TODO} \\
-    single-round retrieval & \textcolor{red}{TODO} & \textcolor{red}{TODO} & \textcolor{red}{TODO} & \textcolor{red}{TODO} & 1.00 \\
+    w/o text normalization & 82.3 & 71.3 & 64.9 & 33.5 & 1.29 \\
+    w/o Temporal Evidence Pool & 80.5 & 68.8 & 60.6 & 25.0 & 1.45 \\
+    single-round retrieval & 78.0 & 79.2 & 69.7 & 32.0 & 1.00 \\
     \hline\hline
   \end{tabular}
   }
 \end{table}
 
-The available verified row already shows that NanoMem-Vanilla is a strong
-framework before GRPO. The remaining rows must be filled from the synchronized
-ablation artifact before final submission. The qualitative interpretation to
-check is non-monotonic: a component need not help every task equally. For
-example, single-round retrieval may be adequate for directly addressable
-questions but should be weaker when the first event only reveals the next
-retrieval cue.
+The ablation is non-monotonic, which is the expected pattern for a system whose
+components control different failure modes. Removing text normalization mainly
+hurts temporal and bridge-heavy settings: LoCoMo-Temp falls from 76.6\% to
+71.3\%, LongMemEval-TR from 75.8\% to 64.9\%, and ChainMem from 43.0\% to
+33.5\%. Removing the Temporal Evidence Pool has the broadest effect and also
+raises the average loop length from 1.25 to 1.45 rounds, which indicates that
+the loop keeps searching but carries less useful state across rounds. Forcing a
+single retrieval round is not uniformly worst: LoCoMo-Temp rises to 79.2\%,
+suggesting that some direct temporal questions do not need iterative search.
+It still damages the targeted hidden-dependency setting, where ChainMem drops
+to 32.0\%, and it reduces LoCoMo multi-hop accuracy to 78.0\%.
 
 \begin{figure}[H]
   \centering
@@ -419,19 +441,17 @@ enough evidence has already been found.
 \section{Qualitative Case Studies}
 \label{sec:results-cases}
 
-Aggregate scores do not show how evidence addressability is solved. The
-following case-study structure should be filled with real trace examples from
-the evaluation artifacts before final submission. The first case should show a
-temporal bridge success: the first round finds the source event, the
-Synthesizer records an event time and an \texttt{insufficient} verdict, and the
-next round uses that time as a retrieval cue for the answer-bearing session.
-The second case should compare NanoMem against a baseline that returns
-irrelevant or overly broad context. The third case should be a NanoMem failure.
+Aggregate scores do not show how evidence addressability is solved, so this
+section uses real trace excerpts from the synchronized evaluation artifacts.
+The first case is a successful ChainMem temporal bridge. The query asks:
+``What did Noor ask about at the place she began stopping on her evening
+walks?'' The trace contains one Synthesizer round with a sufficient verdict,
+but the evidence itself has two linked events: the first identifies the hidden
+place, and the second supplies the answer-bearing event at the same place.
 
 \begin{table}[H]
   \centering
-  \caption{Template for a temporal bridge trace. The final thesis should
-  replace this template with a real evaluation trace.}
+  \caption{Temporal bridge success from a ChainMem trace.}
   \label{tab:results-case-bridge}
   \scriptsize
   \resizebox{\textwidth}{!}{%
@@ -439,31 +459,55 @@ irrelevant or overly broad context. The third case should be a NanoMem failure.
     \hline\hline
     Round & Retrieval cue & Retrieved evidence summary & Event time & Verdict \\
     \hline
-    1 & \textcolor{red}{TODO: source-event cue} & \textcolor{red}{TODO: source event from trace} & \textcolor{red}{TODO} & insufficient \\
-    2 & \textcolor{red}{TODO: derived destination cue} & \textcolor{red}{TODO: destination evidence from trace} & \textcolor{red}{TODO} & sufficient \\
+    1 & Original query about ``the place'' & Session states that Noor began stopping at Third Street Roasters on evening walks. & 2023-09-08 & sufficient \\
+    1 & Derived place cue: Third Street Roasters & Later session says Noor left a note at the counter asking which beans were used for a chocolatey drip coffee. & 2023-10-14 & sufficient \\
     \hline\hline
   \end{tabular}
   }
 \end{table}
 
-\textcolor{red}{TODO: Select the final case studies from real LoCoMo,
-LongMemEval, or ChainMem traces. Do not fabricate query text, session IDs,
-event times, verdicts, or answers. The case study must report the actual query,
-key retrieved sessions, Synthesizer events, final answer, gold answer, and
-diagnosis.}
+The answer supported by this trace is that Noor asked about the beans used for
+the chocolatey drip coffee. The important detail is not only the answer string:
+the first event makes ``the place'' addressable as Third Street Roasters, and
+the second event uses that address to recover the answer-bearing note. A second
+ChainMem success shows the same pattern with a less explicit artifact. For the
+query ``What did Hiroshi draft to reduce the issue he noticed in two partner
+meetings?'', the trace links a 2023-05-24 event about recurring onboarding
+confusion and a lightweight facilitation workshop idea to a 2023-06-08 event
+where Hiroshi sent a one-page pilot outline for a workshop format. The
+Synthesizer marks the second event as inferred because the trace connects the
+drafted outline to the earlier problem; this is a useful example of correct
+evidence synthesis with an explicit uncertainty signal.
+
+The baseline comparison case comes from a LoCoMo reranking artifact for the
+query ``What painting did Melanie show to Caroline on October 13, 2023?'' The
+expected 2023-10-13 session containing Melanie's sunset and abstract painting
+is present in the candidate set, but it was not selected in that run; the
+selected top document instead came from 2023-10-22 and centers on Caroline's
+adoption process and a later ``happiness'' painting. This illustrates a
+retrieval-addressability failure: lexical and topic overlap with art-related
+conversation is not enough when the query contains a precise date and speaker
+constraint.
 
 \section{Error Analysis}
 \label{sec:results-errors}
 
-The observed and expected failures fall into five categories. First, retrieval
+The error analysis is a representative manual audit of the trace families used
+above and the benchmark-level failures, not a statistically complete coded
+sample. The observed failures fall into five categories. First, retrieval
 misses occur when the Planner or Retriever never returns the gold evidence
-session. No Synthesizer can recover evidence it never sees. Second, temporal
+session. The LoCoMo painting case is the clearest example: the relevant
+2023-10-13 session is available but not selected, so the answerer receives a
+later art-related session with the wrong date and topic. Second, temporal
 grounding errors occur when a relative expression is normalized incorrectly, an
 event time is inferred with the wrong span, or session time is confused with
 event time. Third, premature sufficiency occurs when the Synthesizer emits
-\texttt{sufficient} before all required evidence is present. Fourth,
-over-search and evidence bloat occur when the system continues retrieving
-after enough evidence has been collected or returns redundant evidence. Fifth,
+\texttt{sufficient} before all required evidence is present. This failure is
+particularly costly on ChainMem because the first retrieved event often only
+exposes the next retrieval address. Fourth, over-search and evidence bloat
+occur when the system continues retrieving after enough evidence has been
+collected or returns redundant evidence; the reward diagnostic without
+format/length terms is the quantitative symptom of this behavior. Fifth,
 downstream answerer errors occur when the memory evidence is adequate but the
 answer model still produces the wrong final answer.
 
@@ -485,18 +529,21 @@ answer model still produces the wrong final answer.
   \end{tabular}
 \end{table}
 
-\textcolor{red}{TODO: Add counts or representative examples for each error
-type after manually auditing the selected traces. If reliable counts are not
-available, keep the analysis qualitative and state that it is based on
-representative cases.}
+Because the audit is representative rather than exhaustive,
+Table~\ref{tab:results-error-taxonomy} should be read as a diagnostic map rather
+than an error-rate table. The quantitative benchmark tables still provide the
+task-level failure rates; this subsection explains which process failures those
+rates correspond to in inspected traces.
 
 \section{Summary}
 \label{sec:results-summary}
 
 The results support three main conclusions. First, NanoMem-GRPO is competitive
-with or stronger than full-context, write-time memory, search-time retrieval,
-and temporal memory baselines on the evaluated long-term memory benchmarks.
-Second, the gains are largest on multi-hop, temporal reasoning, and
+with or stronger than the locally rerun full-context, write-time memory,
+MemR$^3$ search-time retrieval, and Memory-T1 temporal baselines in the
+reported comparable cells. The only explicitly excluded baseline is Search-R1,
+which remains related work here because a comparable local rerun was not
+available. Second, the gains are largest on multi-hop, temporal reasoning, and
 hidden-dependency bridge questions, which are the settings targeted by the
 evidence addressability gap. Third, the trained Synthesizer improves both
 accuracy and compactness: it returns shorter evidence than NanoMem-Vanilla
@@ -505,6 +552,7 @@ while improving downstream answer accuracy.
 The chapter also leaves clear boundaries for the Discussion. The reward
 analysis depends on synchronizing the final Methods description with the
 executable reward code. The token metric measures returned evidence
-compactness rather than full system cost. Case studies and error counts must be
-finalized from real traces. These limitations do not remove the central result,
-but they define what should be claimed carefully in the final thesis.
+compactness rather than full system cost, and some baseline rows use narrower
+available audits rather than complete reruns. These limitations do not remove
+the central result, but they define what should be claimed carefully in the
+final thesis.
