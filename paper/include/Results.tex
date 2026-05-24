@@ -49,14 +49,21 @@ directly name the destination evidence, so the system must first recover a
 source event and then use the discovered time, entity, or condition to search
 again.
 
-The common evaluation boundary is fixed across NanoMem variants. NanoMem
-returns structured evidence and a verdict. A downstream Qwen3.5-9B answerer
-then generates the final answer from the query and evidence, and a GPT-5.1
-judge compares the prediction against the gold answer. This boundary matters:
-an answer can fail because retrieval missed the source, because the Synthesizer
-emitted incomplete evidence, because the verdict stopped too early, or because
-the downstream answerer made an error despite correct evidence. The metrics
-below therefore report both answer accuracy and evidence-side behavior.
+The common evaluation boundary is fixed across the synchronized NanoMem
+variants. NanoMem returns structured evidence and a verdict; GPT-5.1 then
+generates the final answer from the query and evidence, and a GPT-5.1 judge
+compares the prediction against the gold answer. Qwen3.5-9B is part of the
+NanoMem-side planning, synthesis, or compression configurations, not the final
+answer generator for the synchronized NanoMem benchmark rows reported here.
+\textcolor{red}{TODO: Before the final thesis freeze, re-audit every
+synchronized NanoMem run directory and table row against its
+\texttt{answer\_gpt51.json} and usage files, and split any row that used a
+different final answer model instead of presenting it under this shared
+boundary.} This boundary matters: an answer can fail because retrieval missed
+the source, because the Synthesizer emitted incomplete evidence, because the
+verdict stopped too early, or because the downstream answerer made an error
+despite correct evidence. The metrics below therefore report both answer
+accuracy and evidence-side behavior.
 
 \begin{table}[H]
   \centering
@@ -103,7 +110,11 @@ the quantitative claims below. Memory-T1 is included as a temporal memory
 baseline because it explicitly targets temporal evidence selection
 \cite{du2026memoryt1}. NanoMem is reported in two versions: NanoMem-Vanilla,
 which uses the same framework without the GRPO-trained Synthesizer, and
-NanoMem-GRPO, which uses the trained Synthesizer.
+NanoMem-GRPO, which uses the trained Synthesizer. The table cells below mix
+full local reruns, narrower synchronized cells, and one explicitly marked
+20-example audit cell; the captions identify these boundaries so that the
+NanoMem evidence-provider claim is not read as a fully homogeneous benchmark
+suite.
 
 \begin{table}[H]
   \centering
@@ -543,7 +554,7 @@ wrong final answer.
     Answer-bearing evidence miss & Gold answer absent from evidence and response despite related evidence & Retriever/Synthesizer fails to recover destination event & A plausible bridge event can hide a missing answer event \\
     Premature sufficiency & Verdict is sufficient before gold coverage & Synthesizer stop decision & Loop stops before bridge evidence is found \\
     Over-search or bloat & Extra rounds or long redundant evidence & Weak stop/length control & Higher cost and possible answer noise \\
-    Answerer error & Evidence appears correct but answer is wrong & Downstream Qwen3.5-9B answer model & Memory and answering failures must be separated \\
+    Answerer error & Evidence appears correct but answer is wrong & Downstream GPT-5.1 answer model & Memory and answering failures must be separated \\
     \hline\hline
   \end{tabular}
 \end{table}
