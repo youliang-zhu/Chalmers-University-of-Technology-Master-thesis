@@ -1,9 +1,9 @@
-round_id: 9
-phase: 1
-section: discussion
+round_id: 10
+phase: 2
+section: introduction
 section_round: 1
-status: ready_for_review
+status: drafting
 artifacts:
-  - paper/sections_drafts/05_discussion.md
+  - paper/include/Introduction.tex
 commit_hash: "99ebccaa9d1c95005df2dc68388f4c7f516b0b4b"
-updated_at: "2026-05-24T01:47:09Z"
+updated_at: "2026-05-24T01:49:55Z"
