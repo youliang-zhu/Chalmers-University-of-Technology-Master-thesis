@@ -20,7 +20,8 @@ Section~\ref{sec:discussion-design-lessons} draws design lessons for agent
 memory systems. Section~\ref{sec:discussion-limitations} analyzes failure
 modes and system limitations. Section~\ref{sec:discussion-validity} discusses
 threats to validity. Sections~\ref{sec:discussion-deployment}
-and~\ref{sec:discussion-ethics} consider deployment, privacy, and safety.
+and~\ref{sec:discussion-ethics} consider deployment, privacy, safety, and
+sustainability.
 Section~\ref{sec:discussion-future-work} outlines future work, and
 Section~\ref{sec:discussion-conclusion} concludes the thesis.
 
@@ -35,7 +36,16 @@ statement, a source session identifier, the session time, and the event time.
 This representation is not only a formatting choice. It changes the interface
 between memory and answering: the downstream answer model receives an
 inspectable evidence artifact instead of a noisy history dump or an opaque
-memory-side answer.
+memory-side answer. The final schema also clarifies what the phrase
+``inference markers'' means in the thesis. Earlier variants contained a
+separate \texttt{inferred} event attribute, but the parser used in the final
+method removes that field. NanoMem instead marks inference boundaries through
+attribution and decomposition: each event is tied to a single source session,
+cross-session conclusions should be represented as multiple source-grounded
+events, and uncertain or bridge reasoning remains in the \texttt{reasoning}
+field and verdict boundary rather than being presented as a direct observation.
+Thus RQ1 is satisfied in the final method as a source-attribution and
+reasoning-boundary requirement, not as a standalone XML attribute.
 
 The second research question asked how an iterative Planner--Synthesizer loop
 can recover evidence that is not named in the original query. The main lesson
@@ -90,9 +100,9 @@ evidence and search again. The verdict field exposes this decision explicitly.
 The reward diagnostics in Section~\ref{sec:results-reward} are not a final
 causal proof for every named reward component, because the reward boundary is
 still marked as unresolved in Chapter~\ref{chap:methods}. They are nevertheless
-consistent with the behavioral claim that compactness and sufficiency control
-must be trained or otherwise supervised, rather than left as a side effect of
-answer accuracy.
+consistent with treating stop-or-continue behavior as an explicit supervised
+or controlled decision, rather than leaving compactness and sufficiency as
+unobserved side effects of answer accuracy.
 
 \begin{figure}[H]
   \centering
@@ -308,7 +318,7 @@ memory artifact.
   }
 \end{table}
 
-\section{Ethical, Privacy, and Safety Considerations}
+\section{Ethics, Safety, and Sustainability}
 \label{sec:discussion-ethics}
 
 Long-term agent memory is privacy sensitive by design. A system that stores
@@ -346,6 +356,34 @@ LoCoMo, LongMemEval, and ChainMem test answer quality and temporal bridge
 search. They do not fully evaluate privacy leakage, adversarial memory queries,
 cross-user contamination, retention compliance, or consent. These are necessary
 evaluations for any production memory system built on similar ideas.
+
+The ecological and sustainability dimension is also part of the deployment
+boundary. NanoMem can reduce the evidence tokens passed to the downstream
+answer model, but this does not prove end-to-end energy or carbon efficiency.
+The system may spend additional computation in multi-round retrieval,
+Planner prompts, Synthesizer calls, GRPO rollouts, LLM-judge evaluation,
+GPT-5.1 downstream answering, and benchmark reruns. These costs are especially
+important because memory systems are invoked repeatedly in long-running agents:
+a small per-query overhead can become substantial when applied to every user
+interaction or every regression run.
+
+The experiments in this thesis do not report direct energy, carbon, or
+hardware-utilization measurements. This is a limitation, not a basis for an
+efficiency claim. The more defensible conclusion is that NanoMem improves the
+compactness of the evidence artifact under the reported metric, while the full
+environmental cost of training, evaluation, and serving remains unmeasured.
+Future artifact reporting should therefore include model-call boundaries,
+hardware or API settings, run directories, retry policies, and the number of
+judge and answer-model calls used for each benchmark table.
+
+Practical mitigations follow from this boundary. A deployed NanoMem-like
+service should cache retrieval and synthesis traces where consent and freshness
+allow it, enforce maximum rounds and candidate budgets, avoid unnecessary
+benchmark reruns, use smaller or local models for low-risk steps when accuracy
+permits, and report which parts of the system require external frontier-model
+calls. These measures do not remove the environmental cost of agent memory, but
+they make that cost visible and controllable instead of hidden behind output
+compactness.
 
 \section{Future Work}
 \label{sec:discussion-future-work}
