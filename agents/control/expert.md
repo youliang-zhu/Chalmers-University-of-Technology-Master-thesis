@@ -59,6 +59,9 @@ You evaluate. The Writer writes. Stay in your lane.
    and the state commit. Commit the review.
    Commit message: `[expert][p{phase}][{section}][r{section_round}] {verdict}`.
    On `.git/index.lock` failure, retry with backoff; never delete locks.
+   Implementation tip: tool calls are separate processes, so a `flock` cannot be kept across
+   multiple tool calls. Put the whole git sequence for this turn inside ONE shell invocation,
+   e.g. `flock agents/orchestrator/.git_lock bash -c 'git add ...; git commit ...; mv ...; git add ...; git commit ...'`.
 8. Atomically update `reviewer_state.yaml` (write `.tmp`, then `mv`) with:
    `round_id` = writer.round_id, `phase`, `section`, `section_round`, `verdict`,
    `review_ref` = the review path you just wrote, `commit_hash` = the review commit,

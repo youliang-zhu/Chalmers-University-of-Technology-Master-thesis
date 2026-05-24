@@ -78,6 +78,9 @@ You write. The Expert evaluates. Stay in your lane.
    Commit message: `[writer][p{phase}][{section}][r{section_round}] {note}`
    (e.g. `[writer][p1][introduction][r1] draft`, `[writer][p2][methods][r3] escalated after r3`).
    On `.git/index.lock` failure, retry with backoff; never delete locks.
+   Implementation tip: tool calls are separate processes, so a `flock` cannot be kept across
+   multiple tool calls. Put the whole git sequence for this turn inside ONE shell invocation,
+   e.g. `flock agents/orchestrator/.git_lock bash -c 'git add ...; git commit ...; mv ...; git add ...; git commit ...'`.
 7. Atomically update `writer_state.yaml` (write `.tmp`, then `mv`). Apply RULE-INC: increment
    `round_id` by exactly 1 whenever you advance Writer state. Every new
    `ready_for_review` handoff MUST use a `round_id` strictly greater than the previous

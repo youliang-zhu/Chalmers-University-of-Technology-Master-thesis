@@ -233,6 +233,9 @@ Common to both:
   across the product/review commit and the state commit. If the lock was released, re-acquire it
   before committing state. On `.git/index.lock` failure, retry with backoff — never delete locks
   blindly.
+- Tool calls are separate processes, so a `flock` cannot be kept across multiple tool calls.
+  In practice, roles should put the full git sequence for one turn inside ONE shell invocation,
+  e.g. `flock agents/orchestrator/.git_lock bash -c 'git add ...; git commit ...; mv ...; git add ...; git commit ...'`.
 
 Writer per invocation (ordered):
 1. read writer.md, workflow.md, `agents/project_contexts.md`, both state files;
