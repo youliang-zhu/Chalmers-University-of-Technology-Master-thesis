@@ -1,9 +1,9 @@
-round_id: 5
+round_id: 6
 phase: 1
-section: methods
+section: results
 section_round: 1
-status: ready_for_review
+status: drafting
 artifacts:
-  - paper/sections_drafts/03_methods.md
+  - paper/sections_drafts/04_results.md
 commit_hash: "4696e3523abbcb1fc35f37f527f6ad439575849b"
-updated_at: "2026-05-24T01:31:36Z"
+updated_at: "2026-05-24T01:36:46Z"
