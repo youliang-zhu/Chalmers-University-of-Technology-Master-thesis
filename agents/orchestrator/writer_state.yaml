@@ -1,9 +1,9 @@
-round_id: 15
+round_id: 16
 phase: 2
 section: methods
 section_round: 1
-status: drafting
+status: ready_for_review
 artifacts:
   - paper/include/Methods.tex
-commit_hash: "b014255cddc8e42187681667b0cf966c2c244ce9"
-updated_at: "2026-05-24T02:08:55Z"
+commit_hash: "296b00828c694a49b5d94848d165428df6eb3cd5"
+updated_at: "2026-05-24T02:14:45Z"
