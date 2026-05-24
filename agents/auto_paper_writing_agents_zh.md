@@ -151,6 +151,8 @@ updated_at: "ISO8601"
 ## 4. Orchestrator 轮询方案
 
 采用一个顶层 orchestrator loop,而不是两个 agent 自己无限轮询。
+orchestrator 自身必须持有 `agents/orchestrator/.orch_lock`,避免误启动两个 loop
+实例并发唤起角色。
 
 每轮 loop:
 
@@ -247,10 +249,14 @@ Phase 2:
 不再使用 `open_questions.md`。人工复查时直接聚合全文标记:
 
 ```bash
-rg -n "NOTSURE:|TODO:" paper agents/orchestrator/reviews
+cd paper && make notsure
 ```
 
-后续可以加一个 `make notsure` 作为这个命令的快捷入口。
+等价的仓库根目录命令是:
+
+```bash
+rg -n "NOTSURE:|TODO:" paper/sections_drafts paper/Main.tex paper/include agents/orchestrator/reviews
+```
 
 ## 8. Pass 转移规则
 

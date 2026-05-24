@@ -129,6 +129,8 @@ FINAL DECISION: use one external orchestrator loop, not two independent self-pol
 The orchestrator owns liveness. Writer and Expert are role slots. Each slot should
 prefer an existing Codex session/process when it is still alive, but must be able
 to restart a fresh one if the old session is gone, stuck, or unusable.
+The orchestrator itself must hold `agents/orchestrator/.orch_lock` so two loop
+instances cannot invoke roles concurrently.
 
 Core principle:
 
@@ -396,10 +398,16 @@ STATE MACHINE (section level), transitions:
 
 HUMAN REVIEW OF UNRESOLVED ITEMS:
   There is no `open_questions.md`. Use in-place markers and aggregate them when
-  needed with a future `make notsure` helper or directly with:
+  needed with:
 
 ```bash
-rg -n "NOTSURE:|TODO:" paper agents/orchestrator/reviews
+cd paper && make notsure
+```
+
+Equivalent root-level command:
+
+```bash
+rg -n "NOTSURE:|TODO:" paper/sections_drafts paper/Main.tex paper/include agents/orchestrator/reviews
 ```
 
 ## 7. CONFLICT-SAFETY (four layers; any one ~suffices, stacked = robust)

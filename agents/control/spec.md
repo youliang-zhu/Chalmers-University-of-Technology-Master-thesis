@@ -35,8 +35,10 @@ Full authority: `agents/resources/thesis_rules.md` (regulation C 2025-0611). Con
 - LANGUAGE: the final thesis is in English. NOTE: phase-1 planning docs are Chinese BY DESIGN —
   never flag phase-1 Chinese as a language violation. English applies to phase-2 prose.
 - TEMPLATE & BUILD: must follow the Chalmers degree-project template; chapters live under
-  `paper/include/`; the thesis must compile to PDF via `make pdf` (exact command/path: see
-  thesis_rules.md). Structural non-conformance to the template the references follow is blocking.
+  `paper/include/`; the thesis must compile to PDF via
+  `cd /mnt/models/youliang/master_thesis/paper && make pdf`, which has been tested and produces
+  `paper/build/Main.pdf`. Structural non-conformance to the template the references follow is
+  blocking.
 - ABSTRACT (when present): 250–350 words, ending with ≤10 keywords.
 - TRACEABILITY & HONESTY: every technical claim must be traceable to literature, code,
   experiments, or clearly marked reasoning. NO fabricated citations, bibkeys, experiment numbers,
@@ -158,7 +160,6 @@ improvements that do not threaten the High-Quality bar on any axis.
   are mandatory.
 - SPEC-TODO: examiner-specific requirements (e.g. whether an AI-use appendix/methodology note is
   required) once known.
-- SPEC-TODO: exact `make pdf` command/path confirmation against the actual repo.
 
 Until a SPEC-TODO is filled, do not invent a hard requirement for it — judge by the reference
 theses and the Chalmers criteria above, and surface the open question in your review.

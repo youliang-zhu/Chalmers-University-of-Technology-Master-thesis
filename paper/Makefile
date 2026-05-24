@@ -9,7 +9,7 @@ LATEXMK_FLAGS := -xelatex -shell-escape -interaction=nonstopmode -halt-on-error 
 
 -include $(DEPS)
 
-.PHONY: all pdf watch clean distclean pack
+.PHONY: all pdf watch clean distclean pack notsure
 
 all: pdf
 
@@ -35,6 +35,13 @@ pack: | $(OUTDIR)
 		$(wildcard refs.bib) \
 		include \
 		figure
+
+notsure:
+	@if command -v rg >/dev/null 2>&1; then \
+		rg -n "NOTSURE:|TODO:" sections_drafts Main.tex include ../agents/orchestrator/reviews || true; \
+	else \
+		grep -rnE "NOTSURE:|TODO:" sections_drafts Main.tex include ../agents/orchestrator/reviews || true; \
+	fi
 
 clean:
 	if [ -d "$(OUTDIR)" ]; then $(LATEXMK) -c -outdir=$(OUTDIR) $(MAIN_TEX); fi

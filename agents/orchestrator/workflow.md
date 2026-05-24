@@ -89,6 +89,12 @@ spec.md and is Expert-only):
 - PHASE 2 product: LaTeX body (`Main.tex` + `include/`), written per the phase-1 docs,
   starting at introduction, advancing per section. References inserted inline into
   `refs.bib`. Acknowledgements and other non-core matter are out of scope for now.
+- PHASE 2 section-to-file mapping:
+  - `introduction` -> `paper/include/Introduction.tex`
+  - `related_work` -> `paper/include/Theory.tex`
+  - `methods` -> `paper/include/Methods.tex`
+  - `results` -> `paper/include/Results.tex`
+  - `discussion` -> `paper/include/Conclusion.tex`
 
 PHASE TRANSITION:
 - pass on `discussion` in phase 1  -> switch to phase 2, section=introduction, section_round=1.
@@ -146,9 +152,12 @@ When a section reaches `section_round == 3` and the Expert verdict is still
 AGGREGATION: there is no separate open-questions file. To collect all leftovers, the human
 (or a Makefile target) greps the markers:
 ```
-grep -rnE 'NOTSURE:|TODO:' paper/sections_drafts paper/Main.tex paper/include
+cd paper && make notsure
 ```
-Recommended: a `make notsure` target wrapping the above.
+Equivalent root-level command:
+```
+rg -n "NOTSURE:|TODO:" paper/sections_drafts paper/Main.tex paper/include agents/orchestrator/reviews
+```
 
 ---
 
@@ -157,6 +166,9 @@ Recommended: a `make notsure` target wrapping the above.
 Run exactly one loop (`scripts/orchestrator_loop.sh`). `invoke_*` is SYNCHRONOUS: the
 orchestrator blocks until the role process exits AND its state file is updated, then loops
 and re-reads state. It must not pipeline or run roles concurrently.
+
+The loop must also hold an exclusive process lock at `agents/orchestrator/.orch_lock`. If a
+second orchestrator is started accidentally, it must exit before invoking any role.
 
 ```text
 loop:
@@ -217,8 +229,10 @@ Common to both:
 - Update the OWN state file LAST and ATOMICALLY (`tmp` + `mv`); this is the commit point of
   the transition. If the process dies before this step, the unfinished unit is simply redone
   on the next invocation (the state still shows the pre-transition value).
-- Acquire `flock agents/orchestrator/.git_lock` around git operations; on `.git/index.lock`
-  failure, retry with backoff — never delete locks blindly.
+- Acquire `flock agents/orchestrator/.git_lock` around git operations; keep the same lock
+  across the product/review commit and the state commit. If the lock was released, re-acquire it
+  before committing state. On `.git/index.lock` failure, retry with backoff — never delete locks
+  blindly.
 
 Writer per invocation (ordered):
 1. read writer.md, workflow.md, `agents/project_contexts.md`, both state files;
@@ -233,7 +247,7 @@ Writer per invocation (ordered):
 6. atomically update writer_state.yaml (incl. round_id per RULE-INC, status, artifacts,
    commit_hash); commit state. For W1/W2/W3, where no paper product changes, leave
    `commit_hash` unchanged or empty; do not try to predict the state commit hash inside the
-   state file;
+   state file. The state commit must also be protected by `agents/orchestrator/.git_lock`;
 7. exit.
 Writer does NOT read spec.md, thesis_rules.md, references, or sources/ during normal
 operation. It learns standards only through Expert feedback. It DOES know the Phase Output
@@ -246,7 +260,7 @@ Expert per invocation (ordered):
 4. write exactly one review file `reviews/pX_<section>_rN.md`;
 5. commit review (capture hash);
 6. atomically update reviewer_state.yaml (round_id := writer.round_id, verdict, review_ref,
-   section/section_round/phase, commit_hash); commit state;
+   section/section_round/phase, commit_hash); commit state under `agents/orchestrator/.git_lock`;
 7. exit.
 
 ---

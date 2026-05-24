@@ -60,8 +60,9 @@ You write. The Expert evaluates. Stay in your lane.
        - `section_round == 3` → **W5**: escalate the current section, then advance (see ESCALATION).
    - If none of the above is cleanly true, the orchestrator mis-routed; write nothing and exit.
    Section order is: `introduction → related_work → methods → results → discussion`.
-3. If you are responding to a review (W4/W5, or W1/W2 after a pass), read the review at
-   `reviewer_state.review_ref`.
+3. If you are responding to a `needs_revision` review (W4/W5), read the review at
+   `reviewer_state.review_ref`. W1/W2/W3 are pure state transitions after `pass`; they do not
+   need to read or respond to the review body.
 4. Read your content sources AS NEEDED for this section:
    - NanoMem NeurIPS paper: `/mnt/models/yupan/llm/nanomem/paper`
    - NanoMem code & experiment artifacts: `/mnt/models/yupan/llm/nanomem`
@@ -72,8 +73,8 @@ You write. The Expert evaluates. Stay in your lane.
    - W0/W4 produce or revise a paper artifact.
    - W5 marks unresolved issues in the current artifact, then advances state.
    - W1/W2/W3 are state-transition actions only; they do not create a new paper artifact.
-6. Acquire `flock agents/orchestrator/.git_lock`, then commit any paper product changes if this
-   row changed paper files.
+6. Acquire `flock agents/orchestrator/.git_lock` and keep that lock through BOTH the paper commit
+   and the state commit. Commit any paper product changes if this row changed paper files.
    Commit message: `[writer][p{phase}][{section}][r{section_round}] {note}`
    (e.g. `[writer][p1][introduction][r1] draft`, `[writer][p2][methods][r3] escalated after r3`).
    On `.git/index.lock` failure, retry with backoff; never delete locks.
@@ -84,7 +85,9 @@ You write. The Expert evaluates. Stay in your lane.
    `section`, `section_round`, `status`, `artifacts` (the current review target or next target),
    `commit_hash`, `updated_at`. For rows with paper changes, `commit_hash` is the paper-product
    commit. For W1/W2/W3 with no paper changes, leave `commit_hash` unchanged or set it to `""`;
-   do not try to predict the state commit hash inside the state file.
+   do not try to predict the state commit hash inside the state file. Commit `writer_state.yaml`
+   under the same git lock before exiting. If the lock was released for any reason, re-acquire it
+   before committing the state file.
 8. Exit.
 
 ---
@@ -111,6 +114,12 @@ PHASE 1 — planning docs at `paper/sections_drafts/0N_<section>.md`
 PHASE 2 — LaTeX body (`paper/Main.tex` + `paper/include/<section>.tex`):
 - Write the actual section, FOLLOWING the agreed phase-1 plan for that section
   (`paper/sections_drafts/`). Set `artifacts` to the file(s) you wrote.
+- Use this section-to-file mapping:
+  - `introduction` -> `paper/include/Introduction.tex`
+  - `related_work` -> `paper/include/Theory.tex`
+  - `methods` -> `paper/include/Methods.tex`
+  - `results` -> `paper/include/Results.tex`
+  - `discussion` -> `paper/include/Conclusion.tex`
 - Insert citations inline as you write, adding entries to `paper/refs.bib`.
 - CITATION RULE: use only citations you can verify from real sources (the NeurIPS paper's own
   references, the code, or material you can actually locate). NEVER fabricate a bibkey or a
@@ -154,7 +163,7 @@ In the SAME invocation, do all of this:
    - `section == discussion` AND `phase == 1` → behave as W2 (phase 2 introduction's `drafting` state).
    - `section == discussion` AND `phase == 2` → behave as W3 (set `all_complete`).
 The escalated section is now frozen with its markers; it will not be reviewed again. The human
-resolves all markers later (e.g. via `grep -rnE 'NOTSURE:|TODO:' paper/`).
+resolves all markers later (e.g. via `cd paper && make notsure`).
 
 ---
 

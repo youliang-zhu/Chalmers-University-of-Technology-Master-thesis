@@ -18,3 +18,7 @@ paper/Main.lot
 .DS_Store
 *.swp
 *.swo
+
+# Local orchestration locks
+agents/orchestrator/.git_lock
+agents/orchestrator/.orch_lock

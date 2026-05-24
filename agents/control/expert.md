@@ -55,13 +55,15 @@ You evaluate. The Writer writes. Stay in your lane.
 5. Evaluate (see EVALUATION + VERDICT below).
 6. Write exactly one review file: `agents/orchestrator/reviews/p{phase}_{section}_r{section_round}.md`
    (e.g. `reviews/p1_introduction_r2.md`). Use the REVIEW FILE FORMAT below.
-7. Acquire `flock agents/orchestrator/.git_lock`, then commit the review.
+7. Acquire `flock agents/orchestrator/.git_lock` and keep that lock through BOTH the review commit
+   and the state commit. Commit the review.
    Commit message: `[expert][p{phase}][{section}][r{section_round}] {verdict}`.
    On `.git/index.lock` failure, retry with backoff; never delete locks.
 8. Atomically update `reviewer_state.yaml` (write `.tmp`, then `mv`) with:
    `round_id` = writer.round_id, `phase`, `section`, `section_round`, `verdict`,
    `review_ref` = the review path you just wrote, `commit_hash` = the review commit,
-   `updated_at` = now. Commit the state file.
+   `updated_at` = now. Commit the state file under the same git lock. If the lock was released
+   for any reason, re-acquire it before committing the state file.
 9. Exit.
 
 ---

@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WRITER_STATE="$ROOT_DIR/agents/orchestrator/writer_state.yaml"
 REVIEWER_STATE="$ROOT_DIR/agents/orchestrator/reviewer_state.yaml"
 STOP_FILE="$ROOT_DIR/agents/orchestrator/STOP"
+ORCH_LOCK="$ROOT_DIR/agents/orchestrator/.orch_lock"
 
 CODEX_BIN="${CODEX_BIN:-codex}"
 CODEX_MODEL="${CODEX_MODEL:-}"
@@ -129,6 +130,15 @@ Follow these files as authority:
 - agents/control/writer.md
 - agents/orchestrator/workflow.md
 
+Minimum required sequence:
+1. Read writer.md, workflow.md, agents/project_contexts.md, and both state files.
+2. Confirm the selected route from current state.
+3. For W0/W4, write or revise the current paper artifact; for W5, mark unresolved issues and
+   advance; for W1/W2/W3, do only the state transition.
+4. Use agents/orchestrator/.git_lock for all git operations, including the state commit.
+5. Atomically update agents/orchestrator/writer_state.yaml and commit it.
+6. Exit without polling.
+
 Read the current state files and do exactly ONE Writer unit of work for the selected route.
 Respect the Writer hard boundaries. Do not poll. Do not wait for the Expert. Commit as required,
 atomically update agents/orchestrator/writer_state.yaml, then exit.
@@ -146,6 +156,15 @@ Follow these files as authority:
 - agents/control/expert.md
 - agents/control/spec.md
 - agents/orchestrator/workflow.md
+
+Minimum required sequence:
+1. Read expert.md, spec.md, workflow.md, agents/project_contexts.md, and both state files.
+2. Confirm writer.status=ready_for_review and writer.round_id > reviewer.round_id.
+3. Read every artifact listed in writer_state.artifacts.
+4. Write exactly one review file under agents/orchestrator/reviews/.
+5. Use agents/orchestrator/.git_lock for all git operations, including the state commit.
+6. Atomically update agents/orchestrator/reviewer_state.yaml and commit it.
+7. Exit without polling.
 
 Read the current state files and do exactly ONE Expert review for the selected route.
 Respect the Expert hard boundaries. Do not poll. Do not wait for the Writer. Commit as required,
@@ -204,8 +223,22 @@ select_turn() {
 main() {
   require_file "$WRITER_STATE"
   require_file "$REVIEWER_STATE"
+  command -v ruby >/dev/null 2>&1 || {
+    echo "Ruby is required for YAML parsing but was not found in PATH." >&2
+    exit 1
+  }
+  command -v flock >/dev/null 2>&1 || {
+    echo "flock is required for orchestrator and git locks but was not found in PATH." >&2
+    exit 1
+  }
   command -v "$CODEX_BIN" >/dev/null 2>&1 || {
     echo "Codex executable not found: $CODEX_BIN" >&2
+    exit 1
+  }
+
+  exec 9>"$ORCH_LOCK"
+  flock -n 9 || {
+    echo "Another orchestrator is already running (lock: $ORCH_LOCK)." >&2
     exit 1
   }
 
@@ -253,6 +286,8 @@ main() {
       idle)
         idle=$((idle + 1))
         echo "[$(iso_now)] idle $idle/$MAX_IDLE: $reason"
+        echo "  writer: round=$writer_round status='$writer_status'"
+        echo "  reviewer: round=$reviewer_round verdict='$reviewer_verdict'"
         if [[ "$ONCE" -eq 1 || "$DRY_RUN" -eq 1 ]]; then
           exit 0
         fi
