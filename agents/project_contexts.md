@@ -233,7 +233,9 @@ mapping is:
 
 ### Introduction
 
-Use and expand the NeurIPS introduction. It should explain:
+Use the accepted thesis plan, current thesis chapters, and verified NanoMem
+code/experiment artifacts. Do not use old conference-paper prose as a writing
+source. The introduction should explain:
 
 - Why long-term memory matters for LLM agents.
 - Why memory should provide evidence rather than direct answers.
@@ -245,7 +247,8 @@ Use and expand the NeurIPS introduction. It should explain:
 
 ### Background / Theory
 
-This should be broader than the NeurIPS related work section. It should explain:
+This should be broader and more explanatory than a conference-paper related
+work section. It should explain:
 
 - LLM agents and long-term memory.
 - Retrieval-augmented generation and vector retrieval.
@@ -258,7 +261,9 @@ This should be broader than the NeurIPS related work section. It should explain:
 
 ### Method
 
-Use and expand the NeurIPS methodology/architecture section. It should cover:
+Use verified implementation details from the NanoMem codebase, training
+configuration, prompts, and experiment artifacts. Do not rely on old
+conference-paper methodology prose. The method chapter should cover:
 
 - Problem formulation.
 - Memory evidence schema.
@@ -269,11 +274,13 @@ Use and expand the NeurIPS methodology/architecture section. It should cover:
 - ChainMem construction if it is a core method contribution.
 - Training setup: SFT warm-up, reward design, GRPO or other RL procedure,
   depending on what is actually implemented.
-- Implementation details that are too long for a NeurIPS paper.
+- Implementation details that are too long for a conference paper.
 
 ### Experiments / Results
 
-Use and expand the NeurIPS evaluation section. It should cover:
+Use verified result tables, run directories, evaluation scripts, and accepted
+thesis planning. Do not rely on old conference-paper evaluation prose. The
+results chapter should cover:
 
 - Datasets: LoCoMo, LongMemEval, TimeDialog if used, ChainMem if used.
 - Baselines.
@@ -287,7 +294,8 @@ Use and expand the NeurIPS evaluation section. It should cover:
 
 ### Conclusion
 
-Use and expand the NeurIPS conclusion and limitations. It should cover:
+Use the already written thesis chapters and accepted Discussion plan. Do not
+rely on old conference-paper conclusion prose. The final chapter should cover:
 
 - Summary of findings.
 - What the thesis demonstrates about evidence-centric memory.
