@@ -202,7 +202,9 @@ recover temporal or causal evidence that is not named in the original query?
 
 \textbf{RQ3.} How does NanoMem perform on long-term memory and temporal-causal
 evidence-search benchmarks compared with write-time memory systems, retrieval
-agents, temporal memory baselines, and full-context answer models?
+agents, temporal memory baselines, and full-context answer models, in terms of
+answer quality, evidence compactness, temporal grounding, and sufficiency
+judgment?
 
 These questions define the structure of the thesis. RQ1 is addressed mainly by
 the evidence schema and Temporal Evidence Pool in Chapter 3. RQ2 is addressed
@@ -298,12 +300,13 @@ The temporal reasoning studied here is also scoped. NanoMem targets
 multi-session conversational memory where relative time, event-time grounding,
 and evidence discovered through intermediate temporal hints affect retrieval. It
 does not claim to solve all forms of temporal logic, planning, or calendar
-reasoning. Its claims are limited by the datasets, retrievers, base models,
-answer models, and evaluation protocols used in the experiments.
-
-\textcolor{red}{TODO: Before the final thesis version, verify that the names and
-implementation descriptions for ingestion, retrieval, answerer models, and
-ChainMem match the final NanoMem code and experiment artifacts.}
+reasoning. The implemented system uses temporal normalization as a lightweight
+preprocessing step, iterative retrieval over memory sessions or chunks, a
+Synthesizer that produces structured evidence, and a separate downstream answer
+model that consumes that evidence. The empirical claims in this thesis are
+therefore limited to the LoCoMo, LongMemEval, and ChainMem evaluations and to
+the concrete retriever settings, model backbones, answer models, and evaluation
+protocols reported in Chapter 4.
 
 \section{Thesis Structure}
 \label{sec:intro-structure}
