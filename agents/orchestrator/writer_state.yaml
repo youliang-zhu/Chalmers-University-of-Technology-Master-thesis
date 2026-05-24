@@ -1,9 +1,9 @@
-round_id: 20
+round_id: 21
 phase: 2
 section: results
-section_round: 1
+section_round: 2
 status: ready_for_review
 artifacts:
   - paper/include/Results.tex
-commit_hash: "7e08cda602939b9a69de35269dc45dbb58d3325e"
-updated_at: "2026-05-24T02:41:47Z"
+commit_hash: "a2f4be93c8ffc5207a40665a34d94b12157e59a1"
+updated_at: "2026-05-24T02:54:50Z"
