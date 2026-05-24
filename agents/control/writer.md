@@ -67,7 +67,12 @@ You write. The Expert evaluates. Stay in your lane.
    - NanoMem NeurIPS paper: `/mnt/models/yupan/llm/nanomem/paper`
    - NanoMem code & experiment artifacts: `/mnt/models/yupan/llm/nanomem`
    - distilled history: `agents/resources/history_paper_commit.md`
-   - your own prior outputs: `paper/sections_drafts/**` (in phase 2, FOLLOW these plans), `paper/**`
+   - already accepted earlier Writer outputs when needed for continuity:
+     - Phase 1: you MAY read earlier section planning docs that already have Expert `pass`
+       reviews. Do NOT use the current target file's old content, initial scaffold, or any future
+       section draft as an authority. For a W0 draft, treat the target file as replaceable output.
+     - Phase 2: FOLLOW only phase-1 planning docs that have already passed Expert review.
+   - current `paper/**` only as needed for template/layout context or for Phase 2 LaTeX writing.
    - `git log` for context on what changed across rounds
 5. Perform the action for the triggered row (see WRITING GUIDANCE):
    - W0/W4 produce or revise a paper artifact.
@@ -107,6 +112,11 @@ PHASE 1 — planning docs at `paper/sections_drafts/0N_<section>.md`
 (`01_introduction.md … 05_discussion.md`):
 - Write the PLAN, in Chinese prose (English only for natural technical terms). This is the
   thinking/structure layer, not finished thesis prose.
+- For W0, do not inherit or trust old scaffold content already present in the target file. The
+  target file may be a placeholder from initialization or an obsolete draft. Build the plan from
+  authoritative NanoMem sources, code/experiment artifacts, history summary, and any earlier
+  section plans that already passed Expert review.
+- Do not read future section draft files as planning evidence. They may be stale and misleading.
 - For the section, lay out: the subsection breakdown and order; what each subsection will
   contain and argue; every figure and table you intend, WITH its position and a one-line
   rationale (why this figure is needed here). Aim so the whole thesis lands around ~15 figures,

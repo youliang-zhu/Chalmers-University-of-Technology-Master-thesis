@@ -86,6 +86,9 @@ spec.md and is Expert-only):
   section breakdown, per-subsection content, and which figures/tables go where. Figures are
   PLANNED (position + rationale) only, NOT generated. Tables MAY be generated. The whole
   thesis targets ~15 figures, distributed across sections.
+  For a W0 draft, any pre-existing target file is not authority: it may be a placeholder or stale
+  scaffold. Writer may use already passed earlier section plans for continuity, but must not use
+  current stale target content or future section drafts as planning evidence.
 - PHASE 2 product: LaTeX body (`Main.tex` + `include/`), written per the phase-1 docs,
   starting at introduction, advancing per section. References inserted inline into
   `refs.bib`. Acknowledgements and other non-core matter are out of scope for now.

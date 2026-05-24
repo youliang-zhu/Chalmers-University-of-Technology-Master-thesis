@@ -135,6 +135,8 @@ Minimum required sequence:
 2. Confirm the selected route from current state.
 3. For W0/W4, write or revise the current paper artifact; for W5, mark unresolved issues and
    advance; for W1/W2/W3, do only the state transition.
+   For Phase 1 W0, do not rely on stale target-file scaffold content or future section drafts;
+   use authoritative NanoMem sources and already passed earlier section plans only.
 4. Use agents/orchestrator/.git_lock for all git operations, including the state commit.
 5. Atomically update agents/orchestrator/writer_state.yaml and commit it.
 6. Exit without polling.

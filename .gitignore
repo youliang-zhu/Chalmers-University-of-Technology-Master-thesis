@@ -22,3 +22,4 @@ paper/Main.lot
 # Local orchestration locks
 agents/orchestrator/.git_lock
 agents/orchestrator/.orch_lock
+agents/orchestrator/STOP
