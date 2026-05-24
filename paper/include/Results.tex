@@ -136,7 +136,10 @@ address.
   \centering
   \caption{Main benchmark summary. Accuracy is reported as percentage points.
   Dashes mark cells without a directly comparable local rerun in the synchronized
-  artifacts; MemR$^3$ LongMemEval TR is a 20-example audit cell.}
+  artifacts. A-Mem is only reported where synchronized comparable cells are
+  present, MemR$^3$ LongMemEval TR is a 20-example audit cell, and Search-R1 is
+  excluded from the quantitative table because no comparable local rerun is
+  available.}
   \label{tab:results-main-summary}
   \scriptsize
   \resizebox{\textwidth}{!}{%
@@ -339,8 +342,8 @@ more than directly addressable questions.
     \hline
     Full NanoMem-Vanilla & 84.0 & 76.6 & 75.8 & 43.0 & 1.25 \\
     w/o text normalization & 82.3 & 71.3 & 64.9 & 33.5 & 1.29 \\
-    w/o Temporal Evidence Pool & 80.5 & 68.8 & 60.6 & 25.0 & 1.45 \\
-    single-round retrieval & 78.0 & 79.2 & 69.7 & 32.0 & 1.00 \\
+    w/o Temporal Evidence Pool & 77.0 & 67.6 & 60.6 & 25.0 & 1.45 \\
+    single-round retrieval & 78.0 & 78.5 & 78.0 & 32.0 & 1.00 \\
     \hline\hline
   \end{tabular}
   }
@@ -350,13 +353,16 @@ The ablation is non-monotonic, which is the expected pattern for a system whose
 components control different failure modes. Removing text normalization mainly
 hurts temporal and bridge-heavy settings: LoCoMo-Temp falls from 76.6\% to
 71.3\%, LongMemEval-TR from 75.8\% to 64.9\%, and ChainMem from 43.0\% to
-33.5\%. Removing the Temporal Evidence Pool has the broadest effect and also
-raises the average loop length from 1.25 to 1.45 rounds, which indicates that
-the loop keeps searching but carries less useful state across rounds. Forcing a
-single retrieval round is not uniformly worst: LoCoMo-Temp rises to 79.2\%,
-suggesting that some direct temporal questions do not need iterative search.
-It still damages the targeted hidden-dependency setting, where ChainMem drops
-to 32.0\%, and it reduces LoCoMo multi-hop accuracy to 78.0\%.
+33.5\%. Removing the Temporal Evidence Pool has the broadest effect among the
+stateful ablations: LoCoMo-MH falls to 77.0\%, LoCoMo-Temp to 67.6\%,
+LME-TR to 60.6\%, and ChainMem to 25.0\%. It also raises the average loop
+length from 1.25 to 1.45 rounds, which indicates that the loop keeps searching
+but carries less useful state across rounds. Forcing a single retrieval round
+is not uniformly worst: LoCoMo-Temp and LME-TR are 78.5\% and 78.0\%,
+respectively, suggesting that some temporal questions are directly addressable
+or can be harmed by extra noisy search. It still damages the targeted
+hidden-dependency setting, where ChainMem drops to 32.0\%, and it reduces
+LoCoMo multi-hop accuracy to 78.0\%.
 
 \begin{figure}[H]
   \centering
@@ -385,21 +391,24 @@ synchronized, this section should be read as a diagnostic comparison of
 Synthesizer behavior, not as a final causal claim about every named reward
 component.}
 
-With that caveat, Table~\ref{tab:results-reward-ablation} reports the planned
-reward diagnostic values. The full reward setting has strong accuracy on the
-four target tasks, high verdict accuracy, a low average number of rounds, and
-short outputs. Removing the format and length terms mainly increases output
-length, from about 110 to 359 tokens, while accuracy drops moderately. Removing
-the verdict-related signal produces a different pattern: some temporal
-categories can improve, but multi-hop and ChainMem drop, verdict accuracy falls
-from 84.0\% to 72.9\%, and average rounds increase. This is consistent with
-the thesis claim that stop/continue behavior is a learned part of evidence
-construction.
+With that caveat, Table~\ref{tab:results-reward-ablation} reports these values
+as reward diagnostics rather than final causal attribution for every named
+reward component. The full reward setting has strong accuracy on the four
+target tasks, high verdict accuracy, a low average number of rounds, and short
+outputs. Removing the format and length terms mainly increases output length,
+from about 110 to 359 tokens, while accuracy drops moderately. Removing the
+verdict-related signal produces a different pattern: some temporal categories
+can improve, but multi-hop and ChainMem drop, verdict accuracy falls from
+84.0\% to 72.9\%, and average rounds increase. This is consistent with the
+thesis claim that stop/continue behavior is a learned part of evidence
+construction, but the unresolved Methods marker prevents treating the table as
+a final reward-component causality result.
 
 \begin{table}[H]
   \centering
-  \caption{Reward diagnostic ablation. Values should be finalized only after
-  the reward implementation and reported Methods objective are reconciled.}
+  \caption{Reward diagnostic ablation. The table is reported as an unresolved
+  diagnostic boundary until the reward implementation and reported Methods
+  objective are reconciled.}
   \label{tab:results-reward-ablation}
   \scriptsize
   \resizebox{\textwidth}{!}{%
@@ -441,43 +450,48 @@ enough evidence has already been found.
 \section{Qualitative Case Studies}
 \label{sec:results-cases}
 
-Aggregate scores do not show how evidence addressability is solved, so this
-section uses real trace excerpts from the synchronized evaluation artifacts.
-The first case is a successful ChainMem temporal bridge. The query asks:
+Aggregate scores do not show how evidence addressability is solved or where it
+fails, so this section uses real trace excerpts from the synchronized
+evaluation artifacts. The ChainMem cases below come from
+\url{/mnt/models/yupan/llm/nanomem/tmp/search/chainmem2/nanomem/task8_chainmem2_combo2_gpt54pre_qwencomp_20260428_100723/eval_gpt51.json}.
+The Noor example is a failure case rather than a success. The query asks:
 ``What did Noor ask about at the place she began stopping on her evening
-walks?'' The trace contains one Synthesizer round with a sufficient verdict,
-but the evidence itself has two linked events: the first identifies the hidden
-place, and the second supplies the answer-bearing event at the same place.
+walks?'' The gold answer is ``the beans they used for a chocolatey drip
+coffee'', but NanoMem returns ``Her regular order at Third Street Roasters.''
+The trace contains one event, a \texttt{sufficient} verdict, and a wrong judge
+label. The failure is therefore not only answer wording: the evidence never
+recovers the answer-bearing bean question, yet the loop stops.
 
 \begin{table}[H]
   \centering
-  \caption{Temporal bridge success from a ChainMem trace.}
+  \caption{ChainMem trace excerpts used for qualitative diagnosis.}
   \label{tab:results-case-bridge}
   \scriptsize
   \resizebox{\textwidth}{!}{%
-  \begin{tabular}{p{0.10\textwidth}p{0.22\textwidth}p{0.25\textwidth}p{0.16\textwidth}p{0.14\textwidth}}
+  \begin{tabular}{p{0.13\textwidth}p{0.22\textwidth}p{0.21\textwidth}p{0.20\textwidth}p{0.18\textwidth}}
     \hline\hline
-    Round & Retrieval cue & Retrieved evidence summary & Event time & Verdict \\
+    Case & Query target & Gold / response & Event and verdict fields & Diagnosis \\
     \hline
-    1 & Original query about ``the place'' & Session states that Noor began stopping at Third Street Roasters on evening walks. & 2023-09-08 & sufficient \\
-    1 & Derived place cue: Third Street Roasters & Later session says Noor left a note at the counter asking which beans were used for a chocolatey drip coffee. & 2023-10-14 & sufficient \\
+    Noor, \texttt{chainmem\_new\_00015} & What she asked about at the place she began stopping on evening walks & Gold: beans used for a chocolatey drip coffee. Response: regular order at Third Street Roasters. & \texttt{S\_E003}, event time 2023-09-08, verdict \texttt{sufficient}, \texttt{inferred=false} & Answer-bearing evidence is missing despite a sufficient verdict. \\
+    Hiroshi, \texttt{chainmem\_new\_00010} & What he sent to the person he talked the idea through with & Gold: a one-page pilot outline. Response: one-page pilot outline for a lightweight workshop format. & \texttt{S\_H2\_E002\_01}, event time 2023-06-08, verdict \texttt{sufficient}, \texttt{inferred=false} & Direct answer-bearing event is recovered and the judge marks the answer correct. \\
     \hline\hline
   \end{tabular}
   }
 \end{table}
 
-The answer supported by this trace is that Noor asked about the beans used for
-the chocolatey drip coffee. The important detail is not only the answer string:
-the first event makes ``the place'' addressable as Third Street Roasters, and
-the second event uses that address to recover the answer-bearing note. A second
-ChainMem success shows the same pattern with a less explicit artifact. For the
-query ``What did Hiroshi draft to reduce the issue he noticed in two partner
-meetings?'', the trace links a 2023-05-24 event about recurring onboarding
-confusion and a lightweight facilitation workshop idea to a 2023-06-08 event
-where Hiroshi sent a one-page pilot outline for a workshop format. The
-Synthesizer marks the second event as inferred because the trace connects the
-drafted outline to the earlier problem; this is a useful example of correct
-evidence synthesis with an explicit uncertainty signal.
+The two rows illustrate different boundaries. Noor's trace exposes premature
+sufficiency with missing answer-bearing evidence: the system identifies Third
+Street Roasters but never retrieves or synthesizes the later event about beans
+for chocolatey drip coffee. Hiroshi's ``sent to the person'' trace is a
+cleaner success case. The event directly states that Hiroshi sent a one-page
+pilot outline to Maya, the verdict is \texttt{sufficient}, the
+\texttt{inferred} flag is \texttt{false}, and the final answer matches the
+gold answer. A nearby Hiroshi trace for the query ``What did Hiroshi draft to
+reduce the issue he noticed in two partner meetings?'' should not be used as a
+success example: its verdict is also \texttt{sufficient}, but the gold answer
+is ``a short intake checklist and sample kickoff email'', while the response is
+the one-page pilot outline. This is another answer-bearing evidence miss, not
+a demonstration of inferred evidence synthesis.
 
 The baseline comparison case comes from a LoCoMo reranking artifact for the
 query ``What painting did Melanie show to Caroline on October 13, 2023?'' The
@@ -494,22 +508,26 @@ constraint.
 
 The error analysis is a representative manual audit of the trace families used
 above and the benchmark-level failures, not a statistically complete coded
-sample. The observed failures fall into five categories. First, retrieval
-misses occur when the Planner or Retriever never returns the gold evidence
-session. The LoCoMo painting case is the clearest example: the relevant
-2023-10-13 session is available but not selected, so the answerer receives a
-later art-related session with the wrong date and topic. Second, temporal
-grounding errors occur when a relative expression is normalized incorrectly, an
-event time is inferred with the wrong span, or session time is confused with
-event time. Third, premature sufficiency occurs when the Synthesizer emits
-\texttt{sufficient} before all required evidence is present. This failure is
-particularly costly on ChainMem because the first retrieved event often only
-exposes the next retrieval address. Fourth, over-search and evidence bloat
-occur when the system continues retrieving after enough evidence has been
-collected or returns redundant evidence; the reward diagnostic without
-format/length terms is the quantitative symptom of this behavior. Fifth,
-downstream answerer errors occur when the memory evidence is adequate but the
-answer model still produces the wrong final answer.
+sample. The observed failures fall into six categories. First, retrieval misses
+occur when the Planner or Retriever never returns the gold evidence session.
+The LoCoMo painting case is the clearest example: the relevant 2023-10-13
+session is available but not selected, so the answerer receives a later
+art-related session with the wrong date and topic. Second, temporal grounding
+errors occur when a relative expression is normalized incorrectly, an event
+time is inferred with the wrong span, or session time is confused with event
+time. Third, answer-bearing evidence can be missing even when the retrieved
+evidence is partially relevant. Noor's ChainMem trace is the concrete signal:
+the evidence identifies Third Street Roasters and the verdict is
+\texttt{sufficient}, but the gold answer about chocolatey drip coffee beans is
+absent from both evidence and response. Fourth, premature sufficiency occurs
+when the Synthesizer emits \texttt{sufficient} before all required evidence is
+present; in ChainMem this often turns a bridge event into a false stopping
+point. Fifth, over-search and evidence bloat occur when the system continues
+retrieving after enough evidence has been collected or returns redundant
+evidence; the reward diagnostic without format/length terms is the
+quantitative symptom of this behavior. Sixth, downstream answerer errors occur
+when the memory evidence is adequate but the answer model still produces the
+wrong final answer.
 
 \begin{table}[H]
   \centering
@@ -522,6 +540,7 @@ answer model still produces the wrong final answer.
     \hline
     Retrieval miss & Gold session absent from selected sessions & Planner cue or retriever recall failure & Evidence synthesis is bounded by recall \\
     Temporal grounding error & Wrong date span or event ordering & Normalization or Synthesizer event-time inference & Later retrieval follows the wrong address \\
+    Answer-bearing evidence miss & Gold answer absent from evidence and response despite related evidence & Retriever/Synthesizer fails to recover destination event & A plausible bridge event can hide a missing answer event \\
     Premature sufficiency & Verdict is sufficient before gold coverage & Synthesizer stop decision & Loop stops before bridge evidence is found \\
     Over-search or bloat & Extra rounds or long redundant evidence & Weak stop/length control & Higher cost and possible answer noise \\
     Answerer error & Evidence appears correct but answer is wrong & Downstream Qwen3.5-9B answer model & Memory and answering failures must be separated \\
