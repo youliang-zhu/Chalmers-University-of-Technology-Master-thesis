@@ -409,8 +409,20 @@ environment.
 \label{sec:methods-reward}
 
 The reward is designed for evidence construction rather than direct answer
-generation. The checked GRPO reward implementation combines four weighted
-signals: format validity, event faithfulness, outcome usefulness, and length.
+generation. The design separates four desired signals: format validity, source
+faithfulness, outcome usefulness, and length. However, the current code
+artifact does not yet support all four as a synchronized, executable reward
+contract. The parser schema exposes event fields for \texttt{session\_id},
+\texttt{session\_time}, \texttt{event\_time}, and text, while the faithfulness
+reward path still expects the older \texttt{inferred} attribute when selecting
+direct events. Consequently, this chapter treats source faithfulness as a
+method requirement and planned reward component, not as a verified active
+component for reported GRPO training unless the implementation is first
+synchronized. \textcolor{red}{TODO: Before reporting GRPO training results,
+either update the reward path so faithfulness checks all parsed source-grounded
+events under the current schema, or report the run as using only the executable
+format, outcome, and length components.}
+
 The verdict remains central to the method, but it is not a separate additive
 reward component in the active reward total. Instead, it controls whether a
 trajectory is terminal and therefore whether terminal outcome evaluation is
@@ -422,16 +434,18 @@ text, and a valid binary verdict. Format validity is necessary because the rest
 of the pipeline depends on structured evidence. A malformed output cannot be
 reliably attributed, evaluated, or passed downstream.
 
-\textbf{Event faithfulness reward.} Each emitted event is supposed to be
-directly supported by its cited session. The faithfulness component checks
-event text against the corresponding session with a frozen verifier and rewards
-the proportion of supported events. This signal is needed because a compact
-evidence pool is useful only if compression preserves attribution. Since the
-current parser does not expose an \texttt{inferred} field, the method-level
-contract is stricter than the earlier design: every emitted event should be
-source-grounded. Evidence that depends on cross-session inference should be
-expressed through separate cited events and the \texttt{reasoning} field rather
-than as a single unsupported event.
+\textbf{Source faithfulness requirement.} Each emitted event is supposed to be
+directly supported by its cited session. This requirement is needed because a
+compact evidence pool is useful only if compression preserves attribution.
+Under the current parser schema, every parsed event should be treated as a
+source-grounded claim: evidence that depends on cross-session inference should
+be expressed through separate cited events and the \texttt{reasoning} field
+rather than as a single unsupported event. The intended faithfulness reward
+would check event text against the corresponding session with a frozen verifier
+and reward the proportion of supported events. In the present artifact, though,
+that reward path has not been reconciled with the current parser because it
+still filters on the removed \texttt{inferred} field. It should therefore be
+used only after the schema mismatch is fixed and recorded.
 
 \textbf{Outcome reward.} When the loop terminates, the evidence is provided to
 a frozen answer model. A judge compares the answer to the gold answer. This
@@ -441,11 +455,13 @@ Synthesizer.
 
 \textbf{Length reward.} Compactness is part of the evidence-provider objective:
 the answer model should receive enough evidence, not an unbounded transcript.
-The length reward encourages shorter Synthesizer outputs, usually conditional
-on the output being useful. It must not dominate outcome or verdict quality,
-because a trivially short but uninformative evidence pool is not useful memory.
+The implemented length term is a penalty,
+$R_{\mathrm{len}}=-\min(1,\mathrm{tokens}/2048)$, so adding it with a positive
+weight encourages shorter Synthesizer outputs. It must not dominate outcome or
+verdict quality, because a trivially short but uninformative evidence pool is
+not useful memory.
 
-A representative total reward is
+The intended full reward, after the faithfulness path is synchronized, is
 \[
   R(\tau)=
   w_f R_{\mathrm{fmt}}(\tau)
@@ -461,21 +477,38 @@ verdict exposes incomplete evidence to the answer model, while repeated
 \texttt{insufficient} verdicts can terminate by maximum-round or no-new-evidence
 conditions and receive no terminal outcome reward.
 
+For any result reported before that synchronization, the faithful description
+is the executable reward subset:
+\[
+  R_{\mathrm{exec}}(\tau)=
+  w_f R_{\mathrm{fmt}}(\tau)
+  + w_o R_{\mathrm{out}}(\tau)
+  + w_l R_{\mathrm{len}}(\tau),
+\]
+with source faithfulness evaluated, at most, as a post-hoc diagnostic rather
+than as an optimization signal. This constraint is important for Chapter 4:
+claims about learned source faithfulness or a faithfulness--compactness
+trade-off require a run whose reward implementation and parser schema are
+aligned.
+
 \begin{figure}[H]
   \centering
   \fbox{\begin{minipage}{0.92\textwidth}
     \centering
     \vspace{0.8em}
     \textcolor{red}{TODO: Replace this placeholder with the planned reward
-    signal figure. It should mark format and faithfulness on the Synthesizer
-    artifact, outcome at terminal answer evaluation, compactness on Synthesizer
-    output length, and the verdict as the terminal gate.}
+    signal figure. It should mark format on the Synthesizer artifact, outcome
+    at terminal answer evaluation, compactness as a token penalty, the verdict
+    as the terminal gate, and faithfulness as a planned/source-support check
+    that requires schema synchronization before it can be claimed as active.}
     \vspace{0.8em}
   \end{minipage}}
-  \caption{Reward signals in a NanoMem trajectory. Format and faithfulness
-  supervise the structured evidence artifact, while outcome and length connect
-  terminal evidence to downstream usefulness and compactness. The verdict gates
-  whether terminal outcome evaluation is reached.}
+  \caption{Reward signals in a NanoMem trajectory. Format supervises the
+  structured evidence artifact, outcome and length connect terminal evidence to
+  downstream usefulness and compactness, and the verdict gates whether terminal
+  outcome evaluation is reached. Source faithfulness is a method requirement,
+  but it should be claimed as an active reward only after its implementation is
+  synchronized with the parser schema.}
   \label{fig:methods-rewards}
 \end{figure}
 
@@ -489,7 +522,7 @@ conditions and receive no terminal outcome reward.
     Component & Measures & Timing & Failure mode addressed & Risk \\
     \hline
     Format & XML parseability and required fields & Each Synthesizer output & Unusable evidence artifact & Models may learn shallow formatting \\
-    Faithfulness & Direct support between event text and cited session & Parsed events in the terminal reward path & Unsupported compressed evidence & Requires parser and verifier assumptions to stay aligned \\
+    Faithfulness & Direct support between event text and cited session & Planned reward or post-hoc diagnostic until schema is synchronized & Unsupported compressed evidence & Current reward path still expects removed \texttt{inferred} field \\
     Outcome & Answer correctness from terminal evidence & Terminal only & Evidence that is well formed but not useful & Can hide which component failed \\
     Length & Compactness of Synthesizer output & Usually terminal or trajectory aggregate & Passing bloated evidence to answer model & Must not reward empty evidence \\
     \hline\hline
@@ -588,14 +621,17 @@ reported GRPO retrieval path uses BM25/dense index search with the $0.25/0.75$
 combined score, cue-level \texttt{hard\_mention} temporal filtering when cue
 spans exist, disabled reranking, top-seven pre-reranker session retention per
 cue, complete-session token-budget pruning, and up to three retrieval rounds by
-default. The active reward total uses format, faithfulness, length, and outcome
-weights. Because the current event parser no longer exposes the older
-\texttt{inferred} attribute, any reported training run must keep the
-faithfulness reward path synchronized with the parser and treat emitted events
-as directly source-grounded claims. Chapter 4 should still report run-specific
-model identities, data splits, group size, checkpoint selection, and any
-configuration overrides, but the retrieval and reward behavior above is part of
-the method definition.
+default. The reward boundary is less settled. Format, outcome, and length are
+traceable in the current reward pipeline, with length implemented as a negative
+token-ratio penalty. The source-faithfulness reward is not yet a reliable
+active method claim because the parser no longer exposes the older
+\texttt{inferred} attribute while the reward code still reads that field. A
+reported training run must therefore either document a synchronized
+faithfulness implementation or exclude faithfulness from the claimed
+optimization objective. Chapter 4 should still report run-specific model
+identities, data splits, group size, checkpoint selection, and any
+configuration overrides, and it must align its GRPO claims with whichever
+reward path was actually executable.
 
 \begin{table}[H]
   \centering
@@ -611,7 +647,7 @@ the method definition.
     Retrieval & \texttt{src/nanomem/operators/read\_path.py}; vector stores & Cues to candidate sessions & BM25/dense $0.25/0.75$, \texttt{hard\_mention}, reranker off, top-seven per cue \\
     Synthesizer schema & \texttt{training/grpo/trainer/schemas.py} & XML to structured events and verdict & \texttt{session\_id}, \texttt{session\_time}, \texttt{event\_time}, text, binary verdict \\
     GRPO rollout & \texttt{training/grpo/trainer/rollout.py} & Query trajectory to masked policy tokens & Maximum three rounds by default; terminal on \texttt{sufficient} \\
-    Reward pipeline & \texttt{training/grpo/trainer/rewards.py}; reward weights config & XML and terminal answer to scalar reward & Format, faithfulness, length, and outcome components \\
+    Reward pipeline & \texttt{training/grpo/trainer/rewards.py}; reward weights config & XML and terminal answer to scalar reward & Format/outcome/length executable; faithfulness requires schema synchronization before active-use claims \\
     Benchmarks & \texttt{evals/locomo}, \texttt{evals/longmemeval}, \texttt{evals/chainmem} & Dataset records to evaluation results & Split sizes and filtering rules \\
     \hline\hline
   \end{tabular}
@@ -626,7 +662,8 @@ source-grounded events with separate session-time and event-time fields. The
 Planner--Retriever--Synthesizer loop answers RQ2 by allowing evidence found in
 one round to guide retrieval in the next round. GRPO training and the reward
 design align the Synthesizer with parseable, compact, useful, and
-sufficiency-aware evidence construction. Chapter 4 evaluates
-whether these design choices improve answer quality, temporal grounding,
-compactness, and hidden-dependency retrieval on public memory benchmarks and
-ChainMem.
+sufficiency-aware evidence construction, while source faithfulness remains a
+required evidence property that must be either synchronized in the reward
+implementation or evaluated diagnostically. Chapter 4 evaluates whether these
+design choices improve answer quality, temporal grounding, compactness, and
+hidden-dependency retrieval on public memory benchmarks and ChainMem.
