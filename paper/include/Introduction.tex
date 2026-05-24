@@ -2,327 +2,219 @@
 \chapter{Introduction}
 \label{chap:introduction}
 
-Large language model (LLM) agents are increasingly expected to operate across
-long-running interactions rather than isolated prompts. A user may discuss a
-task today, revise it next week, add a preference in a different session, and
-later ask a question whose answer depends on several earlier moments. In this
-setting, the current context window is not a sufficient representation of the
-agent's state. The agent needs an external memory system that can preserve
-relevant parts of past interactions and make them usable when a future query
-arrives. Recent memory systems for LLM agents therefore study how to store,
-organize, retrieve, and update long-term conversational information
+Large language models (LLMs) have become a foundation for systems that can
+produce text, follow instructions, use external tools, and participate in
+multi-turn interaction. When such models are embedded in agent systems, they are
+no longer used only as single-turn text generators. They may plan subtasks, call
+tools, inspect external resources, and adapt their behavior over a longer
+interaction. This shift makes state important. An agent that helps a user over
+days or weeks needs access to information that was introduced outside the
+current prompt.
+
+Long-term memory is therefore a central component of LLM agents. A memory
+system can preserve user preferences, plans, corrections, decisions, and events
+that occurred across previous sessions. Without such a component, an agent is
+limited by the current context window and must either forget earlier
+interactions or ask the user to repeat information. Recent memory systems for
+LLM agents study how to store, organize, retrieve, and update long-term
+conversational information
 \cite{chhikara2025mem0,li2025memos,xu2025amem,zhang2025gmemory,zhang2025memsim}.
 
-This thesis studies a specific responsibility within such systems: the memory
-module as an evidence provider. The memory module should not simply return a
-long list of raw sessions, because that forces the downstream answer model to
-perform retrieval, denoising, temporal reasoning, evidence selection, and final
-answer generation at once. It should also not directly replace the answer model,
-because then retrieval failures, evidence synthesis failures, and answer
-generation failures become difficult to separate. Instead, a useful memory
-module should return compact, faithful, source-grounded evidence that an answer
-model can inspect and use. NanoMem is designed around this boundary. Its output
-is structured evidence about what happened, when it happened, where it was
-mentioned, and whether the accumulated evidence is sufficient for answering.
+Figure~\ref{fig:intro-memory} illustrates the basic motivation for such a
+memory component. A naive long-context approach appends the message history and
+the current query directly to the prompt. This can overflow the context window,
+increase token cost and latency, and still leave the model to find the relevant
+parts of the history by itself. A memory-augmented approach instead uses a
+memory system to select information that is relevant to the current query
+before the prompt is sent to the LLM. The goal is not only to shorten the
+prompt, but also to make the historical context more focused for downstream
+answering.
 
 \begin{figure}[H]
   \centering
-  \fbox{\begin{minipage}{0.9\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned boundary
-    diagram showing multi-session dialogue history, the memory evidence
-    provider, structured evidence output, and the downstream answer model.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{Role boundary for long-term agent memory. The memory system is
-  treated as an evidence provider: it transforms dialogue history into compact
-  structured evidence, while final answer generation remains outside the memory
-  module.}
-  \label{fig:intro-boundary}
+  \includegraphics[width=0.95\textwidth]{figure/intro_memory.png}
+  \caption{Naive long-context prompting compared with memory-augmented
+  prompting. Long-context prompting sends the message history directly to the
+  LLM, whereas memory-augmented prompting first uses a memory system to select
+  relevant information for the current query.}
+  \label{fig:intro-memory}
 \end{figure}
 
-\section{Long-Term Conversational Memory}
-\label{sec:intro-background}
+This thesis focuses on conversational agent memory. Unlike a static document
+collection, a conversation history is incremental, personal, and time-sensitive.
+The same user may mention a future plan in one session, revise it later, and
+ask about it after several unrelated conversations. The memory source therefore
+contains not only facts, but also event order, relative dates, stale
+information, and references to earlier or later moments. A useful memory system
+must recover evidence from this history even when the user does not remember the
+exact wording or the session in which the evidence appeared.
 
-Long-term conversational memory differs from ordinary document retrieval in two
-ways. First, the source material is personal, incremental, and time-sensitive.
-Sessions can contain preferences, plans, corrections, stale information,
-future commitments, and references to earlier events. Second, the user often
-does not remember the exact wording or location of the supporting evidence. A
-query may refer to "the week after my promotion", "the restaurant I liked last
-time", or "the book I was reading when the project changed direction". The
-memory system must recover the relevant evidence even when the query does not
-name the evidence directly.
+Temporal reasoning is especially important in this setting. A user may ask
+about what happened before a trip, which book they were reading during the week
+of a promotion, or what decision changed after a meeting. Such questions are
+not only asking for stored facts. They require the memory system to distinguish
+when something was mentioned from when it actually happened, and to use temporal
+information to decide which part of the history should be inspected. Prior work
+and benchmarks show that LLMs remain brittle on temporal reasoning tasks,
+including event ordering, relative dates, and long conversational histories
+\cite{chu2024timebench,fatemi2025testoftime,maharana2024locomo}.
 
-Temporal reasoning is therefore central to agent memory. Benchmarks and prior
-work show that LLMs remain brittle when they must reason over event order,
-relative dates, and long conversational histories
-\cite{chu2024timebench,fatemi2025testoftime,maharana2024locomo}. In a memory
-setting, this difficulty is not only an answer-generation problem. It affects
-which sessions are retrieved, which utterances are considered evidence, and
-whether the system knows that more retrieval is needed. A memory system that
-retrieves by semantic similarity alone may find a session mentioning a topic but
-miss the actual event time. Conversely, a system that filters rigidly by session
-timestamp may discard the session that contains the necessary temporal clue.
+The position of this thesis is that long-term agent memory should be studied as
+an evidence-providing component. The memory module should not simply return all
+retrieved sessions to a downstream answer model, because that makes the answer
+model perform noise filtering, temporal reasoning, evidence selection, and final
+answer generation at once. The memory module should also not hide the retrieval
+and synthesis process behind an opaque final answer. Instead, it should provide
+compact, source-grounded, temporally grounded evidence that a downstream answer
+model can inspect and use.
 
-The example used throughout this thesis is a user asking: "What book was I
-reading during the week I got promoted?" The query does not directly identify
-the book session. A useful memory system must first locate evidence about the
-promotion, infer the relevant week, and then use that inferred time window to
-retrieve reading-related evidence. The first retrieval result is not the final
-answer; it creates the search condition for the next retrieval step.
+\section{Significance of the Study}
+\label{sec:intro-significance}
 
-\section{The Evidence Addressability Gap}
-\label{sec:intro-gap}
+This study is significant because conversational memory is becoming a basic
+requirement for long-running AI assistants rather than a peripheral research
+idea. Modern conversational agents are expected to remember preferences, past
+decisions, plans, corrections, and personal context across sessions. This
+changes the role of the assistant: it is no longer only a model that answers the
+current prompt, but a system that must maintain continuity over a user's
+history. If the memory layer is unreliable, the agent may forget important
+context, retrieve stale information, or force the user to repeatedly restate
+facts that should already be available.
 
-The central problem addressed in this thesis is the evidence addressability gap:
-the evidence needed to answer a query is often not directly addressable from the
-query text. The missing address may be a time window, an entity, a causal
-predecessor, a remembered attribute, or a dependency exposed only after an
-earlier retrieval step. This gap is broader than date normalization. It is a
-problem of making hidden evidence searchable and inspectable.
+The technical significance is that long-term conversational memory exposes
+reasoning problems that are not solved by storing more text. Benchmarks such as
+LongMemEval and LoCoMo treat temporal reasoning, multi-session reasoning,
+knowledge updates, and multi-hop reasoning as core memory abilities
+\cite{wu2024longmemeval,maharana2024locomo}. These abilities are central to
+real conversations because users often refer to events by relative time,
+implicit dependencies, or remembered circumstances rather than by exact session
+identifiers. The problem is therefore not only recall. A memory system must
+decide which pieces of history count as evidence for the current question and
+how temporal relationships should guide later retrieval.
 
-Three coupled challenges make the gap difficult for agent memory systems.
+The system significance is that existing memory infrastructure leaves an
+important design space between raw-context prompting and heavy write-time memory
+construction. Systems such as MemGPT, Mem0, and Zep show that persistent memory,
+context management, and temporal knowledge organization are valuable for agents
+\cite{packer2023memgpt,chhikara2025mem0,rasmussen2025zep}. At the same time,
+write-time extraction, summarization, or graph construction must decide what is
+important before the future query is known. This thesis instead emphasizes
+query-time evidence construction: preserving the original conversational memory
+more lightly, then selecting, grounding, and synthesizing evidence when a user
+question arrives.
 
-The first challenge is the mismatch between session time and event time. A
-session timestamp records when the user mentioned something. The event time
-records when the event actually happened. If a user says on April 2 that they
-"traveled to Europe last week", then April 2 is the mention time, while the trip
-occurred during the previous week. A write-time memory system may extract the
-travel event and attach the inferred event time, but doing only that loses the
-fact that the user mentioned it on April 2. Storing both interpretations as
-fixed memories can also confuse retrieval. The interpretation that matters is
-often query dependent.
+The practical significance is that compact and source-grounded evidence is a
+more inspectable memory interface than either passing all retrieved sessions to
+an answer model or returning only a final answer. Long personal and workplace
+histories can be noisy, sensitive, and expensive to process. A memory module
+that produces concise evidence with source grounding can reduce the burden on
+the downstream answer model and make failures easier to diagnose. In this sense,
+NanoMem is not presented as a complete solution to long-term agent memory, but
+as a study of an important interface: query-time, temporally grounded evidence
+construction for conversational agents.
 
-The second challenge is indirectly addressable temporal evidence. In the book
-example, the book session becomes retrievable only after the promotion event has
-been found and temporally grounded. A one-shot retriever receives the original
-query but not the intermediate event-time inference. Even a strong reranker can
-fail if the candidate set never contains the later evidence. The memory system
-therefore needs a search state that can carry temporal hints forward across
-retrieval rounds.
+\section{Problem Description}
+\label{sec:intro-problem-description}
 
-The third challenge is faithfulness under compression. Memory systems are often
-used to reduce long histories into short evidence snippets. If a model compresses
-uncertain cross-session reasoning into a statement that looks directly observed,
-the downstream answer model cannot tell which part is supported by source text
-and which part was inferred. For this reason, NanoMem separates source
-identifiers, session time, event time, and inferred evidence in its structured
-events. The goal is not only to find evidence, but also to preserve how the
-evidence is grounded.
+The problem addressed in this thesis is that evidence needed for long-term
+conversational memory is often not directly addressable from the user's query.
+A query may contain a relative time expression, an event description, a causal
+consequence, or a remembered attribute, while the session that contains the
+answer can only be found after another piece of evidence has first been
+recovered. This thesis refers to this as the evidence addressability gap.
+
+The first part of the problem is temporal reasoning. Even strong LLMs can make
+errors when reasoning about event order, relative dates, durations, and updates
+over time \cite{chu2024timebench,fatemi2025testoftime}. In conversational
+memory, this difficulty is compounded by the difference between session time and
+event time. Session time records when the user said something. Event time
+records when the described event happened or was valid. If a user says on April
+2 that they travelled to Europe last week, April 2 is the session time, but the
+travel event belongs to the previous week. A memory system that conflates these
+two times can retrieve or interpret the wrong evidence.
+
+The second part is hidden-dependency retrieval. Many useful memory questions
+cannot be answered by one retrieval step. For example, in the question ``What
+book was I reading during the week I got promoted?'', the query does not
+directly identify the session where the book was mentioned. The system must
+first find evidence about the promotion, determine the relevant time window, and
+then use that window to locate the reading-related evidence. The first retrieved
+evidence is not the answer; it supplies the address needed for the next
+retrieval step.
+
+The third part is the amount and noise of retrieved memory. Long-term
+conversational memory can return many candidate sessions, and those sessions may
+contain unrelated events, outdated information, and near-miss evidence. Passing
+all of this raw context to a downstream LLM turns the task into a
+needle-in-a-haystack problem over a long and noisy input. This is expensive, can
+dilute attention over the relevant evidence, and still leaves the downstream
+model responsible for temporal reasoning and multi-hop evidence selection.
+Repeated multi-round retrieval can make this problem worse if each round keeps
+accumulating uncompressed sessions.
+
+Together, these issues make long-term conversational memory more than a top-$k$
+retrieval problem. The system must find evidence whose retrieval address may
+not be present in the original query, and it must distinguish retrieved memory
+from evidence that is compact and reliable enough for downstream answering.
 
 \begin{figure}[H]
   \centering
-  \fbox{\begin{minipage}{0.9\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned
-    session-time/event-time and indirect-search diagram. The diagram should show
-    why session-time search and single-pass temporal search miss different
-    parts of the evidence trajectory.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{Evidence addressability gap in temporal conversational memory. A
-  session can mention an event at one time while the event happened at another
-  time; after that event time is inferred, it may become the retrieval cue for a
-  second piece of evidence.}
-  \label{fig:intro-gap}
+  \includegraphics[width=0.95\textwidth]{figure/intro_latest.pdf}
+  \caption{Evidence addressability gap in temporal conversational memory. The
+  answer-bearing evidence may not be directly retrievable from the original
+  query: an earlier piece of evidence must first expose a temporal bridge, while
+  raw retrieved sessions still need to be reduced to usable evidence.}
+  \label{fig:intro-problem}
 \end{figure}
 
-\section{Limitations of Existing Memory Paradigms}
-\label{sec:intro-existing-methods}
+\section{Purpose of the Study}
+\label{sec:intro-purpose}
 
-Existing memory systems approach long-term memory from several directions, each
-of which addresses part of the problem but leaves the evidence addressability
-gap unresolved.
+The purpose of this study is to investigate how a long-term conversational
+agent memory system can construct compact and temporally grounded evidence for
+questions whose supporting information is distributed across multiple sessions
+and is not directly addressable from the original query.
 
-Write-time memory methods extract, summarize, link, or update memory records
-before the future query is known. Systems such as Mem0, MemOS, Zep, and A-Mem
-make persistent memory more manageable by organizing user history into reusable
-units or structured stores
-\cite{chhikara2025mem0,li2025memos,rasmussen2025zep,xu2025amem}. This is useful
-for storage and retrieval efficiency, but it forces the system to decide in
-advance which interpretation of an utterance should be preserved. Future queries
-may require a different temporal interpretation or a hidden dependency that was
-not salient at ingestion time.
+The first objective is to study query-time memory evidence construction. This
+thesis does not treat memory primarily as a write-time process in which the
+system must fully interpret, summarize, or restructure a conversation before
+knowing the future query. Instead, the study focuses on how a memory agent can
+model the relationship between a user query and the stored history when the
+query arrives. The ingestion stage should preserve the original memory structure
+and provide only lightweight processing, indexing, and temporal support, so that
+future query-specific interpretations are not fixed prematurely.
 
-Retrieval and reranking methods keep more of the original history available at
-query time. This avoids some premature compression, but it often returns raw
-sessions or ranked snippets rather than structured evidence. The downstream
-answer model must still determine which retrieved pieces are sufficient, which
-temporal hints should be propagated, and whether another retrieval step is
-needed. Temporal memory systems such as TReMu and Memory-T1 explicitly target
-time-aware memory or temporal session selection
-\cite{ge2025tremu,du2026memoryt1}, but they do not provide NanoMem's explicit
-query-time evidence state with separate session-time and event-time fields.
+The second objective is to study complex temporal reasoning and multi-hop
+evidence search in long-term conversation. The target setting is not only
+general long-term recall, but temporal-causal evidence search: cases where the
+answer evidence is distributed across sessions and the cue needed for a later
+retrieval step must be discovered from earlier evidence.
 
-Iterative or reflective retrieval systems are closer to the search behavior
-needed here. Self-reflective retrieval and search-trained RAG systems can decide
-when to retrieve again or adjust a query based on previous context
-\cite{asai2024selfrag,jin2025searchr1,du2025memr3}. However, their intermediate
-state is usually answer-oriented reasoning, retrieved snippets, or textual gap
-descriptions. NanoMem instead makes the intermediate state an evidence pool:
-structured event records with source identifiers, temporal grounding, and a
-verdict about sufficiency.
+The third objective is to study how the evidence construction component can be
+trained for this setting. NanoMem uses a Synthesizer to construct evidence from
+retrieved sessions and to decide whether the current evidence is sufficient for
+downstream answering. A central purpose of the study is to investigate whether
+reinforcement learning can align this component with the behavior required by
+the framework: useful temporal grounding, compact evidence synthesis, and
+sufficiency judgment.
 
-\begin{table}[H]
-  \centering
-  \caption{Simplified positioning of NanoMem relative to common long-term memory
-  paradigms. The detailed literature review is developed in Chapter 2.}
-  \label{tab:intro-methods}
-  \footnotesize
-  \begin{tabular}{p{0.21\textwidth}p{0.23\textwidth}p{0.21\textwidth}p{0.23\textwidth}}
-    \hline\hline
-    Paradigm & Typical output & Strength & Limitation for this thesis \\
-    \hline
-    Write-time memory & Extracted records or graphs & Compact persistent state & Query-agnostic compression can miss future hidden dependencies \\
-    Retrieval or reranking & Raw sessions, chunks, or ranked candidates & Preserves source text at query time & Does not synthesize sufficient structured evidence \\
-    Iterative retrieval agent & Retrieval traces or answer reflections & Adapts search over multiple rounds & Loop state is rarely explicit temporal evidence \\
-    NanoMem & Structured events and sufficiency verdict & Makes indirect temporal evidence addressable & Requires reliable evidence synthesis policy \\
-    \hline\hline
-  \end{tabular}
-\end{table}
+These objectives lead to three research questions:
 
-\section{Research Aim and Questions}
-\label{sec:intro-rqs}
+\textbf{RQ1.} How can a long-term conversational memory system construct
+evidence at query time while preserving the original memory structure and
+avoiding heavy query-agnostic interpretation during ingestion?
 
-The aim of this thesis is to investigate whether a long-term conversational
-memory system can construct compact, faithful, temporally grounded evidence at
-query time, while exposing whether the evidence is sufficient for a downstream
-answer model. This aim leads to three research questions.
+\textbf{RQ2.} How can a memory agent recover temporally grounded and multi-hop
+evidence when the retrieval cue needed for the answer is not directly present
+in the original query?
 
-\textbf{RQ1.} How can long-term conversational memory be represented as
-source-grounded structured evidence, with explicit session time, event time, and
-inference markers, rather than only as raw retrieved sessions or final answers?
+\textbf{RQ3.} How can reinforcement learning be used to train the Synthesizer
+to produce useful, compact, temporally grounded evidence and to judge whether
+the current evidence is sufficient for downstream answering?
 
-\textbf{RQ2.} How can an iterative Planner-Synthesizer loop use evidence
-constructed in earlier retrieval rounds to generate new retrieval cues and
-recover temporal or causal evidence that is not named in the original query?
+NanoMem is developed in this thesis as a query-time memory evidence provider
+for long-term conversational agents. The detailed system design, training
+procedure, and evaluation are presented in the following chapters.
 
-\textbf{RQ3.} How does NanoMem perform on long-term memory and temporal-causal
-evidence-search benchmarks compared with write-time memory systems, retrieval
-agents, temporal memory baselines, and full-context answer models, in terms of
-answer quality, evidence compactness, temporal grounding, and sufficiency
-judgment?
-
-These questions define the structure of the thesis. RQ1 is addressed mainly by
-the evidence schema and Temporal Evidence Pool in Chapter 3. RQ2 is addressed
-by the iterative Planner-Retriever-Synthesizer loop and the sufficiency verdict.
-RQ3 is addressed by the experimental evaluation in Chapter 4, including public
-long-term memory benchmarks and ChainMem, a
-diagnostic benchmark for indirectly addressable temporal-causal evidence.
-
-\section{NanoMem Overview}
-\label{sec:intro-nanomem}
-
-NanoMem is a memory evidence synthesis framework for long-term conversational
-agents. It combines lightweight temporal preprocessing, iterative retrieval, and
-a trainable Synthesizer that produces structured evidence. At ingestion time,
-relative temporal expressions in sessions are normalized into explicit temporal
-hints where possible. This does not decide every future event interpretation in
-advance; instead, it gives the query-time system better material for search.
-
-At query time, a Planner proposes retrieval cues from the user query and the
-current evidence state. A Retriever returns candidate sessions or chunks. A
-Synthesizer then converts the retrieved material into evidence events and
-updates the Temporal Evidence Pool. Each event records a source session, a
-session time, an event time, and a concise evidence statement. The Synthesizer
-also emits a verdict. A sufficient verdict stops retrieval and passes the
-evidence pool to the downstream answer model. An insufficient verdict indicates
-that the pool is relevant but incomplete, so the Planner should use the current
-evidence and missing information to search again.
-
-The Synthesizer is trained because prompting alone is not reliable enough for
-the stop-or-continue decision. NanoMem uses supervised fine-tuning followed by
-Group Relative Policy Optimization (GRPO) \cite{shao2024deepseekmath}. The
-reward design combines parseable output format, compactness, downstream answer
-usefulness, temporal grounding, and verdict accuracy. The verdict reward is
-especially important because it supervises the internal search decision: when
-the current evidence is incomplete, the correct behavior is not to answer
-prematurely, but to preserve the partial evidence and continue retrieval.
-
-\begin{figure}[H]
-  \centering
-  \fbox{\begin{minipage}{0.9\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned NanoMem
-    workflow diagram showing temporal preprocessing, Planner, Retriever,
-    Synthesizer, Temporal Evidence Pool, verdict loop, and downstream answer
-    model.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{High-level NanoMem workflow. The Planner-Retriever-Synthesizer loop
-  builds a Temporal Evidence Pool iteratively; the sufficiency verdict decides
-  whether to continue retrieval or provide evidence to the answer model.}
-  \label{fig:intro-workflow}
-\end{figure}
-
-\section{Contributions}
-\label{sec:intro-contributions}
-
-This thesis makes four contributions.
-
-First, it formulates long-term agent memory as temporal-causal evidence
-synthesis. The formulation separates the role of the memory system from the role
-of the downstream answer model and focuses on evidence that is compact,
-inspectable, and grounded in source sessions.
-
-Second, it presents NanoMem, a Planner-Synthesizer memory framework that builds
-a Temporal Evidence Pool through iterative retrieval. The evidence pool
-explicitly separates event time from session time and preserves source
-identifiers, allowing intermediate temporal inferences to guide subsequent
-search.
-
-Third, it trains the Synthesizer as an evidence construction policy. The
-training procedure combines supervised warm-up and GRPO rewards for parseable
-format, compactness, answer usefulness, temporal grounding, and sufficiency
-judgment.
-
-Fourth, it evaluates NanoMem on LoCoMo, LongMemEval, and ChainMem
-\cite{maharana2024locomo,wu2024longmemeval}. The evaluation compares NanoMem
-against write-time memory systems, search-time retrieval agents, temporal memory
-baselines, and full-context answer models, with additional ablations and case
-studies to analyze the role of temporal normalization, the evidence pool, and
-the verdict signal.
-
-\section{Scope and Delimitations}
-\label{sec:intro-scope}
-
-This thesis focuses on memory evidence construction, not on general final answer
-generation. The downstream answer model is treated as an evidence consumer. This
-boundary is intentional: it makes the memory module easier to inspect and makes
-it possible to evaluate whether failures come from missing evidence, unfaithful
-evidence synthesis, or final answer generation.
-
-The temporal reasoning studied here is also scoped. NanoMem targets
-multi-session conversational memory where relative time, event-time grounding,
-and evidence discovered through intermediate temporal hints affect retrieval. It
-does not claim to solve all forms of temporal logic, planning, or calendar
-reasoning. The implemented system uses temporal normalization as a lightweight
-preprocessing step, iterative retrieval over memory sessions or chunks, a
-Synthesizer that produces structured evidence, and a separate downstream answer
-model that consumes that evidence. The empirical claims in this thesis are
-therefore limited to the LoCoMo, LongMemEval, and ChainMem evaluations and to
-the concrete retriever settings, model backbones, answer models, and evaluation
-protocols reported in Chapter 4.
-
-\section{Thesis Structure}
-\label{sec:intro-structure}
-
-Chapter 2 reviews long-term agent memory, temporal reasoning in memory systems,
-search-side retrieval, evidence synthesis, and reinforcement learning for
-retrieval and memory agents.
-
-Chapter 3 presents the NanoMem method. It defines the problem, the structured
-evidence schema, the Temporal Evidence Pool, the Planner-Retriever-Synthesizer
-loop, the verdict mechanism, the training objective, and the construction of
-ChainMem.
-
-Chapter 4 reports the experimental setup and results. It describes datasets,
-baselines, metrics, main results, ablations, and qualitative case studies.
-
-Chapter 5 discusses the implications and limitations of NanoMem, including
-scalability, privacy, failure modes, and future work, before summarizing the
-thesis.
+\section{Thesis Outline}
+\label{sec:intro-outline}

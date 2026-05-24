@@ -2,378 +2,253 @@
 \chapter{Related Work}
 \label{chap:related-work}
 
-This chapter positions NanoMem within prior work on long-term memory for LLM
-agents, query-time retrieval, temporal reasoning, evidence synthesis, and
-reinforcement learning for retrieval policies. The purpose is not only to list
-systems that are adjacent to NanoMem, but to separate their system boundaries.
-Some work asks how an agent should store or update memories before a future
-query is known. Other work asks how a model should search, rerank, or reason
-after the query arrives. NanoMem belongs to the latter group, but with a more
-specific output contract: the memory module should return structured,
-source-grounded evidence for a downstream answer model, not merely raw sessions
-or a final answer.
+This chapter positions NanoMem within prior work on LLM agents, long-term
+agent memory, retrieval-augmented generation, temporal reasoning, and
+reinforcement learning for memory systems. The goal is not to present these
+areas as competing lines of work, but to clarify their system boundaries.
+NanoMem builds on retrieval and memory-augmented agent research, while focusing
+on a narrower problem: constructing compact, source-grounded, temporally
+grounded evidence at query time for long-term conversational memory.
 
-\section{From Memory Systems to Evidence Synthesis}
-\label{sec:rw-map}
+\section{LLM Agents}
+\label{sec:rw-llm-agents}
 
-Research on agent memory now spans several connected problems. Long-term memory
-systems study how user histories should be persisted, compressed, indexed, and
-updated across sessions. Retrieval systems study how the current query should
-select useful parts of that history. Temporal memory systems study how event
-order, relative dates, stale facts, and updated plans should be represented.
-Reflective RAG and search agents study how a model can retrieve repeatedly
-instead of relying on one fixed context. Faithful evidence synthesis studies how
-retrieved text can be compressed without losing attribution or inventing facts.
-Finally, reinforcement learning has been used to train memory managers,
-retrievers, search agents, and answer models when supervised next-token
-prediction is not enough.
+Large language model agents extend language models from single-turn text
+generators into systems that can act over multiple steps. In this setting, an
+LLM is used as a controller that may decompose tasks, call tools, inspect
+external observations, update its plan, and produce responses based on both the
+current instruction and accumulated state. Work such as ReAct and Toolformer
+helped establish the idea that language models can interleave reasoning with
+external actions or tool calls rather than only generating a final answer in
+one pass \cite{yao2023react,schick2023toolformer}.
 
-These directions overlap, but they are not interchangeable. A system that
-organizes memory well at ingestion time may still return the wrong evidence for
-a query whose useful retrieval cue is hidden behind a temporal or causal
-dependency. A system that performs multi-step search may still expose only raw
-snippets or answer-oriented reasoning, leaving the downstream model to decide
-which facts are grounded. NanoMem is motivated by this gap. It treats query-time
-memory access as evidence-state construction: each retrieval round should add
-compact evidence records that preserve source identifiers, session time, event
-time, and a sufficiency verdict.
+Although agent systems vary in implementation, they commonly combine several
+functional components: planning, tool use, retrieval, memory, and feedback or
+reflection. These components are useful because real tasks often require more
+than the information present in the current prompt. An agent may need to
+retrieve a document, remember a user preference, revise a plan after an
+observation, or decide that more information is needed before answering.
 
-\begin{figure}[H]
-  \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned related-work
-    classification map. The horizontal axis should show the memory lifecycle
-    from write-time ingestion and organization to query-time retrieval and
-    synthesis. The vertical axis should show output level, from raw sessions to
-    memory records, ranked evidence, structured evidence, and final answers.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{Planned map of related work by memory lifecycle stage and output
-  level. NanoMem is positioned as a query-time, evidence-centric memory module
-  whose output is a structured Temporal Evidence Pool rather than a final answer.}
-  \label{fig:rw-map}
-\end{figure}
+Memory becomes central when the agent is expected to serve the same user,
+project, or workflow over a long period of time. A conversational agent cannot
+rely only on the current context window if the relevant information was
+mentioned days or months earlier. It needs a mechanism for storing and
+re-accessing preferences, facts, corrections, plans, events, and task state
+across sessions. The remainder of this chapter focuses on that memory problem,
+especially in long-term conversational settings.
 
-\section{Long-Term Agent Memory Systems}
-\label{sec:rw-long-term-memory}
+\section{Long-Term Agent Memory}
+\label{sec:rw-long-term-agent-memory}
 
-Long-term agent memory begins with the observation that an LLM's active context
-cannot hold all information needed across a long-running interaction. A user
-history may contain preferences, corrections, project decisions, future plans,
-outdated facts, and events mentioned only once. Memory systems therefore add an
-external substrate that stores information beyond the current prompt and makes
-it available to future agent actions.
-
-One line of work frames memory as context management. MemGPT treats memory as a
-virtual context problem, where an agent decides which information should remain
-in the active context and which should be paged to external storage
-\cite{packer2023memgpt}. This view is important because it makes the context
-window a managed resource rather than a fixed limitation. However, it does not
-focus on constructing temporally grounded evidence records at query time.
-
-Production-oriented memory systems instead expose persistent memory as a
-service. Mem0 and MemOS organize histories into reusable memory units and
-provide infrastructure for storing, updating, and retrieving user information
-\cite{chhikara2025mem0,li2025memos}. These systems address practical deployment
-questions such as deduplication, updates, and reuse across agent tasks. Their
-typical output is a memory record or a set of retrieved memories, whereas
-NanoMem's output is a structured evidence state with explicit temporal fields
-and source identifiers.
-
-Other work enriches the organization of memory itself. A-Mem constructs dynamic
-note-style memories for agents; GMemory and MemSim study memory organization and
-simulation; Zep uses temporal knowledge graphs; HyperMem explores hypergraph
-memory for long conversations; and MemPalace represents a local-first memory
-management direction \cite{xu2025amem,zhang2025gmemory,zhang2025memsim,
-rasmussen2025zep,yue2026hypermem,mempalace2026}. These systems show that memory
-is not only a vector index: linking, graph structure, time, and evolving
-records matter. The remaining tension is that write-time extraction must decide
-what to store before the future query is known. If a future query depends on a
-hidden temporal bridge, the relevant interpretation may be easier to construct
-after the query arrives.
-
-Compression-oriented memory work is complementary. LightMem and R3MEM study how
-long histories can be represented more efficiently or reversibly
-\cite{fang2025lightmem,wang2025r3mem}. This reduces storage and context cost,
-but compression alone does not solve evidence addressability. A compressed
-record can still omit the intermediate cue needed for a later retrieval round,
-or merge observed facts with inferred ones in a way that makes grounding hard to
-inspect.
-
-\begin{table}[H]
-  \centering
-  \caption{Representative long-term agent memory systems and their relation to
-  NanoMem.}
-  \label{tab:rw-memory-systems}
-  \scriptsize
-  \begin{tabular}{p{0.19\textwidth}p{0.21\textwidth}p{0.19\textwidth}p{0.19\textwidth}p{0.14\textwidth}}
-    \hline\hline
-    Category & Representative systems & Main stage & Typical output & Relation to NanoMem \\
-    \hline
-    Context management & MemGPT & Runtime context and storage management & Active context plus external memory & Establishes memory as managed system state \\
-    Persistent memory services & Mem0, MemOS & Write, update, and retrieve persistent memories & Memory records or retrieved memories & Complementary storage layer; not structured evidence synthesis \\
-    Structured memory organization & A-Mem, GMemory, Zep, HyperMem & Write-time linking, graphing, or memory evolution & Notes, graphs, linked records & Improves organization before future query is known \\
-    Efficient retention & LightMem, R3MEM & Compression and efficient long-history representation & Compressed or reversible memory representation & Reduces cost but does not by itself solve hidden dependencies \\
-    NanoMem & This thesis & Query-time evidence search & Structured events and verdict & Constructs inspectable evidence for a downstream answer model \\
-    \hline\hline
-  \end{tabular}
-\end{table}
-
-\section{Search-Side Memory Retrieval and Reflective Retrieval}
-\label{sec:rw-search-side}
-
-Write-side organization is only one part of memory. Once a query arrives, the
-system must decide what to retrieve, whether the retrieved material is enough,
-and what form should be passed downstream. Passive retrieval is the simplest
-case: an embedding retriever or keyword system returns the top-ranked chunks or
-sessions for the original query. This is scalable and general, but it assumes
-that the query text already contains the right retrieval address. Temporal and
-causal memory questions often violate this assumption.
-
-A second family learns ranking or selection proxies. Temporal memory systems
-such as Memory-T1 train agents to select temporally consistent evidence
-sessions for multi-session reasoning \cite{du2026memoryt1}. Such methods improve
-the candidate set and can reduce the burden on the answer model, but the output
-is still often session-level or answer-oriented. NanoMem instead emphasizes
-event-level evidence synthesis: retrieved sessions are transformed into
-structured evidence items that can become search state in later rounds.
-
-Iterative and reflective retrieval systems are closer to NanoMem's search
-behavior. Self-RAG teaches a model to reflect on retrieval and generation
-decisions; Search-R1 trains multi-step search behavior with reinforcement
-learning; SmartRAG, RAG-RL, RPO, SSFO, TreeGRPO, and Stratified GRPO each study
-ways to adapt retrieval, preference optimization, or search-agent training
-\cite{asai2024selfrag,jin2025searchr1,gao2025smartrag,huang2025ragrl,
-yan2025rpo,tang2025ssfo,ji2026treegrpo,zhu2025stratifiedgrpo}. In long-context
-and memory settings, SUMER shows that goal-directed search can outperform
-goal-agnostic compression, while MemR$^3$ introduces a reflective
-retrieve--reflect--answer controller for long-term conversational memory
-\cite{zheng2025sumer,du2025memr3}.
-
-The shared insight is that retrieval should be adaptive. The difference is the
-loop state and output boundary. Reflective RAG systems often carry snippets,
-reasoning traces, or textual gap descriptions, and many directly produce the
-final answer. NanoMem carries a Temporal Evidence Pool. Each event records what
-was found, where it came from, when the source session occurred, when the event
-itself occurred, and whether the current evidence is sufficient. This separates
-memory evidence construction from downstream answer generation.
+Long-term agent memory addresses the mismatch between persistent user history
+and the limited active context available to an LLM. In a long-running
+interaction, useful information is distributed across many sessions and may
+include user preferences, personal facts, project decisions, future plans,
+outdated statements, corrections, and events mentioned only once. Directly
+passing the entire history to the model is expensive, slow, and often
+unreliable. A memory system therefore turns past interactions into a resource
+that can be stored, maintained, retrieved, and reused when a future query
+requires it.
 
 \begin{figure}[H]
   \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned query-time
-    output pipeline comparison. The diagram should contrast passive retrieval
-    producing raw sessions, ranking proxies producing selected sessions,
-    reflective retrieval producing traces or answers, and NanoMem producing a
-    Temporal Evidence Pool plus verdict.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{Planned comparison of search-side memory outputs. NanoMem differs
-  from raw retrieval and answer-oriented reflective search by exposing
-  structured evidence state.}
-  \label{fig:rw-search-outputs}
+  \includegraphics[width=0.88\textwidth]{figure/realted_work_memory_framework.png}
+  \caption{A generic long-term agent memory framework. Historical messages and
+  the current query are processed by an agent memory system that extracts,
+  stores, manages, and retrieves information before passing relevant memory
+  content to the LLM.}
+  \label{fig:rw-memory-framework}
 \end{figure}
 
-\begin{table}[H]
-  \centering
-  \caption{Query-time retrieval paradigms relevant to long-term memory.}
-  \label{tab:rw-search-paradigms}
-  \scriptsize
-  \begin{tabular}{p{0.18\textwidth}p{0.13\textwidth}p{0.22\textwidth}p{0.18\textwidth}p{0.17\textwidth}}
-    \hline\hline
-    Paradigm & Multi-round & Loop state & Output object & Main risk \\
-    \hline
-    Passive retrieval & No & Original query and retrieved chunks & Raw sessions or chunks & Hidden evidence may not be addressable from the query \\
-    Ranking or selection proxy & Usually no & Candidate sessions and learned scores & Ranked sessions or selected evidence sessions & Session selection may not synthesize event-level evidence \\
-    Reflective retrieval & Yes & Snippets, reasoning traces, or textual gaps & Retrieval trajectory or final answer & Retrieval and answer failures can be entangled \\
-    NanoMem & Yes & Temporal Evidence Pool with event and session fields & Structured evidence plus verdict & Requires reliable evidence synthesis and stop/continue decisions \\
-    \hline\hline
-  \end{tabular}
-\end{table}
+Figure~\ref{fig:rw-memory-framework} summarizes a common view of long-term
+agent memory. On the write side, information extraction decides how interaction
+history enters memory. Some systems directly archive conversations, others
+summarize them into compact records, and graph-based systems extract entities,
+relations, or events. Memory storage then determines how the resulting memory
+units are represented and indexed, for example as flat records, hierarchical
+structures, vector stores, or graph stores. Memory management maintains the
+memory over time by connecting, integrating, transforming, filtering, and
+updating records. On the query side, information retrieval selects relevant
+memory content through lexical, vector-based, structure-based, or LLM-assisted
+methods.
 
-\section{Temporal Reasoning in Dialogue and Agent Memory}
-\label{sec:rw-temporal}
+This framework is useful because it separates two design choices that are often
+blurred. A memory system may do heavy write-time processing, attempting to
+summarize, normalize, and structure information before a future query is known.
+It may also do query-time processing, where the current user question determines
+which parts of memory should be retrieved and how they should be interpreted.
+NanoMem does not reject write-time processing. It uses lightweight extraction,
+temporal enhancement, and indexing so that memories remain searchable. However,
+it avoids making the memory writer responsible for heavy interpretation of
+future query-dependent relations. The main reasoning step is moved to query
+time, where evidence can be constructed with the actual question in view.
 
-Temporal reasoning is especially difficult in conversational memory because
-time appears in several forms at once. A session has a timestamp, but the events
-mentioned in that session may have happened earlier, may be planned for the
-future, or may be described only through relative expressions such as "last
-week" or "after the meeting". Long-term dialogue also contains corrections and
-updates, so the latest mention is not always the same as the event that matters.
-Benchmarks such as TimeBench, Test of Time, LoCoMo, and LongMemEval show that
-LLMs and memory systems remain brittle when they must handle event order,
-temporal constraints, and long multi-session histories
-\cite{chu2024timebench,fatemi2025testoftime,maharana2024locomo,wu2024longmemeval}.
+Prior long-term memory systems cover several parts of this framework. MemGPT
+frames memory as a virtual context management problem, where an agent decides
+which information should stay in active context and which should be moved to
+external storage \cite{packer2023memgpt}. Production-oriented systems such as
+Mem0 and MemOS organize histories into persistent memory units and expose
+memory as a reusable service for agents \cite{chhikara2025mem0,li2025memos}.
+Structured memory systems enrich the memory substrate itself: Zep uses a
+temporal knowledge graph, A-Mem constructs dynamic agentic notes, GMemory
+studies hierarchical memory for multi-agent systems, HyperMem uses hypergraph
+memory for long conversations, and MemPalace represents a local-first memory
+management direction \cite{rasmussen2025zep,xu2025amem,zhang2025gmemory,
+yue2026hypermem,mempalace2026}. Compression-oriented systems such as LightMem
+and R3MEM reduce the cost of retaining long histories
+\cite{fang2025lightmem,wang2025r3mem}.
 
-Existing systems use time in different ways. Zep encodes temporal information in
-a temporal knowledge graph, making time part of the memory substrate
-\cite{rasmussen2025zep}. TReMu builds timeline summaries and combines them with
-neuro-symbolic reasoning for multi-session temporal questions
-\cite{ge2025tremu}. Memory-T1 uses temporal-aware training signals to improve
-multi-session temporal reasoning and evidence selection \cite{du2026memoryt1}.
-These approaches demonstrate that time cannot be reduced to semantic
-similarity. They also illustrate three design choices: time can be stored as
-metadata, summarized into a timeline, or used as a retrieval and selection
-signal.
+These systems show that agent memory is not simply a vector database attached
+to a chatbot. It is a long-lived subsystem with extraction, storage,
+management, and retrieval responsibilities. This thesis focuses on a narrower
+case within that space: conversational agent memory. Conversation history has a
+session structure, contains updates and corrections, and frequently includes
+relative time expressions. The time at which a user mentions an event can
+differ from the time at which the event happened. As a result, long-term
+conversational memory requires more than storing more history; it requires
+query-time interpretation of how past memories relate to the current question.
 
-NanoMem uses time as a query-time search state. The difference matters when
-session time and event time diverge. If a user says on April 2 that they
-travelled to Europe last week, the source session belongs to April 2, while the
-travel event belongs to the previous week. A future question may need either
-date depending on its phrasing. NanoMem therefore keeps both the source
-session-time and the inferred event-time in the evidence record. Once inferred,
-the event-time can become a retrieval cue for another round, for example when a
-question first requires identifying the week of a promotion and then searching
-for a book mentioned during that week.
+\section{RAG}
+\label{sec:rw-rag}
 
-\section{Evidence Synthesis, Faithfulness, and Source Grounding}
-\label{sec:rw-evidence-synthesis}
+Retrieval-Augmented Generation (RAG) is the standard paradigm for combining a
+language model with external information. Given a query, a retriever selects
+relevant documents or passages from an external corpus, and a generator uses
+the retrieved context to produce an answer. Classic work such as REALM, DPR,
+RAG, FiD, and Atlas established important variants of this retrieve-then-read
+pipeline, including learned retrieval, dense passage retrieval, sequence
+generation conditioned on retrieved documents, fusion over multiple passages,
+and retrieval-augmented few-shot learning \cite{guu2020realm,
+karpukhin2020dpr,lewis2020rag,izacard2021fid,izacard2023atlas}.
 
-Retrieval is not the same as evidence. Raw sessions are often long, noisy, and
-contain multiple unrelated events. Passing them directly to a downstream answer
-model makes the answer model perform denoising, temporal interpretation,
-evidence selection, and final reasoning at the same time. This can work when the
-full history fits in context and the relevant evidence is obvious, but it makes
-errors hard to diagnose. If the final answer is wrong, it is unclear whether the
-retriever missed the right session, the compression step hallucinated a fact, or
-the answer model ignored the evidence.
+Recent RAG research has moved beyond one-shot retrieval. Self-RAG trains a
+model to decide when to retrieve and critique its own generations, while
+SmartRAG jointly learns RAG-related behaviors from environmental feedback
+\cite{asai2024selfrag,gao2025smartrag}. Search-R1 and RAG-RL study
+reinforcement learning for search and retrieval behavior
+\cite{jin2025searchr1,huang2025ragrl}. Other work optimizes retrieval
+preferences, faithfulness, and structured search-agent behavior
+\cite{yan2025rpo,tang2025ssfo,ji2026treegrpo,zhu2025stratifiedgrpo}. These
+directions are important for NanoMem because they show that query-time
+retrieval can be adaptive rather than a fixed top-$k$ operation.
 
-Evidence synthesis addresses this boundary by converting retrieved text into
-compact, inspectable records. For NanoMem, a useful evidence record should state
-the supported event, identify the source session, preserve the session time,
-separate the event time, and make clear whether the evidence is sufficient for
-the downstream answer model. This differs from ordinary summarization because
-the goal is not a fluent standalone answer. The goal is a memory-side artifact
-that remains attributable and useful for subsequent retrieval.
+However, RAG and long-term conversational agent memory are not the same task.
+RAG is usually defined over an external corpus such as documents, webpages,
+papers, or search results. The corpus is often treated as already existing, and
+the main problem is to retrieve useful context for the current information
+need. Conversational agent memory is produced by the interaction between a user
+and an agent. It is personal, multi-session, updateable, and part of the agent's
+state. The goal is not only to answer a knowledge question, but to preserve
+continuity, personalization, and consistency across time.
 
-Faithfulness is especially important when the system compresses cross-session
-reasoning. A model may infer that two events are connected, but if that
-inference is written as if it were directly observed, downstream users and
-evaluators cannot tell what is supported by source text. NanoMem's structured
-events and sufficiency verdict are designed to make this boundary explicit. A
-partial event can be retained even when the verdict is insufficient, allowing
-the Planner to use the partial evidence as a bridge instead of forcing an
-answer prematurely.
+This distinction becomes sharper for temporal questions. A RAG document may
+have metadata timestamps, but standard RAG does not normally separate the time
+at which a memory was mentioned from the time at which the event described by
+that memory occurred. In long-term dialogue, that separation is often essential.
+If a user says in an April 2 session that they travelled to Europe last week,
+the session date and the travel date are different. A later question may depend
+on the travel week rather than the April 2 mention. Treating the history as an
+ordinary document corpus leaves this temporal relation implicit.
 
-\section{Reinforcement Learning for Memory and Retrieval Policies}
-\label{sec:rw-rl}
+NanoMem therefore uses RAG as a technical neighbor, not as the task definition.
+It inherits the query-time retrieval idea and is influenced by reflective RAG
+and search-agent RL. At the same time, it also has a write-side memory
+component: memories are lightly extracted, timestamped, temporally enhanced, and
+indexed without aggressively rewriting the original conversational structure.
+The central contribution is then placed on the search side. At query time,
+NanoMem synthesizes compact, source-grounded evidence with explicit temporal
+fields and a binary sufficiency verdict, rather than returning only raw
+retrieved passages or a final answer.
 
-Reinforcement learning has become relevant to memory and retrieval because many
-important decisions are not well captured by next-token likelihood. A memory
-system may need to learn when to write, update, retrieve, continue searching,
-stop, or compress. The reward can be attached to the final answer, to retrieved
-evidence, or to intermediate process decisions.
+\section{Temporal Reasoning in Agent Memory}
+\label{sec:rw-temporal-agent-memory}
 
-Write-side RL and policy-learning work trains memory operations before or while
-memories are constructed. Memory-R1 trains agents to manage and use memories
-through reinforcement learning, while MemReader and Mem-$\alpha$ study active or
-learned memory construction \cite{yan2025memoryr1,kang2026memreader,
-wang2025memalpha}. MMOA-RAG and EMG-RAG also connect retrieval-augmented
-generation with multi-objective or external-memory optimization
-\cite{chen2025mmoarag,wang2024emgrag}. These works show that memory operations
-can be optimized as policies, but their action spaces differ from NanoMem's
-query-time evidence construction.
+Temporal reasoning is a core difficulty in long-term agent memory. Dialogue
+contains absolute dates, relative expressions, event order, durations, plans,
+updates, and implicit dependencies across sessions. Users rarely formulate
+queries as exact session lookups. They ask about ``the week after my
+promotion'', ``the trip I mentioned last time'', or ``the meeting before I
+changed my plan''. Such questions require the system to identify a temporal
+anchor, normalize or infer the relevant time window, and often use that window
+to retrieve additional evidence.
 
-Search-side RL optimizes retrieval and reasoning after a query arrives.
-Search-R1, RAG-RL, RPO, SSFO, TreeGRPO, and Stratified GRPO train or optimize
-multi-step retrieval and search agents \cite{jin2025searchr1,huang2025ragrl,
-yan2025rpo,tang2025ssfo,ji2026treegrpo,zhu2025stratifiedgrpo}. These methods
-are relevant because NanoMem also depends on multi-step search. However, many
-search-agent rewards are dominated by final answer correctness or generic
-search success. For temporal-causal memory, an intermediate retrieval round can
-be useful even when it cannot yet answer the question: it may identify the
-temporal bridge needed for the next round.
+Benchmarks support this problem framing. TimeBench and Test of Time evaluate
+general temporal reasoning abilities and show that LLMs remain brittle when
+handling temporal relations and event ordering
+\cite{chu2024timebench,fatemi2025testoftime}. LoCoMo evaluates very long-term
+conversational memory and includes temporal and multi-hop question types
+\cite{maharana2024locomo}. LongMemEval benchmarks chat assistants on
+long-term interactive memory, including temporal reasoning, multi-session
+reasoning, knowledge updates, and abstention \cite{wu2024longmemeval}. These
+benchmarks make temporal reasoning a central capability for memory systems
+rather than an optional add-on.
 
-Memory-T1 is particularly close because it studies temporal reasoning in
-multi-session memory with reinforcement learning \cite{du2026memoryt1}. The key
-distinction is the trained object and output. Memory-T1 primarily improves
-session selection and answer behavior for temporal questions, while NanoMem
-trains the Synthesizer as an intermediate evidence construction policy. Its
-reward design supervises parseable format, compactness, downstream answer
-usefulness, and the verdict that decides whether to stop or continue retrieval.
+Existing memory systems incorporate time in several ways. Zep encodes temporal
+information into a temporal knowledge graph, making time part of the structured
+memory substrate \cite{rasmussen2025zep}. TReMu builds time-aware memory with
+timeline summaries and combines them with neuro-symbolic reasoning for
+multi-session temporal questions \cite{ge2025tremu}. Beyond Dialogue Time
+argues for temporal semantic memory that goes beyond the dialogue timestamp
+alone \cite{su2026beyonddialoguetime}. Memory-T1 uses reinforcement learning to
+improve temporal reasoning in multi-session agents, especially through
+temporally relevant session selection and reasoning \cite{du2026memoryt1}.
 
-\begin{table}[H]
-  \centering
-  \caption{Comparison of reinforcement-learning signals and trained objects.}
-  \label{tab:rw-rl}
-  \scriptsize
-  \begin{tabular}{p{0.19\textwidth}p{0.18\textwidth}p{0.22\textwidth}p{0.18\textwidth}p{0.13\textwidth}}
-    \hline\hline
-    Work family & Trained object & Action space & Main reward signal & Structured evidence output \\
-    \hline
-    Write-side memory RL & Memory manager or constructor & Add, update, extract, or organize memories & Memory usefulness or task success & Usually no \\
-    Search-side RAG RL & Search or retrieval agent & Query rewriting, retrieval, tool use, answer generation & Search success or final answer & Usually no \\
-    Temporal memory RL & Temporal selector or answerer & Select sessions and reason over them & Temporal answer quality or consistency & Limited \\
-    NanoMem & Synthesizer evidence policy & Reasoning, evidence events, sufficiency verdict & Format, compactness, answer usefulness, verdict correctness & Yes \\
-    \hline\hline
-  \end{tabular}
-\end{table}
+NanoMem is aligned with these works in treating time as essential, but it uses
+time differently. Rather than only storing time as metadata, summarizing it into
+a timeline, or using it as a selection signal, NanoMem treats time as part of
+the query-time search state. Each synthesized evidence event separates the
+source session time from the inferred event time. The inferred event time can
+then become a new retrieval cue for the next round. For example, a first round
+may find when a user was promoted; the resulting time window can then be used
+to search for what the user was reading during that week. This turns temporal
+grounding from a passive attribute into an active bridge for multi-hop memory
+search.
 
-\section{Benchmark Coverage}
-\label{sec:rw-benchmarks}
+\section{Reinforcement Learning for Agent Memory}
+\label{sec:rw-rl-agent-memory}
 
-The evaluation of long-term memory systems requires more than one benchmark
-because different datasets stress different capabilities. LoCoMo provides
-multi-session long histories and includes single-hop, multi-hop, temporal, and
-open-domain questions \cite{maharana2024locomo}. LongMemEval focuses on
-chat-assistant memory and includes practical cases such as single-session
-recall, multi-session reasoning, temporal reasoning, knowledge updates, and
-abstention \cite{wu2024longmemeval}. These benchmarks are necessary because
-they test whether a memory system remains useful in broad long-term
-conversational settings.
+Reinforcement learning is relevant to agent memory because many memory
+decisions are policy decisions rather than simple next-token prediction
+problems. A system may need to learn what to write, what to update, what to
+retrieve, whether current evidence is sufficient, whether another search round
+is needed, and how compact the intermediate evidence should be. These decisions
+are naturally evaluated by downstream usefulness, temporal grounding,
+faithfulness, and stop-or-continue behavior.
 
-Temporal reasoning benchmarks such as TimeBench and Test of Time isolate
-temporal robustness more directly \cite{chu2024timebench,fatemi2025testoftime}.
-They help explain why temporal normalization and event ordering are difficult,
-but they do not by themselves capture the full agent-memory setting with
-session sources, retrieved evidence, and query-time evidence construction.
+One line of work applies RL or learnable policies to write-side memory
+construction and management. Memory-R1 trains agents to manage and utilize
+memories through reinforcement learning, while MemReader and Mem-$\alpha$ study
+active or learnable memory construction during the ingestion stage
+\cite{yan2025memoryr1,kang2026memreader,wang2025memalpha}. These systems show
+that memory operations do not need to be purely hand-written heuristics. Their
+focus, however, is primarily on memory construction, extraction, or lifecycle
+management before or during storage.
 
-NanoMem also uses ChainMem as a diagnostic benchmark for indirectly addressable
-evidence. Its purpose is to test cases where the next useful retrieval cue must
-be inferred from previous evidence, such as finding a temporal bridge before
-retrieving the answer-bearing session. ChainMem therefore complements LoCoMo and
-LongMemEval rather than replacing them: public long-memory benchmarks test
-generality, while ChainMem stresses the evidence addressability gap.
+A second line trains search-side behavior for RAG and retrieval agents.
+Search-R1, RAG-RL, RPO, SSFO, TreeGRPO, and Stratified GRPO optimize retrieval,
+query rewriting, tool use, faithfulness, or multi-step search behavior
+\cite{jin2025searchr1,huang2025ragrl,yan2025rpo,tang2025ssfo,ji2026treegrpo,
+zhu2025stratifiedgrpo}. MMOA-RAG and EMG-RAG also connect retrieval-augmented
+generation with multi-agent RL or editable memory graphs
+\cite{chen2025mmoarag,wang2024emgrag}. These works are relevant because they
+demonstrate that search behavior can be trained, but their rewards are often
+attached to final answer quality, retrieval success, or generic faithfulness
+signals rather than to structured memory evidence.
 
-\begin{table}[H]
-  \centering
-  \caption{Benchmark coverage for capabilities relevant to NanoMem.}
-  \label{tab:rw-benchmarks}
-  \scriptsize
-  \begin{tabular}{p{0.16\textwidth}p{0.22\textwidth}p{0.13\textwidth}p{0.16\textwidth}p{0.17\textwidth}}
-    \hline\hline
-    Benchmark & Main setting & Multi-session & Temporal grounding & Hidden-dependency stress \\
-    \hline
-    LoCoMo & Long conversational memory & Yes & Partial & Partial \\
-    LongMemEval & Long-term chat-assistant memory & Yes & Partial & Partial \\
-    TimeBench / Test of Time & General temporal reasoning & Not necessarily & Central & Limited for agent memory \\
-    ChainMem & Diagnostic temporal-causal memory search & Yes & Central & Central \\
-    \hline\hline
-  \end{tabular}
-\end{table}
+Memory-T1 is closest to NanoMem in that it combines reinforcement learning with
+multi-session temporal memory \cite{du2026memoryt1}. The difference is the
+trained object and the intermediate output. Memory-T1 primarily improves
+temporal session selection and answer behavior. NanoMem trains the Synthesizer
+as an evidence construction policy. Its output is not merely an answer or a
+selected session, but a set of structured evidence events together with a
+binary verdict, \texttt{sufficient} or \texttt{insufficient}. This verdict is
+important because hidden-dependency temporal questions often require an
+intermediate bridge: the first evidence may be useful because it reveals the
+next retrieval cue, even though it is not yet enough to answer the user query.
 
-\section{Research Gap}
-\label{sec:rw-gap}
-
-The reviewed work shows that NanoMem builds on several mature directions rather
-than replacing them. Write-side memory systems help store, compress, link, and
-update long histories, but they must make many decisions before the future query
-is known. Search-side and reflective retrieval systems show that adaptive
-retrieval is useful, but their intermediate state is often raw text, reasoning
-traces, or answer-oriented context. Temporal memory systems make time explicit,
-but often treat it as metadata, a timeline, or a selection signal rather than as
-evidence state that can drive the next retrieval round. RL-based memory and RAG
-work demonstrates that memory and retrieval policies can be trained, but
-terminal answer rewards alone give weak supervision for whether the current
-evidence is sufficient.
-
-NanoMem therefore occupies a narrower research gap: query-time evidence
-synthesis for temporal-causal agent memory. It asks how a memory module can
-iteratively construct a Temporal Evidence Pool, preserve event time and session
-time separately, expose the source of each evidence item, and use a verdict to
-decide whether to continue searching. The following chapter develops this
-method in detail.
+This framing motivates the method in the next chapter. NanoMem uses
+reinforcement learning to optimize intermediate evidence synthesis, with
+signals for parseable format, compactness, downstream usefulness, temporal
+grounding, and sufficiency behavior. The resulting policy is trained to decide
+not only what evidence to state, but also whether the current evidence should
+stop the search or guide another retrieval round.
