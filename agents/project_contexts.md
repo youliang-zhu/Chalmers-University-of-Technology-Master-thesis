@@ -33,6 +33,29 @@ paper as the core technical contribution, then expand and reshape it into a
 master's thesis with more background, design rationale, implementation detail,
 experimental methodology, limitations, and appendix material.
 
+## Current Writer Source Override
+
+As of 2026-05-24, the Writer agent must not use old conference-paper prose as a
+writing source. This is a deliberate workflow change: some earlier paper text or
+draft notes may be stale or misleading for the thesis. Keep already produced and
+committed thesis content as-is unless a later review asks for a revision, but do
+not use the old source paper text to create new Writer output.
+
+For Writer invocations, the following are historical/archival only and are not
+authoritative writing sources:
+
+```text
+/mnt/models/yupan/llm/nanomem/paper/**
+/mnt/models/yupan/llm/nanomem/paper/agents/**
+/mnt/models/youliang/master_thesis/agents/resources/history_paper_commit.md
+```
+
+The Writer should instead use NanoMem code and experiment artifacts, accepted
+phase-1 plans, accepted thesis chapters already written in this repository, and
+direct Expert feedback. Expert-side evaluation may still consult its own rule
+and reference materials according to `agents/control/expert.md` and
+`agents/control/spec.md`.
+
 ## Research Topic
 
 The work is about long-term memory for LLM agents. The central idea is that an

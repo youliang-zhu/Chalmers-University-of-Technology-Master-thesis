@@ -243,10 +243,13 @@ Common to both:
 Writer per invocation (ordered):
 1. read writer.md, workflow.md, `agents/project_contexts.md`, both state files;
 2. if responding to a review, read the review file at reviewer_state.review_ref;
-3. read Writer content sources as needed: NanoMem NeurIPS paper at
-   `/mnt/models/yupan/llm/nanomem/paper`, code/experiments under
-   `/mnt/models/yupan/llm/nanomem`, `agents/resources/history_paper_commit.md`,
-   current `paper/**`;
+3. read Writer content sources as needed: code/experiments under
+   `/mnt/models/yupan/llm/nanomem`, accepted thesis plans/artifacts in the current repo, and
+   current `paper/**` for template/layout context. Writer must not read or rely on old
+   conference-paper prose, old paper-agent notes, or the historical paper-commit summary,
+   including `/mnt/models/yupan/llm/nanomem/paper/**`,
+   `/mnt/models/yupan/llm/nanomem/paper/agents/**`, and
+   `agents/resources/history_paper_commit.md`;
 4. perform the triggered row (W0..W5): produce/revise paper artifacts only for rows that
    require paper changes; use state-only updates for W1/W2/W3;
 5. commit paper product if the row changed paper files (capture hash);
