@@ -1,9 +1,9 @@
-round_id: 14
+round_id: 15
 phase: 2
-section: related_work
+section: methods
 section_round: 1
-status: ready_for_review
+status: drafting
 artifacts:
-  - paper/include/Theory.tex
+  - paper/include/Methods.tex
 commit_hash: "b014255cddc8e42187681667b0cf966c2c244ce9"
-updated_at: "2026-05-24T02:06:22Z"
+updated_at: "2026-05-24T02:08:55Z"
