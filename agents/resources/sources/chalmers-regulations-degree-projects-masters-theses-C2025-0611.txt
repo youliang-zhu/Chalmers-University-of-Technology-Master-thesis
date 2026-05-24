@@ -1,0 +1,2195 @@
+Decision by:
+Vice President for
+Education
+
+Type of policy document:
+Regulation
+
+Registration number:
+C 2025-0611
+
+Date of decision:
+See e-signature
+
+Administrator:
+Rickard Ambring
+
+Document applies
+from:
+1 September 2025
+
+Division/corresponding entity responsible for creation/revision of
+document:
+Student and Education Office, Education Management Support unit
+
+Document applies
+until:
+Until further notice
+
+The document replaces previous decision:
+C 2024-1325 Regulations for degree projects and Master’s theses at first
+and second cycle levels at Chalmers
+
+Regulations for degree projects and Master’s theses at first
+and second cycle levels at Chalmers
+Policy document at Chalmers tekniska högskola AB
+
+Contents
+1.
+
+Background ..................................................................................................................................... 3
+
+2.
+
+Degree project or Master’s thesis .................................................................................................. 4
+
+3.
+
+Scope of the degree project ........................................................................................................... 4
+
+4.
+
+Purpose and learning objectives .................................................................................................... 4
+
+5.
+
+Examiner and supervisor ................................................................................................................ 6
+
+6.
+
+Conditions for starting a degree project ........................................................................................ 6
+
+7.
+
+Implementation .............................................................................................................................. 6
+
+8
+
+7.1
+
+Initiation ................................................................................................................................ 7
+
+7.2
+
+Preparatory administration .................................................................................................. 7
+
+7.3
+
+Planning report ...................................................................................................................... 8
+
+7.4
+
+Supervision ............................................................................................................................ 8
+
+7.5
+
+Interim presentations ........................................................................................................... 9
+
+7.6
+
+Public access and confidentiality .......................................................................................... 9
+
+7.7
+
+Copyright................................................................................................................................ 9
+
+Examination .................................................................................................................................... 9
+8.1
+
+9
+
+Grades .................................................................................................................................... 9
+
+8.1.1
+
+Criteria for the grade Pass for degree projects comprising 30 higher education credits 10
+
+8.1.2
+
+Criteria for the grade Pass for degree projects comprising 60 higher education credits 10
+
+8.2
+
+Written Presentation .......................................................................................................... 10
+
+8.3
+
+Oral presentation ................................................................................................................ 11
+
+8.4
+
+Opposition ........................................................................................................................... 12
+
+8.5
+
+Attendance at other presentations .................................................................................... 12
+
+8.6
+
+AI tools ................................................................................................................................. 12
+
+Checklist for roles and responsibilities ........................................................................................ 12
+
+APPENDIX 1. Guiding principles for assessing the quality of Master’s theses on Chalmers’ MSc in
+Engineering, Master of Architecture and Master’s programmes ....................................................... 15
+APPENDIX 2. Guiding principles for assessing the quality of degree projects on Chalmers’ BSc in
+Engineering programmes ..................................................................................................................... 19
+APPENDIX 3. Guiding principles for assessing the quality of and grading degree projects on
+Chalmers’ International Logistics, Nautical Science and Marine Engineering programmes.............. 23
+APPENDIX 4. Guiding principles for assessing the quality of degree projects on Chalmers’ Business
+Development and Entrepreneurship programme ............................................................................... 38
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+2
+
+1. Background
+These regulations constitute a revision of the Regulations for Degree projects at Chalmers (reg. no.
+2024-1325), which are in turn an amalgamation of previous regulations for degree projects that
+replace:
+•
+•
+•
+
+Instructions for theses on the MSc in Engineering, Master of Architecture and Master’s
+programmes (reg. no. C 2016-0973)
+Regulations for degree projects for the Degree of BSc in Engineering at Chalmers University
+of Technology (reg. no. C 2019-1523)
+Regulations for independent projects (degree projects) on the Marine Engineering, Nautical
+Science, International Logistics and Shipping and Logistics programmes at Chalmers
+University of Technology (reg. no. C 2020-1531)
+
+In addition, the following guiding principles for assessing the quality of degree projects and Master’s
+theses are attached:
+•
+
+•
+•
+
+Appendix 1 Guiding principles for assessing the quality of Master’s theses on Chalmers’
+MSc in Engineering, Master of Architecture and Master’s programmes. Included as an
+appendix in Regulations for theses on the MSc in Engineering, Master of Architecture and
+Master’s programmes (reg. no. C 2016-0973)
+Appendix 2 Guiding principles for assessing the quality of degree projects on Chalmers’ BSc
+in Engineering programmes. (reg. no. C 2011-893)
+Appendix 3 Guiding principles for assessing quality and grading for independent projects
+(degree projects) on the Marine Engineering, Nautical Science, International Logistics and
+Shipping and Logistics programmes at Chalmers University of Technology. (reg. no. C 20201532)
+
+•
+
+Appendix 4 Guiding principles for assessing the quality of degree projects on Chalmers’
+Business Development and Entrepreneurship programme
+
+•
+
+Appendix 5 Simple risk assessment template
+
+Changes compared to the previous version are as follows:
+• Updating the name of the document to: Regulations for degree projects and Master’s theses
+at first and second cycle levels at Chalmers
+• Adaptations to the course syllabuses of the degree projects and Master’s theses. For specific
+course objectives, refer to the course syllabuses. Adjustments to the requirements for
+passing.
+• Supplementation with special regulations for Master’s theses in Architecture.
+• The regulation has been supplemented by the degree project for Business Development and
+Entrepreneurship (TAFFS).
+• The regulation has been supplemented with the purpose and learning objectives of the
+Master’s programme in Learning and Leadership (MPLOL).
+• The instructions for the planning report (7.3) have been supplemented with a requirement
+for a risk assessment, which must be attached to the report.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+3
+
+2. Degree project or Master’s thesis
+Chalmers’ term for an independent project conducted within the framework of Master of
+Engineering, Architecture, or Master’s programmes is Master’s thesis.
+Chalmers’ term for an independent project conducted within the framework of BSc in Engineering
+programmes is Degree project.
+Chalmers’ term for an independent project conducted within the framework of Marine Engineering
+and Nautical Science programmes is Degree project. On the International Logistics and Business
+Development and Entrepreneurship programmes, the term is Degree project.
+In order to simplify the writing in this document, both Master’s thesis and degree project are referred
+to as degree project where reference is made to all types of independent project. If reference is
+made to just one of the types, it is specified.
+
+3. Scope of the degree project
+As an independent higher education provider, a foundation university, Chalmers must apply the
+Higher Education Ordinance (1993:100)’s Annex 2, System of Qualifications. According to this, the
+following applies to degree projects:
+•
+•
+
+•
+•
+•
+•
+
+For the Master of Architecture/MSc in Engineering degrees, the student must have
+completed an independent project (Master’s thesis) of at least 30 higher education credits.
+For a Master’s degree, the student must have completed an independent project (Master’s
+thesis) of at least 30 higher education credits within the main field of study, as part of the
+course requirements. The independent project may be less than 30 higher education credits
+but must be at least 15 credits if the student has already completed an independent project
+of at least 15 higher education credits at third cycle level within the main field of study or
+equivalent abroad.
+For the BSc in Engineering, the student must have completed an independent project (degree
+project) of at least 15 higher education credits as part of the course requirements.
+For the BSc in Marine Engineering, the student must have completed an independent project
+(degree project) of at least 15 higher education credits as part of the course requirements.
+For the BSc in Nautical Science, the student must have completed an independent project
+(degree project) of at least 15 higher education credits as part of the course requirements.
+For the Bachelor’s degree, the student must have completed an independent project (degree
+project) of at least 15 higher education credits within the main field of study as part of the
+course requirements.
+
+For the MSc in Engineering, Master of Architecture, and Master’s programmes at Chalmers, the
+Master’s thesis is a course of either 30 or 60 higher education credits.
+
+4. Purpose and learning objectives
+The aim of a degree project is for students to develop in-depth knowledge, understanding, skills, and
+attitudes within the context of the education. A degree project should be carried out at the end of
+the education and involve a deepening and synthesis of previously acquired knowledge.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+4
+
+Master’s thesis on the MSc in Engineering, Master of Architecture and Master’s programmes
+In the Master’s thesis on an MSc in Engineering, Master of Architecture or Master of Science
+programme, the emphasis is on technical/scientific/artistic content. The overall objective of the
+Master’s thesis is for the student to demonstrate the knowledge and skills required to work
+independently as an engineer/architect/Master of Science.
+The learning objectives for Master’s theses are based on the objectives for the MSc in Engineering,
+Master of Architecture and Master’s degrees in the national system of qualifications and the local
+system of qualifications for first and second cycle levels applicable at Chalmers during the
+implementation of the thesis work. The specific learning objectives for a Master’s thesis are set out in
+the course syllabus for the thesis in question.
+The Master’s thesis for the Master’s programme in Learning and Leadership must also meet the
+requirements for a Master of Science in Secondary Education. Consequently, the thesis is expected to
+have both relevance to the engineering profession and a clear learning dimension. The specific
+learning objectives for a Master’s thesis in Learning and Leadership are set out in the course syllabus
+for the thesis in question.
+Degree projects on BSc in Engineering programmes
+A degree project on a BSc in Engineering programme should reflect the nature of the education and
+demonstrate the student’s ability to solve technical engineering problems.
+The overall objective of the degree project is for the student to demonstrate the knowledge and skills
+required to work independently as a graduate with a BSc in Engineering.
+The learning objectives for degree projects are based on the objectives for the BSc in Engineering
+degree in the national system of qualifications and the local system of qualifications for first and
+second cycle levels applicable in each case at Chalmers. The specific learning objectives for a degree
+project are set out in the course syllabus for the project in question.
+Degree project for Business Development and Entrepreneurship
+A degree project should reflect the nature of the education and demonstrate the student’s ability to
+solve technical problems related to their profession.
+The overall objective of the degree project is for the student to demonstrate that they have the
+knowledge and ability required to work independently in their professional area.
+The learning objectives for degree projects are based on the objectives for the Bachelor’s degree in
+the national system of qualifications and the local system of qualifications for first and second cycle
+levels applicable at Chalmers during the implementation of the thesis work. The specific learning
+objectives for a degree project are set out in the course syllabus for the project in question.
+Degree projects in the International Logistics, Marine Engineering and Nautical Science
+programmes
+The student should demonstrate the ability to critically and independently utilise, systematise and
+reflect on experiences and relevant research findings, thereby contributing to the development of
+professional practice and knowledge development within the profession, and reflect the nature of
+the education and demonstrate the ability to solve problems related to the profession.
+The overall objective of the degree project is for the student to demonstrate that they have the
+knowledge and ability required to work independently in their professional area.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+5
+
+The learning objectives for the degree project are based on the objectives for the BSc in Nautical
+Science, BSc in Marine Engineering and Bachelor’s degrees in the national system of qualifications
+and the local system of qualifications for first and second cycle levels applicable at Chalmers during
+the implementation of the thesis work. The specific learning objectives for a degree project are set
+out in the course syllabus for the project in question.
+
+5. Examiner and supervisor
+An examiner must be appointed for each degree project. The examiner is scientifically and
+qualitatively responsible for the degree project and for ensuring that the learning objectives are met.
+The examiner decides when the project can be approved and decides on the grade for the degree
+project.
+The Appointment regulation for teaching and research faculty at Chalmers during the
+implementation of the thesis work sets out who may be appointed as an examiner. Each department
+is responsible for ensuring that an examiner is appointed.
+An examiner may appoint one or more supervisors. The supervisor provides
+scientific/technical/artistic support and assists the student(s) with the practical processes.
+For the International Logistics, Nautical Science and Marine Engineering programmes, students
+choose supervisors within their chosen educational area, after which the department appoints an
+examiner for each group.
+If the degree project is carried out in an external organisation, students typically also have a
+supervisor in the organisation in which the degree project is carried out. This supervisor is referred to
+as an external supervisor.
+
+6. Conditions for starting a degree project
+To start a degree project, the following higher education credit requirements must be met in each
+programme:
+•
+•
+•
+•
+•
+
+MSc in Engineering/Master of Architecture - at least 225 higher education credits.
+Students admitted only to a Master’s programme - at least 45 higher education credits.
+BSc in Engineering programme - at least 120 higher education credits.
+Degree project for Business Development and Entrepreneurship - at least 120 higher
+education credits.
+International Logistics, Nautical Science and Marine Engineering programmes - at least 120
+higher education credits. Higher education credits from ship-based education are not
+included. In the case of alternated theory and practice in the Nautical Science and Marine
+Engineering programmes, at least 180 days and 150 days of ship-based education,
+respectively, are required (half of the total practical time).
+
+In addition to meeting the general requirements, the necessary prerequisite courses for the specific
+degree project must have been completed. The examiner formulates and verifies such prerequisites.
+
+7. Implementation
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+6
+
+A degree project is carried out by one student or two students together.
+
+7.1 Initiation
+A degree project is usually initiated in one of the following ways:
+• The student contacts a company or a department with a proposal for a degree project. At the
+same time, the student contacts an examiner in the appropriate subject area at Chalmers or
+the person responsible for degree projects at the department.
+• A proposal from a company or department on the thesis portal (annonsportal.chalmers.se).
+
+7.2
+
+Preparatory administration
+
+The student must write a brief description of the intended degree project. The description must
+provide sufficient information for the examiner to decide whether the task is suitable for a degree
+project. The description must include the background, purpose, objectives and possibly methods. The
+description may, if relevant, also be written in consultation with the external company/organisation
+where the degree project is to be carried out. It is possible to attach this description in the online
+form below. Otherwise it must be emailed directly to the examiner.
+For Master’s theses in Architecture, the student must have an approved project plan in accordance
+with the instructions in the course syllabus for Master’s theses before the thesis may be started. The
+project plan must be submitted in the online ‘Thesis application form’ according to the timetable
+indicated.
+In some cases, the ‘Thesis application exemption form’ must be used. This exemption form can be
+accessed via chalmers.se. This should only be used:
+• If the main field of study of the course does not correspond to the main field of study of the
+programme (applies only to degree projects of 30 or 60 higher education credits)
+• If the student wants to register for an older programme that is no longer offered.
+The form for the degree project (online/exemption form) must first be digitally signed by the
+examiner, who thereby assesses and approves that the implementation of the proposed degree
+project leads to the student(s) developing the knowledge, abilities and attitudes that are part of the
+degree project’s learning objectives.
+After the examiner has signed one of the two forms, the Head of Programme/Director of Master’s
+Programme must make an assessment.
+For students on a Master’s programme, the Director of Master’s Programme (MPA) must assess and
+approve that the proposal falls within the main field of study of the Master’s programme. The MPA
+may decide that a specific thesis belongs to the main field of study of the Master’s programme, even
+if the department at which the thesis is to be carried out does not belong to the main field of study
+according to decision C2008/280.
+If the student(s) is (are) admitted to the programmes in Engineering/Architecture, the MPA must also
+assess and approve that the thesis is relevant in terms of the technical area/artistic area. The MPA
+then signs the form (online/exemption form).
+For students on the BSc in Engineering, Marine Engineering, Nautical Science and Bachelor’s
+programmes, the Head of Programme (PA) checks that the project falls within the technical
+area/main field of study of the programme. The examiner assesses and approves that the
+implementation of the proposed degree project leads to the student(s) developing the knowledge,
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+7
+
+abilities and attitudes that are part of the degree project’s learning objectives and that the project is
+assessed as corresponding to 15 higher education credits. The PA then signs the form
+(online/exemption form).
+Information from the online form will be transferred to Ladok after the form has been signed, first by
+the examiner and then by the PA/MPA. The student can then register.
+(If individual dates are selected or if something else is wrong, a copy of the online form will
+automatically be sent to thesis@chalmers.se , and Thesis Admin. will handle the case and process it
+according to standard procedures).
+The exemption form must, after it has been signed, first by the examiner and then by the PA/MPA,
+be sent to: thesis@chalmers.se, which will transfer the information to Ladok. The student can then
+register.
+Work card
+The student(s) fill in a digital work card (pdf) that is downloaded from Chalmers.se. After each
+completed mandatory part, the student(s) ensures(ensure) that this is signed on the work card.
+Digital work cards are not used at some departments. Information about what applies to degree
+projects on these programmes can be found in Canvas.
+
+7.3
+
+Planning report
+
+The student(s) must write a planning report that specifies the problem description/task. The planning
+report must include the background, preliminary purpose, objectives, limitations and method, and a
+timetable for the degree project’s implementation. In the planning report, the student(s) must
+highlight the societal, ethical and ecological aspects that need to be considered according to the
+learning objectives. If such aspects are not considered, reasons for not doing so must be given. All
+degree projects must also be risk assessed using the ‘Simple risk assessment template’. A students
+carry out the risk assessment with the examiner and any external supervisor. The risk assessment
+must be attached to the planning report and approved by the examiner. More information about the
+examiner’s health and safety responsibilities can be found on the intranet and the page ‘Teacher’s
+health and safety tasks’.
+For a degree project comprising 60 higher education credits, an interim objective for 30 higher
+education credits must be specified.
+The planning report must be approved on the work card by the examiner.
+For Master’s theses in Architecture, the planning report is replaced by the more detailed project
+plan, which must be approved before the Master’s thesis may be started.
+
+7.4
+
+Supervision
+
+During the project, the student(s) are entitled to regular supervision and other resources needed for
+the project’s implementation.
+Supervision is provided by Chalmers’ supervisors and possibly external supervisors. An external
+supervisor continuously supports students during the project’s implementation and assists them with
+practical processes at the external organisation.
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+8
+
+7.5
+
+Interim presentations
+
+For Master’s theses in Architecture, a presentation is made at a midterm seminar.
+Students who carry out degree projects of 60 higher education credits must report on the status of
+the project to the examiner after twenty working weeks. Half of the work required to achieve the
+learning objectives for a degree project of 60 higher education credits should then have been
+completed. An approved interim presentation means that 30 higher education credits are reported in
+Ladok.
+For degree projects in the International Logistics, Marine Engineering and Nautical science
+programmes, a midterm seminar is held in the middle of the course. The purpose of the midterm
+seminar is to clarify progress and receive feedback from the examiner.
+
+7.6
+
+Public access and confidentiality
+
+In accordance with Chalmers’ Appointment regulation for first cycle and second cycle education
+(undergraduate and Master’s education), a degree project must be presented openly both in writing
+and orally. The entire essay must be public. The rule on public access also applies to essays that are
+not published in full (see also section 8.3 on e-publication).
+In other respects, Chalmers’ policies on public access and confidentiality apply to the implementation
+of a degree project and publication of the essay.
+
+7.7 Copyright
+Legislation on copyright has its origins in the Swedish Act on Copyright in Literary and Artistic Works
+(1960:729), normally referred to as the Copyright Act. Copyright consists of an economic right and a
+moral right that both accrue to the author. The author is the natural person who created the work,
+i.e. the student(s).
+The author may choose to enter into an agreement to transfer the economic rights to others, either
+as a whole or in part, or give others the right to use them. Transfer means that the author waives
+their rights and hands over ownership of the economic rights on agreed terms.
+The moral right comprises the author’s right to be named as the author of a work and the right not to
+have to accept changes being made to their work or the work being published in contexts that may
+be prejudicial to their artistic or literary reputation or unique character.
+
+8 Examination
+8.1
+
+Grades
+
+For Master’s theses on the MSc in Engineering, Master of Architecture and Master’s programmes,
+and degree projects in Business Development and Entrepreneurship and on the BSc in Engineering
+programme, grades are awarded on the UG scale with grades U (Fail) and G (Pass).
+For degree projects on the International Logistics, Nautical Science and Marine Engineering
+programmes, grades are awarded on the TH scale, with grades U (Fail), 3 (Pass), 4 (Pass with
+Distinction) and 5 (Pass with Great Distinction).
+To pass, the following is required:
+•
+Approved planning report
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+9
+
+•
+Approved presentation and defence on the degree project presentation
+•
+Approved opposition of another degree project
+•
+Attendance at two other presentations
+•
+Approved report under prevailing standards for scientific and technical reporting
+For degree projects on the International Logistics, Nautical Science and Marine Engineering
+programmes, the following are also required:
+• Approved midterm seminar
+• Approved sections on information and communication skills
+For degree projects on BSc in Engineering programmes and Business Development and
+Entrepreneurship, the following is also required:
+• Approved sections on information and communication skills
+For Master’s theses in Architecture, the following are required:
+• Approved project plan
+• Approved Master’s thesis
+• Presentation of the Master’s thesis at the midterm seminar
+• Approved presentation and defence of the Master’s thesis at the final seminar
+• Approved opposition of another Master’s thesis at the midterm seminar and attendance at
+at least four additional presentations
+• Presentation of the Master’s thesis at the exhibition of Master’s theses
+• Submission of a report, digitally and in two printed copies
+8.1.1
+
+Criteria for the grade Pass for degree projects comprising
+30 higher education credits
+
+For degree projects comprising 30 higher education credits, a Pass grade requires that they at least
+meet the criteria for High Quality in respect of all learning objectives. To meet the criteria for High
+Quality in respect of learning objective 5 (see appendix with assessment criteria), the student must
+have passed all components listed above within a total time frame of 30 working weeks. The
+examiner may, for special reasons, extend this time limit by 10 working weeks at a time.
+8.1.2 Criteria for the grade Pass for degree projects comprising 60
+
+higher education credits
+
+For degree projects comprising 60 higher education credits, a Pass grade requires that they meet the
+criteria for Very High Quality in respect of learning objectives 1 and 2, and at least High Quality for
+the other learning objectives (3-11). See appendix with assessment criteria. To meet the criteria for
+High Quality in respect of learning objective 5, the student must have passed all components listed
+above within a total time frame of 50 working weeks. The examiner may, for special reasons, extend
+this time limit by 10 working weeks at a time.
+
+8.2
+
+Written Presentation
+
+The essay for a Master’s thesis on the MSc in Engineering, Master of Architecture and Master’s
+programmes must be written in English. Exceptions may only be made for Master’s programmes
+taught in Swedish.
+The essay for a degree project on the BSc in Engineering programme and the Business Development
+and Entrepreneurship programme must normally be written in Swedish.
+In exceptional cases, it may be written in English.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+10
+
+For the International Logistics, Marine Engineering and Nautical Science programmes, the essay may
+be written in Swedish or English.
+Essays must be formatted according to the template for formatting degree projects, which can be
+accessed at Chalmers.se. For Master’s theses in Architecture, a different template is used according
+to specific instructions. When two students carry out a project together, the division of labour must
+be clearly outlined in a contribution report which is attached separately.
+The essay must provide sufficient basis for the examiner to decide on a grade.
+The examiner checks the essay against a plagiarism tool.
+
+E-publication
+Chalmers degree projects must be registered and published electronically in Chalmers’ e-publication
+system. They are then searchable in the Student Theses service and freely available and searchable
+online. A student may decline electronic publishing, but the registration (i.e. a searchable record
+without full text) is mandatory. For electronic publication of the full text, all authors must have
+signed and approved the publication agreement on the work card.
+Student theses and projects are registered and published electronically by the respective
+departments, and the examiner is responsible for ensuring that this is done.
+
+8.3
+
+Oral presentation
+
+At the time of the oral presentation, the essay must have been completed but not yet published. This
+makes it possible for feedback received during the presentation to be incorporated in the essay.
+The oral presentation, including opposition, must take place at Chalmers. Additional presentations
+may be held at the company, if required.
+In exceptional cases, for example if the degree project was carried out abroad, the examiner may
+allow the presentation and opposition not to be held on site at Chalmers. In these cases, the
+presentation must be streamed digitally and be open to the public.
+The presentation of the degree project should be advertised at the relevant department at least two
+weeks before the presentation date. The presentation should normally take place in the period from
+15 August to 15 June and during normal working hours.
+The oral presentation begins with the student(s) presenting their project. This is followed by
+opposition and discussion.
+The presentation should take 45-60 minutes, with about one-third of the time devoted to opposition
+and discussion.
+For Master’s theses on the MSc in Engineering, Master of Architecture, and Master’s programmes,
+the oral presentation must be in English. Exceptions may be granted for programmes taught in
+Swedish.
+For degree projects in Marine Engineering, Nautical science, Bachelor’s and BSc in Engineering
+programmes, the presentation should be in Swedish.
+For Master’s theses in Architecture, the thesis is assessed at the final seminar by a jury consisting of
+one external and one internal critic.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+11
+
+8.4
+
+Opposition
+
+A student must have participated as an opponent for another degree project. The department
+decides how the opposition is organised. A maximum of two students may act as opponents for the
+same degree project. Opponents have 10 minutes at their disposal, and all this time should be
+utilised. After the opponents have presented their comments, others present may ask questions.
+Opponents must review the essay. Linguistic errors and minor remarks must be noted in writing and
+submitted after the opposition.
+The opponents’ efforts are assessed by the examiner for the project presented, and approved
+opposition is signed for on the work card.
+The student(s) appoints(appoint) an opponent(opponents) for their own project.
+For Master’s theses in Architecture, other students’ theses are opposed in connection with the
+midterm seminar.
+On the International Logistics, Nautical Science and Marine Engineering programmes, opponents
+are appointed by the examiner.
+
+8.5
+
+Attendance at other presentations
+
+A student must attend two other degree project presentations. The examiner for the degree project
+presented signs for approved attendance on the work card.
+For Master’s theses in Architecture, other requirements apply. See 8.1.
+
+8.6
+
+AI tools
+
+The student(s) is(are) responsible for ensuring that the essay follows Chalmers’ guiding principles and
+rules regarding academic honesty and the use of AI tools. See Chalmers’ education pages. The
+examiner is responsible for having the essay/report checked in a plagiarism tool. An essay/report
+that contains plagiarism will not be awarded a pass. If an essay does not follow Chalmers’ guiding
+principles and rules regarding academic honesty and the use of AI tools, it may lead to disciplinary
+measures according to Chalmers’ Rules of Discipline.
+
+9
+
+Checklist for roles and responsibilities
+
+The following section describes the responsibilities associated with different roles during the degree
+project. In addition, there may be local variations in work procedures and actual implementation at
+the department.
+
+9.1
+
+Examiner
+
+It is the examiner’s responsibility to:
+• Assess and approve the scientific and qualitative level of the degree project and to ensure
+that the implementation of the degree project leads to the student(s) developing the
+knowledge, skills and attitudes included in the degree project’s learning objectives.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+12
+
+• Inform themselves about Guiding principles for Chalmers’ collaboration with trade and
+industry. (C 2007/884) when collaborating with companies.
+• Possibly appoint supervisors and provide necessary guidance for supervision, both for the
+internal supervisor at Chalmers and external supervisors.
+• Ensure that the degree project can be carried out using the given resources.
+• Verify that the student(s) meets(meet) the prerequisites and credit requirements.
+• Approve the thesis application form or the thesis application exemption form.
+• Approve the planning report. For Architecture: Approve the project plan.
+• Inform the student(s) of Chalmers’ policies for public access and confidentiality.
+• Ensure that the student(s) are offered regular supervision.
+• Approve the interim presentation after 20 working weeks (equivalent to 30 higher education
+credits) for degree projects comprising 60 higher education credits, and ensure that the
+approved presentation is reported in Ladok.
+• Check the essay with a plagiarism tool and take action if there is suspicion of plagiarism.
+• Review the degree project and decide when the project can be presented.
+• Ensure that the project is presented orally according to the applicable rules.
+• Chair the presentation.
+• Approve opposition to the degree project.
+• Approve attendance at the presentation session.
+• Sign all approved subtasks and approve the degree project when all subtasks have been
+approved.
+• Ensure that the essay is registered and published electronically in Chalmers’ e-publication
+system and as full text if the student has approved this.
+• Ensure that the degree project is registered and archived.
+
+9.2
+
+Director of Master’s Programme (MPA)/Head of Programme (PA)
+
+The MPA is responsible for:
+• Checking that the degree project falls within the main field of study of the Master’s
+programme.
+• Checking and approving that the Master’s thesis belongs to the relevant technical area
+(equivalent) if the student intends to take the MSc in Engineering/Master of Architecture
+degree. The MPA may decide that a specific Master’s thesis belongs to the main field of study
+of the Master’s programme, even if the department at which the thesis is to be carried out
+does not belong to the main field of study according to decision C2008/280.
+• Signing the thesis application form or the thesis application exemption form.
+For BSc in Engineering, Bachelor’s and Marine/Nautical programmes, the PA is responsible for:
+• Checking and approving that the degree project belongs to the relevant main field of
+study/technical area.
+• Signing the thesis application form or the thesis application exemption form.
+
+9.3
+
+Supervisor
+
+The supervisor is responsible for:
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+13
+
+• Providing ongoing scientific/technical/artistic support to the student(s) during the degree
+project and assisting them with practical processes.
+For BSc in Engineering and Marine/Nautical programmes, the supervisor is also responsible for:
+• Supervising the planning report for the degree project.
+• Supporting the student(s) in completing the essay.
+• Reviewing the degree project and assessing whether the essay is of sufficient quality for
+submission to the examiner.
+
+9.4
+
+Student
+
+The student(s) is(are) responsible for:
+• Finding a suitable issue for a degree project at a company or department.
+• Describing the proposal for the degree project independently and in writing.
+• Contacting the relevant department and examiner for the subject.
+• Filling in the thesis application form or the thesis application exemption form.
+• Ensuring that the work card is signed (does not apply to Marine/Nautical programmes).
+• Planning, carrying out and presenting the project independently according to the
+requirements described above.
+• Reading Chalmers’ policies for public access and confidentiality before starting the project.
+• Reading Chalmers’ information on degree project essays and formatting the essay in
+accordance with Chalmers’ rules for ‘Formatting degree projects’ and for publication in
+Chalmers’ e-publication system.
+• Contacting the examiner before any agreement on the degree project.
+• Contacting and appointing opponent(s) for the presentation of their own work.
+• Delivering the project for publication in Chalmers Open Digital Repository.
+• When attending the presentation of another degree project, ensuring that the examiner in
+question knows that they were present.
+
+9.5 Student and Education Office
+The Student and Education Office is responsible for the degree project being established in
+Ladok.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+14
+
+APPENDIX 1. Guiding principles for assessing the quality of Master’s theses
+on Chalmers’ MSc in Engineering, Master of Architecture and
+Master’s programmes
+This appendix includes the guiding principles in the document ‘Guiding principles for assessing the
+quality of Master’s theses on Chalmers’ MSc in Engineering, Master of Architecture and Master’s
+programmes’, reg. no. C2011/895.
+The guiding principles are based on the learning objectives for the MSc in Engineering, Master of
+Architecture and Master of Science degrees, which are in Chalmers’ local system of qualifications.
+Ratings are given on a three-point scale: Poor Quality (BK), High Quality (HK), and Very High Quality
+(MHK).
+Criteria for Very High Quality (MHK) are formulated only for specific learning objectives, those that
+are judged to be of a distinctive nature: significant specialisation in the main field of study,
+specialised method knowledge, problem formulation, ability to create and evaluate new solutions,
+written presentation and independence.
+
+Learning objectives with guiding principles for quality criteria
+The criteria for Poor Quality (BK), High Quality (HK), and Very High Quality (MHK) are presented
+below for each learning objective for Master’s theses.
+
+1. Apply significantly specialised knowledge in the main field of study/specialisation of the
+programme in your project and relate it to current research and development work in a
+scientifically correct manner
+MHK
+
+Significant specialisation in the main field of study is demonstrated. The thesis
+utilises knowledge from advanced-level studies in the main field of study. An
+extensive review of existing literature, along with reflection on the thesis’
+connection to the forefront of knowledge in the main field of study, is present. The
+thesis contributes to new knowledge in the main field of study in a clearly presented
+manner. The thesis demonstrates the ability to make an independent contribution
+to the field.
+
+HK
+
+Significant specialisation in the main field of study is demonstrated. The thesis
+utilises knowledge from advanced-level studies in the main field of study. A written
+review of existing literature, along with reflection on the thesis’ connection to the
+forefront of knowledge in the main field of study, is present.
+
+BK
+
+The thesis’ connection to the main field of study is weak and absent. Advanced-level
+knowledge is not utilised. A literature review and reflection on the thesis’
+connection to the relevant knowledge area are absent.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+15
+
+2. Choose (and justify the choice) the method in the project, in the main field of
+study/specialisation of the programme
+MHK
+
+HK
+
+BK
+
+Potentially relevant engineering or scientific theories and methods have been
+identified. A well-justified choice of theory and method has been made. The
+theories and methods chosen have been applied correctly and innovatively. The
+thesis demonstrates deep, broad understanding of methodology.
+Potentially relevant engineering or scientific theories and methods have been
+identified. A well-justified choice of theory and method has been made. The
+methods chosen have been correctly applied.
+The theories and methods chosen for the thesis lack relevance. The student has not
+shown mastery of the theories and methods chosen.
+
+3. Contribute to research and development work, and be able to relate your work to relevant
+scientific and technical/industrial/architectural contexts
+HK
+BK
+
+The contribution to research and development work is clearly presented
+The nature of the thesis is such that it is difficult to link it to research and
+development work
+
+4. Identify, formulate and handle complex questions with a holistic view, critically,
+independently and creatively
+MHK
+
+The thesis has a clear, distinct question or set of objectives. The question/objectives
+have been processed in an adequate, critical and reflective way. There is a clear link
+between the question/objectives, results, discussion and conclusions. The thesis’
+conclusions are well substantiated and correct.
+
+HK
+
+The thesis has a clear, distinct question. The question has been adequately
+processed. There is a clear connection between the research question, results and
+conclusions. The thesis’ conclusions are well substantiated and correct.
+
+BK
+
+The thesis lacks or has an unclear question or set of objectives. Irrelevant
+methodology has been employed. The project does not provide an answer to the
+question or a result that relates to the objective. The conclusions are incorrect.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+16
+
+5. Plan and, using adequate methods, carry out advanced tasks within given frameworks, and
+be able to evaluate this work
+HK
+
+A realistic plan has been drawn up for the thesis. The deadlines that were
+communicated and established have been adhered to during the implementation of
+the thesis. Any adjustments that have been necessary for the implementation have
+been documented and communicated.
+
+BK
+
+The thesis has not adhered to the deadlines communicated and established, nor has
+documentation of relevant factors for deviations been presented.
+
+6. Create, analyse and critically evaluate different technical/architectural solutions
+MHK
+
+New solutions are developed in the thesis that are analysed and evaluated in a
+critical way. Alternative solutions have been developed and processed in a relevant,
+exhaustive manner.
+
+HK
+
+Solutions are developed in the thesis that are analysed and evaluated in a critical
+way.
+
+BK
+
+The work has not presented the above in a clear way.
+
+7. Integrate knowledge critically and systematically
+MHK
+
+The thesis integrates knowledge and methods from several subjects in an innovative
+way.
+
+HK
+
+Relevant knowledge and methods have been acquired and applied.
+
+BK
+
+Areas of relevance to the thesis are not addressed or used. Knowledge that has been
+chosen and acquired is not presented clearly and lacks justification.
+
+8. Present and discuss conclusions, and the knowledge and definitions on which they are
+based, clearly in oral and written English
+MHK
+
+A very well-written essay. The overall coherence, structure, and layout are of very
+high quality.
+
+HK
+
+The thesis addresses the chosen area with relevant, accurate use of language. The
+overall coherence, structure and layout are of good quality.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+17
+
+BK
+
+The thesis primarily lacks adequate use of language, making it difficult to understand
+or assess the thesis based on the report.
+
+9. Within the scope of the specific project, identify the questions that need to be answered to
+consider relevant societal, ethical and ecological aspects
+HK
+
+Presents and justifies chosen methods and discusses results from a perspective with
+a focus on sustainable development.
+
+BK
+
+Does not consider this aspect. There is no justification provided in the planning
+report.
+
+10. Consider and discuss ethical aspects of research and development work, in terms of both
+how the work is carried out and what is investigated/developed.
+HK
+
+Presents possible ethical consequences of the work performed.
+
+BK
+
+Does not consider this aspect. There is no justification provided in the planning
+report.
+
+11. Identify and discuss the need for further clarification of various aspects of the project
+before decisions are made or implementation, where relevant.
+HK
+
+The student has reflected on and presented the other aspects that need to be
+clarified/investigated before decisions are made or implementation.
+
+BK
+
+The student has not critically considered which other aspects need to be
+clarified/investigated before decisions are made or implementation.
+
+Overall objectives
+On completion of the Master’s thesis, the student should have demonstrated the knowledge and
+skills required to work independently as an engineer/architect/Master of science
+MHK
+HK
+BK
+
+A Master’s thesis implemented independently and without extraordinary support
+or adjustments, or any other significant extra resources for its implementation.
+Carried out the thesis with reasonable support.
+There has been a great need for support. This support has been too extensive to
+make it likely that the student will be able to work independently after graduation.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+18
+
+APPENDIX 2. Guiding principles for assessing the quality of degree projects
+on Chalmers’ BSc in Engineering programmes
+The guiding principles are specifically intended to be a guide in cases in which the quality of the
+degree project is low, and there is reason to consider whether it can be passed. The guiding
+principles may also be a support when giving feedback to the student on their performance.
+The guiding principles are based on the learning objectives for degree projects in BSc in Engineering
+programmes.
+Criteria for poor quality/high quality are formulated for all learning objectives. Criteria for Very High
+Quality (MHK) are formulated only for specific learning objectives, those that are judged to be of a
+distinctive nature: specialisation in the technical area, problem formulation, ability to create and
+evaluate new solutions, integration of knowledge, written presentation and independence.
+Poor quality in terms of a learning objective or several learning objectives in combination may result
+in a fail grade for the entire project. It is the examiner’s responsibility to make a balanced
+assessment.
+Criteria for Poor Quality (BK), High Quality (HK) and Very High Quality (MHK) for each of the learning
+objectives for the degree project are shown below.
+1. Ability to acquire and apply specialised knowledge in the technical area of the study
+programme, including specialised insight into current development work:
+MHK
+
+Specialised knowledge in the technical area is demonstrated. The project
+contributes, in a clearly presented way, to new knowledge or new application in the
+technical area. The project demonstrates the ability to work independently in the
+area.
+
+HK
+
+Specialised knowledge in the technical area is demonstrated. The project shows the
+ability to work independently in the area.
+
+BK
+
+The project does not utilise specialised knowledge in the technical area. The
+project’s connection to the technical area is weak or absent.
+
+2. The ability to independently and creatively identify, formulate, and manage questions with
+a holistic perspective, and analyse and evaluate various technical solutions:
+MHK
+
+The thesis has a clear, distinct question or set of objectives. The question/objectives
+have been processed in an adequate, critical and reflective way. New solutions are
+developed and analysed and evaluated critically in the project. Alternative solutions
+have been developed and processed in a relevant, exhaustive manner. There is a
+clear connection between question/objectives, results, discussions and conclusions.
+The project’s conclusions are well substantiated and correct.
+
+HK
+
+The project has a clear, distinct question. The question has been adequately
+processed. Solutions are developed, analysed and evaluated critically in the project.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+19
+
+The project’s conclusions are well substantiated and correct. There is a clear
+connection between question, objectives, results and conclusions.
+BK
+
+The project lacks or has an unclear question or set of objectives. Irrelevant
+methodology has been employed. Alternative solutions have not been identified.
+The project does not provide an answer to the question or a result that relates to
+the objective. The conclusions are incorrect.
+
+3. Ability to plan and carry out tasks with adequate methods within given frameworks:
+HK
+
+A realistic plan has been drawn up for the project. The deadlines that were
+communicated and established have been adhered to during the implementation of
+the thesis. Any adjustments that have been necessary for the implementation have
+been documented and communicated.
+
+BK
+
+The project has not adhered to the deadlines communicated and established.
+Furthermore, documentation of relevant factors for deviations has not been
+provided.
+
+4. Ability to critically and systematically apply knowledge, and to model, simulate, predict
+and evaluate phenomena based on relevant information:
+MHK
+
+The project integrates knowledge and methods from several subjects.
+
+HK
+
+Relevant knowledge and methods have been acquired and applied.
+
+BK
+
+Areas of relevance to the project are not addressed or used. Knowledge that has
+been chosen and acquired is not presented clearly and lacks justification.
+
+5.
+
+Ability to give an account of and discuss information, problems and solutions orally and in
+writing:
+
+MHK
+
+A well-written report. The overall coherence, structure and layout are of high
+quality.
+
+HK
+
+The project addresses the chosen area with relevant, accurate use of language. The
+overall coherence, structure and layout are of good quality.
+
+BK
+
+The project primarily lacks adequate use of language, making it difficult to
+understand or assess the project based on the report.
+The guiding principles for the assessment of degree project reports can provide guidance for the
+assessment of the written report. See the document Assessment of the written presentation,
+report - HISS (version 2011-01-10).
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+20
+
+http://www.ait.gu.se/facksprak/kandidatarbete/skrivanvisningar/
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+21
+
+6.
+
+Ability to identify, within the scope of the specific degree project, questions regarding the
+role of technology in society, such as environmental and ethical aspects:
+
+HK
+
+Presents and justifies chosen methods and discusses results from a perspective with
+a focus on sustainable development. Presents possible ethical consequences of the
+project performed.
+
+BK
+
+Does not consider these aspects even though the examiner deems them to be of
+importance for the degree project in question.
+
+This learning objective may be irrelevant for certain degree projects. This assessment is made by the
+examiner.
+7. After having completed the degree project, the student must have demonstrated the
+knowledge and skills required to work independently as a graduate engineer:
+MHK
+
+A degree project implemented independently and without extraordinary support, or
+any other significant extra resources for its implementation.
+
+HK
+
+Implemented the project with reasonable support.
+
+BK
+
+There has been a great need for support. This support has been too extensive to
+make it likely that the student will be able to work independently after graduation.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+22
+
+APPENDIX 3. Guiding principles for assessing the quality of and grading
+degree projects on Chalmers’ International Logistics, Nautical
+Science and Marine Engineering programmes.
+Background
+This document describes the criteria that apply for assessing the quality of and grading
+independent projects (degree projects) on the International Logistics, Nautical Science and
+Marine Engineering programmes at Chalmers University of Technology.
+
+Assessment of degree projects
+Grading is done according to the TH scale, i.e. with the grades Pass with Distinction (5), Pass with
+Credit (4), Pass (3) and Fail (U).
+A student with a degree project that does not meet the criteria for a pass but that, according to the
+examiner’s assessment, could do so with supplementary work, is given such an opportunity.
+Supplementary work involves the students having the possibility to address shortcomings in the
+project and subsequently to be awarded a grade 3. Supplementary work that is not completed
+within six calendar months from the date of submission of the project results in a fail grade.
+A fail grade (U) means that the degree project is of such low quality that the students cannot be
+awarded a pass for their degree project and must start again with a new project.
+The assessment consists of nine assessment criteria, each of them assigned to the three levels Very
+High Quality (MHK), High Quality (HK) and Poor Quality (BK). To achieve the Very High Quality
+(MHK) and High Quality (HK) levels, all the criteria for that level must be fulfilled.
+The grade is given based on the number of MHK, HK and BK according to the table.
+
+Learning Objectives for degree projects and link to assessment criteria
+The overall objective of the degree project is for the student to demonstrate that they have the
+knowledge and ability required to work independently in their professional area.
+Specific learning objectives for the degree project include the student’s ability to:
+1. acquire and apply specialised knowledge in the subject area of the educational
+programme, including specialised insight into current development work,
+2. apply a comprehensive approach to identifying, formulating and managing research
+questions independently and creatively and analysing and evaluating them at a
+specialised level in the subject area,
+3. plan and use appropriate methods to perform, analyse and evaluate tasks within specific
+frameworks and present theoretical and methodically sound arguments,
+4. identify appropriate methods, apply them and critically evaluate them in relation to a
+chosen scientific question,
+5. critically and systematically make use of knowledge and model, simulate, predict and
+evaluate phenomena based on relevant information,
+6. within the framework of the specific degree project, identify research questions relating
+to the role of technology in society taking into account environmental and ethical
+aspects, and
+7. report orally and in writing, for a given audience, discuss information, problems and
+solutions with high standards of structure, formalities and use of language, and defend an
+academic study.
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+23
+
+The following table matches the seven learning objectives to the nine assessment criteria:
+Learning
+objective
+1
+
+Checked against assessment
+criterion/criteria
+3
+
+2
+
+1, 2
+
+3
+
+7, 8
+
+4
+
+7
+
+5
+
+8
+
+6
+
+7, 8
+
+7
+
+4, 5, 6, 7, 8, 9
+
+Assessment criteria
+The assessment is based on the following nine criteria.
+The criteria for specialisation in the project have been assessed to be such an important part that
+they earn double MHK or BK points towards the grade. The process criterion has no BK as an
+inadequate process cannot be supplemented afterwards.
+
+Process
+The contact between the supervisor and the student is extremely important in the course of the
+project. The supervisor provides ongoing support to students while they are working on their
+project and helps them with the practical processes. The scope and means of communication of
+the supervision arrangement must be agreed when the project begins.
+A realistic project plan must be drawn up, which must include a breakdown of activities and a
+timetable. In the course of the project, a project diary and a time log must be kept.
+The students are expected to implement their degree project independently, without too much
+extensive support by the supervisor, and to follow the normal degree project process.
+NB! The assessment criteria are assessed by the supervisor!
+MHK
+
+a) Contact with the supervisor has been good and in line with what was
+agreed.
+b) A realistic plan has been drawn up for the project. The deadlines
+communicated and established have been followed during the
+implementation of the project. Any adjustments that have been necessary
+for the implementation have been documented and communicated.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+24
+
+c) A degree project conducted independently and without extraordinary
+support or adjustments, without requiring any other significant extra
+resources for its execution.
+HK
+
+a) Contact with the supervisor has been good.
+b) A realistic plan has been drawn up for the project. The deadlines
+communicated and established have largely been followed during the
+implementation of the project.
+c) Project implemented with reasonable support.
+
+BK
+
+a) Contact with the supervisor has been inadequate.
+b) The project has not followed the deadlines that were communicated and
+established, nor has it been possible for any documentation of relevant
+factors for these deviations to be presented.
+c) There has been extensive need for support. This support has been too
+extensive to make it likely that the student will be able to work
+independently after graduation.
+
+Overall impression
+For the project’s overall impression to be good, the various parts of the report must cohere with
+one another, there must be a common thread that runs through the project and the subject
+description must be good. The report must follow current templates and be well balanced as well
+as being well written using good language and layout.
+The overall impression is something that can be assessed in a relatively short time when the text
+is first read through and on the basis of the impression it actually gives then. This impression,
+which also comprises understanding of the subject and correctness, is then confirmed or reevaluated on a more thorough review of the text.
+MHK
+
+a) The subject description is excellent, and the analysis of the results is
+comprehensible and coherent in terms of purpose and conclusion. Relevant
+areas are covered and described in a clear manner. In addition, their selection
+and scope are clearly linked to the purpose and general content of the study in
+a well-balanced report.
+b) The conclusions are clearly linked to and highly consistent with the analysis of
+results and the purpose/problem formulation.
+c) The research question/objectives have been formulated following adequate,
+critical and reflective consideration. There is a clear connection between the
+research question/objectives, results, discussion and conclusions. The project’s
+conclusions are well substantiated and correct.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+25
+
+d) Relevant knowledge and methodology have been acquired, applied and
+justified.
+e) A very well-written report. The overall coherence, structure and layout are of
+very high quality.
+f)
+HK
+
+The report contains a summary that reflects the content of the whole report
+clearly and in a manner that arouses interest.
+
+a) The subject description is good. Many important areas are mentioned but in
+certain aspects the description is too narrow or too broad, indicating that the
+selection of areas covered has not been undertaken consistently in relation to
+the purpose and other content. There are only individual inadequacies in how
+the results are dealt with, but the analysis and report give a balanced
+impression despite these inadequacies.
+b) The conclusions are clearly linked to the analysis of results and the
+purpose/problem formulation but in some instances they have a different focus
+from what is stated in the purpose/problem formulation.
+c) The question has been adequately processed. There is a clear connection
+between the research question, results and conclusions. The project’s
+conclusions are substantiated and correct.
+d) Relevant knowledge and methodology have been acquired and applied.
+e) The project tackles the chosen area using relevant, correct language. The overall
+coherence, structure and layout are of good quality.
+f)
+
+BK
+
+The report includes a summary that reflects the entire content of the report in a
+clear manner.
+
+a) The subject description is inadequate because important areas have not been
+described. The results and analysis of results are not easily accessible on a first
+read. The selection is manifestly poorly linked to the purpose and general
+content, and in addition, there is inadequate balance in the report.
+b) No (or very weak) link and consistency between conclusions and
+purpose/problem formulation. Another problem may be that the purpose given
+in the introduction is not consistent with what is argued in the
+discussion/conclusions.
+c) The project lacks or has an unclear research question or set of objectives.
+Irrelevant methodology has been employed. The project does not provide an
+answer to the question or a result that relates to the objective. The conclusions
+are incorrect.
+d) Areas that are relevant to the project are not considered or deployed.
+Knowledge that has been chosen and acquired is not presented clearly and
+lacks justification.
+e) The project largely lacks adequate use of language, coherence, structure or
+layout to provide a context for the reader.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+26
+
+f)
+
+The report does not include a summary that reflects the entire content of the
+report in a clear manner.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+27
+
+Specialisation
+The aim of a degree project is for students to develop specialised knowledge, understanding,
+skills and attitudes within the context of the programme. A degree project must be at the end of
+the programme and involve specialisation and synthesis of previously acquired knowledge.
+The project must be based on relevant in-depth studies for the programme, and this should be
+clear from the report’s theory and discussion as well as in the introduction where the students
+explain the purpose of the study. It shows that the students have read and absorbed literature
+and research that are relevant to the subject area.
+NB! The criteria for specialisation in the project have been assessed to be such an important part
+that they earn double MHK or BK points towards the grade.
+MHK (x2)
+
+a) The theory chapter shows specialised knowledge of the subject. The sources are
+representative of the subject area. The problematisation of the research
+question is deep and demonstrates substantial knowledge of the subject.
+b) Significant specialisation in the main field of study has been demonstrated. The
+project utilises knowledge of the main field of study.
+c) A comprehensive review of existing literature and deep reflection that justifies
+the connection between the project and the forefront of knowledge in the main
+field of study.
+d) The contribution to research or development work is clearly presented.
+
+HK
+
+a) The theory chapter demonstrates knowledge of the subject. The sources are
+representative of the subject area. The problematisation of the research
+question indicates good subject knowledge.
+b) Specialisation in the main field of study has been demonstrated. The project
+utilises knowledge of the main field of study.
+c) There is a written review of existing literature and reflection on the connection
+between the project and the forefront of knowledge in the main field of study.
+d) The project presents a contribution to research or development work.
+
+BK (x2)
+
+a) The theory chapter is thin. The sources used are not representative of the
+subject area. The problematisation of the research question is superficial.
+b) Specialisation in the main field of study is lacking or is vague.
+c) The project’s link to the main field of study is weak or lacking. The project does
+not utilise knowledge of the main field of study. A literature review and
+reflection on the project’s link to the relevant knowledge area are lacking.
+d) The project is such that it is difficult to link it to any research or development
+work.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+28
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+29
+
+Formalities and structure
+The report must follow the current template for degree projects.
+To increase readability, the report must be well structured, and the style must be consistent.
+Chapters must be well balanced in length and content and have a clear, informative heading.
+References must be correctly managed and follow the chosen reference system throughout.
+Tables and figures must be in appropriate places in the report and be clear and referenced in the
+body text. Images, graphs, tables, etc. must comply with the Swedish Copyright Act. Sources must
+be stated clearly and correctly.
+MHK
+
+a) The report’s length and formalities comply with the writing instructions and are
+effectively adapted to the task. The formalities improve readability.
+b) The whole report is divided into clear, well-balanced chapters, sections and
+paragraphs.
+c) The referencing of tables, figures and sources is correct and does not affect
+readability. Any paraphrasing is very well balanced.
+d) Tables and figures are in appropriate places in the text, have clear, informative
+table and figure headings and are well commented in the text.
+
+HK
+
+a) Length and formalities generally comply with the instructions but are not
+always effectively adapted and therefore affect readability. For example, the
+odd heading may not be particularly informative.
+b) The report is generally divided into clear chapters, sections and paragraphs, but
+sometimes consists of very short or long chapters that affect the balance
+between the different parts.
+c) The referencing is good but there are occasional inadequacies in the formalities.
+Several instances of clear paraphrasing but otherwise good referencing.
+d) Tables and headings are in appropriate places in the text, but the table and
+figure headings are somewhat unclear. There are occasional tables and figures
+that are inadequately discussed in the text.
+
+BK
+
+a) Length and formalities do not follow the instructions and there are clear
+inadequacies, for example in the table of contents, layout and/or pagination.
+b) Significant inadequacies in dealing with paragraphs, chapters and sections in
+terms of the scope of and relationship between the various parts.
+c) Significant inadequacies in the referencing. For example, references to
+tables/figures are missing in the text, and/or several sources are missing in the
+bibliography.
+d) Tables and figures are incorrectly placed and/or lack table and figure headings.
+Furthermore, explanatory comments are very often missing in the text.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+30
+
+Readability and language
+The criteria relating to language and style do not mention the concept of flow. This elusive aspect
+of text production is a result of factors such as language and style working together effectively
+with structure and content to create readability that is as effective as possible. Consequently,
+when inadequacies in flow are experienced, the reader sees more clearly which factors or aspects
+are lacking for the text to flow effectively.
+MHK
+
+a) Paragraphing is very good and follows the thought where there is one
+thought/idea per paragraph and the paragraphs have clear core sentences.
+b) The sentence structure is correct, formal and effective (there are no incomplete
+sentences). There are only a few sentences with an information structure that
+is too complex (sentences that are difficult to read).
+c) The report features correct choices of words while concepts fit together well
+and are used consistently.
+d) The style level is even and does not fluctuate between formal and informal
+style. The report features good awareness of the applicable style standard.
+e) The report has been carefully proofread and contains very few or no
+grammatical, construction or spelling errors.
+
+HK
+
+a) Paragraphing is good but there are certain inadequacies in that some
+paragraphs are short and poorly integrated with other paragraphs and/or some
+paragraphs contain several themes without having a core sentence to
+coordinate them.
+b) The sentence structure is good and there are only a few examples of incorrect
+or inadequate sentence structure. Occasional sections have sentences with an
+information structure that is problematic.
+c) Choice of words and concepts is dealt with adequately and appropriately.
+d) The style of the report is at the correct level and the authors have managed the
+applicable style standard with few or no exceptions.
+e) The report has been proofread and contains few errors at word and sentence
+level.
+
+BK
+
+a) There are significant inadequacies in the paragraphing in terms of both the
+formal introduction and the content of the paragraphs. The unclear
+paragraphing means that in several instances it is difficult to understand what a
+paragraph/section/chapter is about.
+b) The text contains many instances of incorrect sentence structure, for example
+sentences without a subject and/or sentences that only consist of subordinate
+clauses. Several sentences contain personal pronouns (e.g. I, we, the
+undergraduates, etc.).
+c) The report is inconsistent in terms of choice of words and concepts.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+31
+
+d) There are clear inadequacies in the style of the report. The style level is uneven
+and several prominent breaches of style feature in the text.
+e) The report has not been proofread and contains so many spelling and typing
+errors throughout that this disturbs the readability of the text and makes it
+more difficult to read.
+Introduction, background, purpose and theory
+In the introduction, the student should cover the basic thinking behind the project and give
+reasons for why it is important without going into detail.
+The background should present the scientific work that has previously been performed and any
+other information that the reader needs for them to be able to understand the rest of the report.
+In addition, the project that is presented should be placed in a context to make clear that there is a
+unique contribution in the report.
+The purpose must show where this particular study is intended to lead. The purpose of the study is
+never that the students should pass the course or advance their own knowledge.
+The theory chapter must contain the theoretical basis the reader needs to understand the specific
+subject, either integrated in the background or as a separate theory chapter, depending on the
+scope and nature of the degree project. The theory chapter must be adapted to the target group.
+MHK
+
+a) A clear common thread that enables the reader to easily and clearly understand
+the basic thinking behind the study, the reason for it and its unique
+contribution.
+b) The purpose of the study is clear and well defined.
+c) The theory is relevant in relation to the purpose and background, enables the
+reader to become familiar with the subject and is up to date with the support of
+relevant scientific literature.
+d) Scientific sources have been used, and for the most part consist of scientific
+articles and/or reports.
+
+HK
+
+a) The basic thinking, reason for the study and unique contribution are not really
+coherent. The reason for the study is unclear or the unique contribution is
+somewhat unclear. The common thread is inadequate or unclear in certain
+respects.
+b) The purpose of the study has been established but the definition is somewhat
+wide/unclear.
+c) The theory is relevant in relation to the purpose and background but is too
+deep/superficial.
+d) Scientific sources have been used.
+
+BK
+
+a) There is no common thread, and the background, purpose and theory are not
+coherent.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+32
+
+b) The purpose is unclear or incorrect (the purpose is ‘to pass the course’ and
+similar).
+c) The theory is not adequately substantiated or is out of date.
+d) The references are not relevant or are missing.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+33
+
+Research question, method and results
+The research question consists of a number of concrete questions to which the report should
+provide answers and is usually formulated as a main question and a number of sub-questions.
+The chapter on methodology briefly explains how the choice of methodology is appropriate and
+reasonable in relation to the purpose and the research question without discussing it in detail.
+How the project was implemented is described in a clear, structured manner, who took part, how
+selections were made, time, place, etc.
+The results chapter presents relevant data that was collected with the chosen methodology in a
+clear, structured manner without discussion in the case of qualitative methodology. The
+integration of results and analysis is permissible in quantitative studies. Interviews provide raw
+data which must be analysed in some way and not merely presented.
+Within the framework of the specific degree project, the students must be able to identify
+research questions relating to the role of technology in society, taking into account environmental
+and ethical aspects.
+MHK
+
+a)
+
+The project has a clear, well-defined research question that comprises its entire purpose.
+
+b) Potentially relevant engineering or scientific theories and methodology have been used.
+The choice of methodology is appropriate and reasonable in relation to the purpose and
+the research question.
+c)
+
+The chosen methodology has been applied in a correct and/or innovative manner. The
+project demonstrates deep, broad methodological knowledge.
+
+d) How the project was implemented is presented correctly, in a structured manner and in
+detail.
+e)
+
+Very well conducted fact finding of high quality.
+
+f)
+
+Results are presented correctly and well. With the selection of tables, figures and
+examples, the presentation of results as a whole is convincing.
+
+g)
+
+The research question clarifies, if possible, the problem at hand in terms of the role of
+technology in society, taking into account environmental and ethical aspects.
+
+h) The report is steeped in an ethically correct approach to oral sources.
+HK
+
+a)
+
+The project has a clear, well-defined research question, but this does not comprise the
+entire purpose.
+
+b) Potentially relevant engineering or scientific theories and methodology have been used.
+The choice of methodology is appropriate and reasonable in relation to the purpose and
+the research question but there is better alternative methodology.
+c)
+
+The chosen methodology has been applied in a correct manner. The project
+demonstrates a certain degree of methodological knowledge.
+
+d) How the project was implemented is presented but there are certain inadequacies in
+terms of correctness, structure or detail.
+e)
+
+Good fact finding but of somewhat variable quality and scope (though only individual
+and limited inadequacies).
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+34
+
+f)
+
+The results are presented largely correctly and well, but individual inadequacies affect
+the project as a whole and its credibility. In addition, the interaction between text,
+figures and tables is sometimes incomplete.
+
+g)
+
+The research question clarifies in part, if possible, the problem at hand in terms of the
+role of technology in society, taking into account environmental and ethical aspects.
+
+h) The report is steeped in an ethically correct approach to oral sources.
+BK
+
+a)
+
+The research question in the project is unclear and/or not well defined.
+
+b) The theories and methodology selected for the project lack relevance. Inappropriate
+methodology in relation to the purpose/research question.
+c)
+
+The student has not demonstrated that they have a grasp of their chosen theories and
+methodology.
+
+d) How the project was implemented is inadequate and/or not sufficiently presented.
+e)
+
+Only a small number of sources have been used. Alternatively, the fact finding is of
+inadequate quality, for example because it consists of online sources with low
+credibility.
+
+f)
+
+Incomplete and incorrect presentation of results with significant inadequacies that are
+not limited to inadequate interaction between text, figures and tables.
+
+g)
+
+The research question does not clarify the problem at hand in terms of the role of
+technology in society, taking into account environmental and ethical aspects, although it
+would be possible to do so.
+
+h) The report is not steeped in an ethically correct approach to oral sources.
+
+Discussions and conclusions
+The results presented in the results chapter must be discussed in relation to theory and previous
+research in the discussion chapter. This chapter provides space for the author’s own thinking, but
+this must not be too speculative in relation to theory, previous research and results.
+It is important for data and results to be critically reviewed and discussed.
+The student must also, via a discussion of methodology, discuss the advantages and disadvantages
+of the methodology as well as the methodology’s credibility (the concepts of validity and reliability
+in appropriate instances).
+Based on the results that are produced and the discussion that has taken place, conclusions must
+be formulated in a relatively short chapter in which an answer is given to the research question as
+formulated, if this can be demonstrated, and provide suggestions for further work to be done in
+the area.
+The discussion chapter must also, where possible, discuss the results on the basis of the role of
+technology in society, taking into account environmental and ethical aspects.
+MHK
+
+a) The argumentation is objective, well structured and well balanced. It is
+substantiated by correct content and relevant references, and is supported by
+clear examples and by the results presented.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+35
+
+b) The results are analysed and evaluated critically. Alternative hypotheses have
+been developed and treated in a relevant manner.
+c) The methodology discussion contains the advantages and disadvantages of the
+chosen methodology in relation to results and any alternative methodology. The
+credibility of the methodology is critically discussed.
+d) The project’s conclusions are well substantiated and clear, and provide answers
+to the study’s research question.
+e) The role of technology in society, taking into account environmental and ethical
+aspects, is discussed (in appropriate instances).
+HK
+
+a) The argumentation is objective but with certain inadequacies in terms of
+structure and support for the arguments that are put forward. The authors are
+able to adapt the strength of various statements to take the line of
+argumentation forward.
+b) The results are analysed and evaluated critically.
+c) The methodology discussion includes the chosen methodology’s advantages and
+disadvantages in relation to the results. The credibility of the methodology is
+discussed.
+d) The conclusions are substantiated and largely provide answers to the study’s
+research question.
+e) The role of technology in society, taking into account environmental and ethical
+aspects, is discussed superficially (in appropriate instances).
+
+BK
+
+a) The argumentation is poorly substantiated. The statements lack support and
+include too many categoric statements.
+b) The results are not analysed and evaluated critically.
+c) The methodology discussion does not include the chosen methodology’s
+advantages and disadvantages in relation to the results. The credibility of the
+methodology is not discussed.
+d) The conclusions are inadequately substantiated and/or do not provide answers
+to the study’s research question.
+e) The role of technology in society, taking into account environmental and ethical
+aspects, is not discussed (in appropriate instances).
+
+Oral presentation and opposition
+Oral presentation and opposition must be in accordance with instructions.
+The oral presentation must be sufficiently detailed for students on the same programme who have
+not read the report to be able to follow the presentation and also take part in the subsequent
+discussion. Visual aids must be used to illustrate the presentation. It is important for the
+presentation to have relevant content, be adequately comprehensive and be presented such that
+the message reaches the audience.
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+36
+
+Well conducted opposition features relevant questions, the following up of questions and the
+ability to create context for the audience. The opposition must be introduced and concluded in a
+well thought out way and the content must be well adapted to the communication situation.
+Personal attacks and abuse will result in an immediate fail grade.
+Presentation:
+• A good selection of material from the report and the degree project in its entirety
+• The project is presented in a form that is well adapted to the recipients, the situation and
+the specific subject area
+• The content is well structured, and the presentation is therefore easy to follow. The
+introduction and conclusion are clearly marked and help the recipients absorb the content.
+The different parts are well linked and together they form a unified whole
+• The visualisation material (images, graphs, bullet lists, text) used is clear and does not
+contain too much information. The material is readily comprehensible
+• The presentation is kept within the given time frame
+Oral opposition:
+• The oral opposition features relevant questions, the following up of questions and the
+ability to create context for the audience.
+• The oral opposition promotes discussion and is not a detailed scrutiny
+Group criteria (not applicable to individual projects):
+•
+•
+
+The handover between different speakers and between sections is well planned and does
+not result in any disruptive interruptions in the presentation
+The division between different group members is relatively equal in terms of both
+speaking time and answering questions
+
+Individual criteria:
+•
+•
+•
+•
+•
+
+Each individual speaker in the group establishes and maintains good eye contact with the
+audience and speaks extemporaneously, with memory aids
+The speaker presents the material shown in clear, comprehensible terms. The presentation
+of the visual material is logical and well conceived
+The performance is engaging and arouses interest
+The individual responds well to relevant questions
+The written opposition is a balanced and well-formulated critique of the report in question
+and how well the opponents were able to familiarise themselves with it
+
+MHK
+
+12–14 criteria met (individual project: 10–12)
+
+HK
+
+5–11 criteria met (individual project: 4–9)
+
+BK (= new presentation
+required)
+
+0–4 criteria met (individual project: 0–3)
+
+Grading criteria
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+37
+
+Grade
+
+Criteria
+
+5
+
+At least 7 MHK, no BK
+
+4
+
+At least 4 MHK, no BK
+
+3
+
+No BK
+
+K
+(Supplementary
+work to grade 3 may
+be done)
+
+1–3 BK
+
+U
+(The project must be
+redone on a new
+subject)
+
+≥ 4 BK
+
+APPENDIX 4. Guiding principles for assessing the quality of degree projects
+on Chalmers’ Business Development and Entrepreneurship
+programme
+The guiding principles are specifically intended to be a guide in cases in which the quality of the
+degree project is low, and there is reason to consider whether it can be passed. The guiding
+principles may also be a support when giving feedback to the student on their performance.
+The guiding principles are based on the learning objectives for degree projects in Bachelor’s
+programmes.
+Criteria for poor quality/high quality are formulated for all learning objectives. Criteria for Very High
+Quality (MHK) are formulated only for specific learning objectives, those that are judged to be of a
+distinctive nature: specialisation in the technical area, problem formulation, ability to create and
+evaluate new solutions, integration of knowledge, written presentation and independence.
+Poor quality in terms of a learning objective or several learning objectives in combination may result
+in a fail grade for the entire project. It is the examiner’s responsibility to make a balanced
+assessment.
+Criteria for Poor Quality (BK), High Quality (HK) and Very High Quality (MHK) for each of the learning
+objectives for the degree project are shown below.
+1. Ability to acquire and apply specialised knowledge in the technical area of the study
+programme, including specialised insight into current development work:
+MHK
+
+Specialised knowledge in the main field of study is demonstrated. The project
+contributes, in a clearly presented way, to new knowledge or new application in the
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+38
+
+main field of study. The project demonstrates the ability to work independently in
+the field.
+HK
+
+Specialised knowledge in the main field of study is demonstrated. The project shows
+the ability to work independently in the field.
+
+BK
+
+The project does not utilise specialised knowledge in the main field of study. The
+project’s link to the main field of study is weak or lacking.
+
+2. The ability to independently and creatively identify, formulate, and manage questions with
+a holistic perspective, and analyse and evaluate various technical solutions:
+MHK
+
+The project has a clear, distinct question or set of objectives. The
+question/objectives have been processed in an adequate, critical and reflective way.
+New solutions are developed and analysed and evaluated critically in the project.
+Alternative solutions have been developed and processed in a relevant, exhaustive
+manner. There is a clear connection between question/objectives, results,
+discussions and conclusions. The project’s conclusions are well substantiated and
+correct.
+
+HK
+
+The project has a clear, distinct question. The question has been adequately
+processed. Solutions are developed, analysed and evaluated critically in the project.
+The project’s conclusions are well substantiated and correct. There is a clear
+connection between question, objectives, results and conclusions.
+
+BK
+
+The project lacks or has an unclear question or set of objectives. Irrelevant
+methodology has been employed. Alternative solutions have not been identified.
+The project does not provide an answer to the question or a result that relates to
+the objective. The conclusions are incorrect.
+
+3. Ability to plan and carry out tasks with adequate methods within given frameworks:
+HK
+
+A realistic plan has been drawn up for the project. The deadlines that were
+communicated and established have been adhered to during the implementation of
+the project. Any adjustments that have been necessary for the implementation have
+been documented and communicated.
+
+BK
+
+The project has not adhered to the deadlines communicated and established.
+Furthermore, documentation of relevant factors for deviations has not been
+provided.
+
+4. Ability to critically and systematically apply knowledge, and to model, simulate, predict
+and evaluate phenomena based on relevant information:
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+39
+
+MHK
+
+The project integrates knowledge and methods from several subjects.
+
+HK
+
+Relevant knowledge and methods have been acquired and applied.
+
+BK
+
+Areas of relevance to the project are not addressed or used. Knowledge that has
+been chosen and acquired is not presented clearly and lacks justification.
+
+5.
+
+Ability to give an account of and discuss information, problems and solutions orally and in
+writing:
+
+MHK
+
+A well-written report. The overall coherence, structure and layout are of high
+quality.
+
+HK
+
+The project addresses the chosen area with relevant, accurate use of language. The
+overall coherence, structure and layout are of good quality.
+
+BK
+
+The project primarily lacks adequate use of language, making it difficult to
+understand or assess the project based on the report.
+The guiding principles for the assessment of degree project reports can provide guidance for the
+assessment of the written report. See the document Assessment of the written presentation,
+report - HISS (version 2011-01-10).
+http://www.ait.gu.se/facksprak/kandidatarbete/skrivanvisningar/
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+40
+
+6.
+
+Ability to identify, within the scope of the specific degree project, questions regarding the
+role of technology in society, such as environmental and ethical aspects:
+
+HK
+
+Presents and justifies chosen methods and discusses results from a perspective with
+a focus on sustainable development. Presents possible ethical consequences of the
+project performed.
+
+BK
+
+Does not consider these aspects even though the examiner deems them to be of
+importance for the degree project in question.
+
+This learning objective may be irrelevant for certain degree projects. This assessment is made by the
+examiner.
+7. After having completed the degree project, the student must have demonstrated the
+knowledge and skills required to work independently after having graduated with a Degree
+of Bachelor of Science:
+MHK
+
+A degree project implemented independently and without extraordinary support, or
+any other significant extra resources for its implementation.
+
+HK
+
+Implemented the project with reasonable support.
+
+BK
+
+There has been a great need for support. This support has been too extensive to
+make it likely that the student will be able to work independently after graduation.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle
+levels at Chalmers, reg. no. C 2025-0611. Decision by the Vice President for Education, 20 August
+2025.
+
+41
+
+Degree project risk assessment
+Educational programme:
+
+Date:
+
+Department:
+
+Name of student:
+
+Name of examiner:
+
+Name of external supervisor:
+
+Risk-assessed degree project (title):
+
+The degree project is being implemented at
+(company name/workplace/Chalmers):
+
+The risk assessment has been performed in consultation with an external supervisor:
+Explanation
+This template is used to risk-assess the project and the steps/labs/experiments that will be carried out during the degree project. The purpose of the risk
+assessment is to identify and prevent potential risks to create a safe working environment for all involved. By identifying potential hazards in advance and taking
+appropriate safety measures, accidents and near-misses can be avoided.
+The risk assessment must be performed with the examiner and any external supervisor. The risk assessment must be attached to the planning report and
+approved by the examiner.
+How to ﬁll in the template:
+• In the ‘Source of risk’ column, describe the risk identiﬁed in as much detail as possible
+• Then assess the severity of the risk.
+• In the ‘Action’ column, describe how the risk will be eliminated or reduced.
+• In the ‘Responsible’ column, enter the name of the person responsible for taking the risk reduction measure.
+• In the ‘Done by’ column, specify when the actions must have been implemented.
+• In the ‘Result’ column, document the actions that have actually been implemented so that it is clear what has been implemented in practice and not just
+planned.
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle levels at Chalmers, reg. no. C 2025-0611. Decision by the
+Vice President for Education, 20 August 2025.
+42
+
+Remember that if steps being risk-assessed will be performed several times, it is important to look at the risk assessment in between the steps and update it if
+you think something did not work.
+
+Source of risk
+
+Risk
+assessment
+low
+
+med
+
+Action
+
+Responsible
+
+Done by?
+
+Result
+
+high
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle levels at Chalmers, reg. no. C 2025-0611. Decision by the
+Vice President for Education, 20 August 2025.
+43
+
+Source of risk
+
+Risk
+assessment
+low
+
+med
+
+Action
+
+Responsible
+
+Done by?
+
+Result
+
+high
+
+POLICY DOCUMENT: Regulation for degree projects and Master’s theses at first and second cycle levels at Chalmers, reg. no. C 2025-0611. Decision by the
+Vice President for Education, 20 August 2025.
+44
+
+

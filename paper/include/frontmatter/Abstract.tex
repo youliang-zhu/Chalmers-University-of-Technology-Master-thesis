@@ -1,8 +1,8 @@
 % CREATED BY MAGNUS GUSTAVER, 2020
-An Informative Headline describing the Content of the Report\\
-A Subtitle that can be Very Much Longer if Necessary\\
-NAME FAMILYNAME\\
-Department of Some Subject or Technology\\
+\ThesisTitle\\
+\ThesisSubtitle\\
+\ThesisAuthor\\
+\ThesisDepartment\\
 Chalmers University of Technology\\
 \if\InstitutionLocation G
 University of Gothenburg\\
@@ -12,11 +12,41 @@ University of Gothenburg\\
 \thispagestyle{plain}			% Supress header 
 \setlength{\parskip}{0pt plus 1.0pt}
 \section*{Abstract}
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Long-term memory is becoming a central component of large language model agents,
+yet existing memory systems often struggle to provide compact and reliable
+evidence for temporally grounded questions. In multi-session dialogue histories,
+the information needed to answer a query may not be directly named in the query
+itself. It can be hidden behind relative temporal expressions, causal
+predecessors, or intermediate facts that must first be retrieved and interpreted.
+This thesis studies this evidence addressability problem through NanoMem, a
+memory framework that treats memory retrieval as iterative evidence synthesis
+rather than one-shot context selection or direct answer generation.
+
+NanoMem separates the role of memory from the role of the downstream answer
+model. At search time, a Planner rewrites the user query into targeted retrieval
+cues, while a Synthesizer compresses retrieved sessions into structured evidence
+events. Each event records its source session, the session timestamp, an inferred
+event time, and whether the statement is directly supported or inferred. A
+verdict signal determines whether the current evidence is sufficient,
+indicative, or insufficient; insufficient evidence is fed back to the Planner to
+drive another retrieval round. The framework is trained and evaluated with
+signals that reward temporal grounding, evidence faithfulness, sufficiency
+judgement, and downstream answer quality.
+
+The thesis adapts the completed NanoMem research project and its conference-paper
+version into a broader degree-project report. It explains the motivation,
+system design, implementation, training signals, benchmark construction, and
+experimental evaluation in greater detail than a conference paper permits.
+Experiments on long-term memory benchmarks including LoCoMo, LongMemEval, and
+ChainMem show that iterative evidence synthesis can improve temporal and
+multi-hop memory reasoning while reducing the amount of evidence passed to the
+downstream model. The results support the view that agent memory should provide
+faithful, source-grounded evidence rather than unstructured retrieved context or
+opaque final answers.
 
 % KEYWORDS (MAXIMUM 10 WORDS)
 \vfill
-Keywords: lorem, ipsum, dolor, sit, amet, consectetur, adipisicing, elit, sed, do.
+Keywords: agent memory, large language models, evidence synthesis, temporal reasoning, retrieval, faithfulness, NanoMem.
 
 \newpage				% Create empty back of side
 \thispagestyle{empty}

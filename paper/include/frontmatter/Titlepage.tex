@@ -1,5 +1,15 @@
 % CREATED BY MAGNUS GUSTAVER, 2020
 
+\newcommand{\ThesisTitle}{NanoMem: Iterative Evidence Synthesis for Temporal-Causal Reasoning in Agent Memory}
+\newcommand{\ThesisTitleCover}{NanoMem:\\[0.15cm] Iterative Evidence Synthesis for\\[0.15cm] Temporal-Causal Reasoning\\[0.15cm] in Agent Memory}
+\newcommand{\ThesisSubtitle}{A Master's Thesis on Long-Term Memory for LLM Agents}
+\newcommand{\ThesisAuthor}{Youliang Zhu}
+\newcommand{\ThesisProgramme}{Physics}
+\newcommand{\ThesisDepartment}{Department of Physics}
+\newcommand{\ThesisSupervisor}{Mats Granath and Sanidhya Kashyap}
+\newcommand{\ThesisExaminer}{Mats Granath}
+\newcommand{\ThesisMonthYear}{May 2026}
+
 \ifx\ThesisType\undefined
 Undefined Thesis type in settings.tex
 \else
@@ -15,14 +25,14 @@ Undefined Thesis type in settings.tex
 % COVER PAGE
 \begin{titlepage}
 \newgeometry{top=3cm, bottom=1cm,
-			left=2.25 cm, right=2.25cm}	% Temporarily change margins		
-			
+			left=2.25 cm, right=2.25cm}	% Temporarily change margins
+
 %Header Front Page
 \ifx\ThesisType\undefined
 \else
     \vtop{
         \null\vspace{-25mm}
-        
+
         \if\ThesisType M   %Defined in settings.tex
         \centerline{\includegraphics[width=1.18\textwidth]{figure/auxiliary/GrayHeaderPattern.jpg}}
         \fi
@@ -30,7 +40,7 @@ Undefined Thesis type in settings.tex
         \centerline{\includegraphics[width=1.18\textwidth,height=80pt]{figure/auxiliary/GreenHeaderPattern.jpg}}
         \fi
         \vspace{-2.3cm}
-        
+
         \if\InstitutionLocation C   %Defined in settings.tex
         \hbox{\hspace{0mm}\includegraphics[height=18mm]{figure/auxiliary/AvancezChalmersU_white_right.eps}}
         \fi
@@ -39,7 +49,7 @@ Undefined Thesis type in settings.tex
         \hbox{\hspace{0mm}\includegraphics[height=13mm]{figure/auxiliary/chalmers_gu_white_eng.eps}}
         \vspace{2.5mm}
         \fi
-        
+
         \centerline{\textcolor{headerBrown}{\rule{1.18\textwidth}{4pt}}}
         \vspace{\paperheight}\vspace{-85mm}
         \centerline{\textcolor{thesisHeaderColor}{\rule{1.1\textwidth}{0.8pt}}} % Rule after Department
@@ -47,32 +57,27 @@ Undefined Thesis type in settings.tex
     }
 \fi
 
-% Cover picture (replace with your own or delete)		
-\begin{figure}[H]
-\centering
-\vspace{1cm}	% Adjust vertical spacing here
-\includegraphics[width=0.9\linewidth]{figure/Wind.png}
-\end{figure}
-
 % Cover text
 \mbox{}
 \vfill
 \renewcommand{\familydefault}{\sfdefault} \normalfont % Set cover page font
-\textbf{{\Huge 	A Chalmers University of Technology 	\\[0.2cm] 
-				Degree project report template for \LaTeX}} 	\\[0.5cm]
-{\Large A Subtitle that can be Very Much Longer if Necessary}\\[0.5cm]
-Degree project report in Programme Name \setlength{\parskip}{1cm}
+\textbf{{\Huge \ThesisTitleCover}} \\[0.5cm]
+{\Large \ThesisSubtitle}\\[0.5cm]
+Master's Thesis in \ThesisProgramme \setlength{\parskip}{1cm}
 
 \noindent
-{\Large NAME FAMILYNAME} \setlength{\parskip}{1.5cm}
+{\Large \ThesisAuthor} \setlength{\parskip}{1.2cm}
 
 \noindent
-\textcolor{thesisHeaderColor}{\small\textbf{DEPARTMENT OF SOME SUBJECT OR TECHNOLOGY}}
+\textcolor{thesisHeaderColor}{\rule{\textwidth}{0.8pt}}
+\setlength{\parskip}{0.5cm}
+
+\noindent
+\textcolor{thesisHeaderColor}{\small\textbf{\MakeUppercase{\ThesisDepartment}}}
 \setlength{\parskip}{1mm}
 
 \textsc{Chalmers University of Technology} \\
-{\small Gothenburg, Sweden \the\year \\
-\href{www.chalmers.se}{www.chalmers.se}}\vspace{1.7cm}
+{\small Gothenburg, Sweden \ThesisMonthYear}\vspace{1.7cm}
 
 \renewcommand{\familydefault}{\rmdefault} \normalfont % Reset standard font
 \end{titlepage}
@@ -89,13 +94,13 @@ Degree project report in Programme Name \setlength{\parskip}{1cm}
 \newpage
 \thispagestyle{empty}
 \begin{center}
-    \textsc{\large Degree project report \the\year}\\[4cm]
-    \textbf{\Large An Informative Headline describing\\ the Content of the Report} \\[1cm]
-    {\large A Subtitle that can be Very Much Longer if Necessary}\\[1cm]
-    {\large NAME FAMILYNAME}
-    
-    \vfill	
-    % Logotype on titlepage	
+    \textsc{\large Master thesis 2026}\\[4cm]
+    \textbf{\Large \ThesisTitle} \\[1cm]
+    {\large \ThesisSubtitle}\\[1cm]
+    {\large \ThesisAuthor}
+
+    \vfill
+    % Logotype on titlepage
     \begin{figure}[H]
         \centering
         % Remove this figure to remove the titlepage logotype
@@ -107,12 +112,12 @@ Degree project report in Programme Name \setlength{\parskip}{1cm}
         \fi
     \end{figure}
     \vspace{5mm}
-    Department of Some Subject or Technology \\
+    \ThesisDepartment \\
     \textsc{Chalmers University of Technology} \\
     \if\InstitutionLocation G
     \textsc{University of Gothenburg} \\
     \fi
-    Gothenburg, Sweden \the\year \\
+    Gothenburg, Sweden \ThesisMonthYear \\
 \end{center}
 
 
@@ -120,26 +125,23 @@ Degree project report in Programme Name \setlength{\parskip}{1cm}
 \newpage
 \thispagestyle{plain}
 \vspace*{4.5cm}
-An Informative Headline describing the Content of the Report\\
-A Subtitle that can be Very Much Longer if Necessary\\
-NAME FAMILYNAME \setlength{\parskip}{1cm}
+\ThesisTitle\\
+\ThesisSubtitle\\
+\ThesisAuthor \setlength{\parskip}{1cm}
 
-\copyright ~ NAME FAMILYNAME, \the\year. \setlength{\parskip}{1cm}
+\copyright ~ \ThesisAuthor, 2026. \setlength{\parskip}{1cm}
 
-Supervisor: Name, Company or Department\\
-Examiner: Name, Department \setlength{\parskip}{1cm}
+Supervisor: \ThesisSupervisor\\
+Examiner: \ThesisExaminer \setlength{\parskip}{1cm}
 
-Degree project report \the\year\\	
-Department of Some Subject or Technology\\
+Master thesis 2026\\
+\ThesisDepartment\\
 Chalmers University of Technology\\
 SE-412 96 Gothenburg\\
 Sweden\\
 Telephone +46 31 772 1000 \setlength{\parskip}{0.5cm}
 
 \vfill
-% Caption for cover page figure if used, possibly with reference to further information in the report
-Cover: Wind visualization constructed in Matlab showing a surface of constant wind speed along with streamlines of the flow. \setlength{\parskip}{0.5cm}
-
 Typeset in \LaTeX \tagtemp\\
 %Printed by Chalmers Reproservice\\
-Gothenburg, Sweden \the\year
+Gothenburg, Sweden \ThesisMonthYear
