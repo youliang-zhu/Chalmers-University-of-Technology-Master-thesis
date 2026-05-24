@@ -1,9 +1,9 @@
-round_id: 6
+round_id: 7
 phase: 1
 section: results
 section_round: 1
-status: drafting
+status: ready_for_review
 artifacts:
   - paper/sections_drafts/04_results.md
-commit_hash: "4696e3523abbcb1fc35f37f527f6ad439575849b"
-updated_at: "2026-05-24T01:36:46Z"
+commit_hash: "1094f42ec8346f1d60fc5f0e8792b76f7c4e9e35"
+updated_at: "2026-05-24T01:40:35Z"
