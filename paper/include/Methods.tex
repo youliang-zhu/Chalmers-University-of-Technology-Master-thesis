@@ -3,686 +3,552 @@
 \label{chap:methods}
 
 This chapter describes NanoMem as a query-time memory evidence provider. The
-chapter starts by formalizing the task as evidence-state construction rather
-than session retrieval. It then describes the system architecture, the Temporal
-Evidence Pool, temporal normalization, the Planner--Retriever--Synthesizer
-loop, the training objective, the reward design, the ChainMem benchmark, and the
-implementation boundary. The common thread is the separation between memory and
-answering: NanoMem constructs compact, source-grounded evidence and a
-sufficiency verdict, while a downstream answer model consumes that evidence to
-produce the final answer.
+central claim is that long-term conversational memory should not only retrieve
+raw sessions, but should construct a compact, source-grounded, and temporally
+grounded evidence state for a downstream answer model. The chapter first
+formalizes this evidence-state construction problem. It then presents the
+NanoMem architecture, the Temporal Evidence Pool, temporal normalization, the
+Planner--Retriever--Synthesizer loop, GRPO training, the reward design, and the
+construction of TimeMemEval. Experimental settings, baselines, data splits, and
+results are deferred to Chapter~\ref{chap:results}.
 
 \section{Problem Formulation}
 \label{sec:methods-formulation}
 
 Let the long-term conversational memory bank be
 \[
-  \mathcal{M} = [(t_1,S_1),(t_2,S_2),\ldots,(t_N,S_N)],
+  \mathcal{M}=\{(S_i,t_i)\}_{i=1}^{N},
 \]
-where $S_i$ is a historical session and $t_i$ is the timestamp at which that
-session was recorded. Each session contains an ordered sequence of conversation
-units,
+where $S_i$ is the $i$-th historical session and $t_i$ is its session timestamp.
+Each session is an ordered sequence of conversational units,
 \[
-  S_i = \{c_{i1},c_{i2},\ldots,c_{iL_i}\},
+  S_i=(c_{i1},c_{i2},\ldots,c_{iL_i}),
 \]
-where a unit may be a message, turn, or chunk. Given a user query $q$, a
-standard memory retrieval system tries to select a subset of sessions
-$\mathcal{S}\subseteq\mathcal{M}$ and provide them to an answer model. This
-formulation is insufficient for the evidence addressability gap introduced in
-Chapter~\ref{chap:introduction}: the query may not contain the cue needed to
-retrieve the answer-bearing session.
+where a unit may be a message, turn, or chunk. Given a user query $q$ issued at
+query time $t_q$, a conventional memory retriever selects a subset of sessions
+\[
+  \mathcal{S}_q \subseteq \mathcal{M}
+\]
+and passes those raw sessions to a downstream model. This objective is too weak
+for temporal and hidden-dependency questions. The answer-bearing session may not
+be directly addressable from the surface query; the system may first need to
+recover a bridge event, infer its event time, and only then search for the final
+evidence.
 
-NanoMem instead treats the task as construction of an evidence state. The
-system incrementally builds a Temporal Evidence Pool $H_T$ such that a
-downstream answer model can answer from $(q,H_T)$ without reading the complete
-history. Each evidence item is query conditioned. A session can support
-different events depending on the query, so the system does not assume that all
-useful event interpretations can be fixed at ingestion time.
+NanoMem therefore reformulates memory access as temporal evidence-state
+construction. For a query $q$, the system incrementally builds a Temporal
+Evidence Pool
+\[
+  H_T=\{h_1,h_2,\ldots,h_m\}
+\]
+such that a frozen downstream answerer $A$ can produce an answer from the query
+and the evidence pool:
+\[
+  \hat{a}=A(q,H_T).
+\]
+NanoMem itself does not directly output $\hat{a}$. Its output is the structured
+evidence state $H_T$ and a binary sufficiency verdict indicating whether the
+memory module has gathered enough evidence for answering.
 
-The formulation distinguishes three time variables. The \emph{session time}
-$t_i$ is the timestamp of the source session. The \emph{event time} is the time
-or interval when the event described by an evidence record actually happened or
-was valid. The \emph{query time} is the timestamp that anchors relative temporal
-expressions in the current query. These variables often differ. If a user says
-on April 2 that they travelled to Europe last week, the session time is April 2,
-while the event time is the preceding week.
+This formulation distinguishes three time variables. The \emph{session time}
+$t_{\mathrm{session}}$ records when a session was stored or observed. The
+\emph{event time} $t_{\mathrm{event}}$ records when the described event actually
+happened or was valid. The \emph{query time} $t_q$ anchors relative expressions
+in the current query. These are not interchangeable: a user can say on April 2
+that a trip happened ``last week,'' so the session time is April 2 while the
+event time is the preceding week. NanoMem's method is designed around this
+separation.
 
-\begin{figure}[H]
-  \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned task
-    redefinition diagram. The left side should show conventional session
-    retrieval returning raw sessions. The right side should show NanoMem
-    constructing source-grounded events with session time, event time, and a
-    verdict.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{From session retrieval to evidence-state construction. NanoMem
-  changes the memory objective from selecting sessions to constructing a
-  structured Temporal Evidence Pool for a downstream answer model.}
-  \label{fig:methods-task}
-\end{figure}
-
-\begin{table}[H]
-  \centering
-  \caption{Core notation and fields used in the NanoMem method.}
-  \label{tab:methods-symbols}
-  \scriptsize
-  \begin{tabular}{p{0.18\textwidth}p{0.34\textwidth}p{0.18\textwidth}p{0.20\textwidth}}
-    \hline\hline
-    Symbol or field & Meaning & Source & Role in the system \\
-    \hline
-    $\mathcal{M}$ & Multi-session memory bank & Stored dialogue history & Search substrate \\
-    $S_i$ & Historical session containing turns or chunks & Memory database & Retrieval unit \\
-    $t_i$ & Timestamp of session $S_i$ & Session metadata & Session-time grounding \\
-    $q$ & Current user query & User input & Defines query-conditioned evidence need \\
-    $H_t$ & Temporal Evidence Pool after round $t$ & Synthesizer output & Working evidence state \\
-    \texttt{session\_id} & Identifier of the source session & Retriever/session metadata & Source attribution \\
-    \texttt{session\_time} & Timestamp of the cited session & Session metadata & Mention-time record \\
-    \texttt{event\_time} & Time or interval of the described event & Temporal normalization or Synthesizer reasoning & Retrieval cue and evidence field \\
-    \texttt{verdict} & \texttt{sufficient} or \texttt{insufficient} & Synthesizer & Stop-or-continue decision \\
-    \hline\hline
-  \end{tabular}
-\end{table}
-
-\section{System Overview}
+\section{NanoMem Overview}
 \label{sec:methods-overview}
 
-NanoMem has two stages. The first stage prepares the memory bank for retrieval.
-It performs lightweight temporal normalization on session text, stores session
-metadata, and indexes sessions or chunks in the memory database. This stage is
-deliberately conservative: it makes obvious temporal expressions searchable but
-does not try to precompute every future query interpretation.
+NanoMem has two stages. The first stage is lightweight memory preparation. It
+normalizes relative time expressions in historical sessions, preserves the
+original dialogue structure, and indexes the resulting session or chunk text in
+the memory database. This is intentionally not a heavy write-time interpretation
+stage: the system does not try to precompute every future fact or relationship
+that a later query might need.
 
-The second stage runs when a query arrives. The query is normalized with respect
-to query time, and a Planner produces retrieval cues. The Retriever searches the
-memory database for candidate sessions. The Synthesizer reads the query,
-retrieved sessions, temporal hints, and the current evidence state, then emits
-reasoning, structured events, and a verdict. If the verdict is
-\texttt{sufficient}, the loop stops and the final evidence is passed to the
-answer model. If the verdict is \texttt{insufficient}, the Synthesizer's
-reasoning and previously generated cues condition the next planning round.
-
-This division gives each component a narrow responsibility. The Planner
-generates search cues, the Retriever returns source material, the Synthesizer
-constructs evidence and judges sufficiency, and the answer model performs final
-answer generation. Chapter~\ref{chap:related-work} positioned this boundary as
-the main distinction between NanoMem and answer-oriented reflective retrieval
-systems.
+The second stage is query-time evidence construction. A query is normalized with
+respect to $t_q$, a Planner generates retrieval cues, a Retriever returns
+candidate sessions, and a trainable Synthesizer converts retrieved material into
+structured events. The loop continues until the Synthesizer emits
+\texttt{sufficient} or a terminal condition is reached. The final pool is then
+given to a downstream answerer.
 
 \begin{figure}[H]
   \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned NanoMem
-    system architecture figure. It should show temporal normalization, memory
-    database indexing, Planner, Retriever, Synthesizer, Temporal Evidence Pool,
-    verdict loop, and downstream answerer, while marking the Synthesizer as the
-    trainable component.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{NanoMem system architecture. The memory module constructs structured
-  evidence at query time and uses the verdict to decide whether to continue
-  retrieval or stop.}
+  \includegraphics[width=0.98\textwidth]{figure/arch_v3_cropped.pdf}
+  \caption{NanoMem architecture for iterative temporal evidence-state
+  construction. Temporal normalization grounds relative time expressions, while
+  the Temporal Evidence Pool stores source-grounded event records that separate
+  event time from session time. The Planner--Retriever--Synthesizer loop updates
+  this pool and uses the accumulated evidence state to guide later retrieval
+  rounds.}
   \label{fig:methods-architecture}
 \end{figure}
 
-\section{Temporal Evidence Pool}
-\label{sec:methods-evidence-pool}
+The component boundary is important. The Planner generates search cues but does
+not answer. The Retriever returns source material and is treated as a frozen
+environment component. The Synthesizer constructs events, reasons about event
+time, and judges sufficiency. The answerer consumes the final evidence pool but
+is outside the NanoMem memory module. The judge is used only in training or
+evaluation to score final answers.
 
-The Temporal Evidence Pool $H_t$ is the state carried across retrieval rounds.
-It is not a cache of raw retrieved sessions. It is a set of structured evidence
-records:
+\section{Temporal Evidence Representation and Normalization}
+\label{sec:methods-temporal-evidence}
+
+\subsection{Temporal Evidence Pool}
+\label{subsec:methods-pool}
+
+The Temporal Evidence Pool $H_t$ is the policy state accumulated across
+retrieval rounds. Each evidence item is represented as
 \[
   h(e)=
-  (\mathrm{text}(e),t_{\mathrm{event}}(e),t_{\mathrm{session}}(e),s(e)),
+  \bigl(\mathrm{text}(e),t_{\mathrm{event}}(e),
+  t_{\mathrm{session}}(e),s(e)\bigr),
 \]
-where $\mathrm{text}(e)$ is a concise evidence statement,
-$t_{\mathrm{event}}(e)$ is the event time, $t_{\mathrm{session}}(e)$ is the
-session time, and $s(e)$ identifies the source session. The implementation
-schema represents these fields with XML event text and the attributes
-\texttt{session\_id}, \texttt{session\_time}, and \texttt{event\_time}.
+where $\mathrm{text}(e)$ is the evidence statement,
+$t_{\mathrm{event}}(e)$ is the time or interval when the event happened,
+$t_{\mathrm{session}}(e)$ is the timestamp of the cited session, and $s(e)$ is
+the source session identifier. The implementation exposes these fields through
+event text and the attributes \texttt{session\_id}, \texttt{session\_time}, and
+\texttt{event\_time}. The sufficiency verdict is binary:
+\[
+  \hat{v}_t\in\{\texttt{sufficient},\texttt{insufficient}\}.
+\]
 
-The pool has two functions. Externally, it is the evidence passed to the answer
-model. Internally, it is the working state of the search loop. A first retrieval
-round may find an event that does not answer the query but reveals a time
-window, entity, or causal predecessor. That information can then guide the next
-round. In the running example, evidence about a promotion supplies the week in
-which the system should search for reading-related evidence.
+After the Synthesizer emits a set of newly constructed events
+$\mathcal{E}_t$, the pool is updated as
+\[
+  H_{t+1}=H_t\cup\{h(e)\mid e\in\mathcal{E}_t\}.
+  \label{eq:pool-update}
+\]
+In the prompt interface, the \texttt{events} block may be rendered cumulatively:
+the Synthesizer keeps still-valid previous events and appends newly extracted
+events. Conceptually, however, the state update is the pool update in
+\autoref{eq:pool-update}. The system does not restrict pool entries to cases
+where $t_{\mathrm{event}}\ne t_{\mathrm{session}}$. Events whose event time and
+session time coincide can still contain entities, locations, activities, or
+state changes that are useful for the next retrieval round.
 
-Each event is source grounded. A record cites one source session rather than a
-set of sessions, which avoids hiding cross-session reasoning inside a single
-claim. If multiple sessions are needed, the pool should contain multiple events,
-each with its own source identifier. This design makes it easier to diagnose
-whether an error came from retrieval, temporal grounding, synthesis, or final
-answering.
+Each event is source grounded. A record cites one source session rather than
+mixing several sessions into one evidence claim. If an answer requires several
+pieces of evidence, the pool should contain several records. This design keeps
+cross-session reasoning visible and makes failures easier to diagnose: errors
+can arise from retrieval, event selection, event-time inference, source
+attribution, or final answering.
 
-\begin{figure}[H]
-  \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned Temporal
-    Evidence Pool schema figure. It should show a query, two source sessions,
-    and event records with \texttt{session\_id}, \texttt{session\_time},
-    \texttt{event\_time}, event text, and verdict.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{Record schema of the Temporal Evidence Pool. Separating event time
-  from session time allows a mention in one session to become a temporal cue for
-  searching another session.}
-  \label{fig:methods-pool-schema}
-\end{figure}
+\subsection{Temporal Normalization and Hints}
+\label{subsec:methods-normalization}
 
-\section{Temporal Normalization and Hints}
-\label{sec:methods-temporal-normalization}
+NanoMem uses deterministic temporal normalization to handle relative time
+expressions that can be resolved without learned reasoning. For a session and a
+query, normalization is written as
+\[
+  \widetilde{S}_i=\mathrm{Norm}(S_i,t_i),
+  \qquad
+  \widetilde{q}=\mathrm{Norm}(q,t_q).
+  \label{eq:normalization}
+\]
+The function $\mathrm{Norm}$ preserves the original phrase and inserts an
+absolute date or interval when possible. For example, a session phrase such as
+``last week'' is resolved against the session timestamp $t_i$, while the same
+phrase in the query is resolved against $t_q$. The normalized sessions are
+indexed in the memory database $\mathcal{B}$:
+\[
+  \mathcal{B}=\mathrm{Index}\bigl(\{\widetilde{S}_i\}_{i=1}^{N}\bigr).
+\]
 
-NanoMem uses deterministic temporal normalization where possible. The purpose
-is not to solve all temporal reasoning with rules, but to remove avoidable date
-arithmetic from the learned Synthesizer. Relative expressions such as
-\texttt{yesterday}, \texttt{last week}, \texttt{next month}, weekday names, and
-several ``N days ago'' style phrases are resolved against a reference
-timestamp. For sessions, the reference is the session timestamp. For the query,
-the reference is the query timestamp.
-
-The normalized text preserves the original wording while adding an absolute
-span when a phrase can be resolved. For example, a phrase such as ``last week''
-can be rewritten with the corresponding date interval. This makes temporal
-information visible to lexical and embedding retrieval. If a session and a
-query use different relative expressions for the same time interval, both can
-still become searchable through a shared absolute span.
-
-Temporal information has two distinct roles in the implementation. It remains
-a hint for the Synthesizer: temporal spans are rendered in the prompt so that
-the model can decide whether retrieved sessions support the query and whether a
-new temporal cue should be searched in a later round. In the GRPO and
-\texttt{search\_expr} retrieval path, however, parseable cue-level temporal
-spans are also used as a targeted hard mention filter. The index search first
-scores sessions with lexical and dense signals, with the default combined score
-using normalized BM25 and dense embedding similarity. For the training rollout
-path, temporal boost is disabled, reranking is disabled, and only the top seven
-pre-reranker sessions per cue are kept by default. When a cue contains
-temporal spans, \texttt{temporal\_filter\_mode=hard\_mention} then retains
-candidate sessions whose session timestamp overlaps the cue span.
-
-This choice is narrower than a universal session-time filter. The system does
-not discard sessions by the original query time before cue generation, and the
-Synthesizer still reasons over event time separately from session time. The
-hard mention filter is used after the Planner has produced a cue with an
-explicit temporal span, mainly to reduce candidate noise in temporal-bridge
-rollouts. Its risk is recall loss: an answer-bearing event may be mentioned
-outside the target interval even when its event time lies inside it. Chapter 4
-therefore has to interpret retrieval failures with this trade-off in mind.
-
-\begin{figure}[H]
-  \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned temporal
-    normalization figure. It should show session text normalized against
-    session time, query text normalized against query time, and Synthesizer
-    event times becoming hints for later retrieval rounds.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{Temporal normalization and hint generation. Deterministic parsing
-  handles simple relative expressions, while event-time inference remains part
-  of the Synthesizer's evidence construction task.}
-  \label{fig:methods-temporal-normalization}
-\end{figure}
+It is useful to separate normalized text from temporal hints. Let
+\[
+  \Gamma_i=\{(\phi_{ij},[\alpha_{ij},\beta_{ij}])\}_{j}
+\]
+denote the deterministic hints extracted from session $S_i$, where $\phi_{ij}$
+is a temporal phrase and $[\alpha_{ij},\beta_{ij}]$ is its resolved span. The
+query-side hints $\Gamma_q$ are defined analogously from $(q,t_q)$. These hints
+are parser aids for the Synthesizer; they are not the Temporal Evidence Pool.
+The pool comes from Synthesizer output, while temporal hints come from
+deterministic preprocessing.
 
 \begin{table}[H]
   \centering
-  \caption{Temporal-processing design choices.}
-  \label{tab:methods-temporal-choices}
+  \caption{Core fields in temporal evidence construction.}
+  \label{tab:methods-fields}
   \scriptsize
-  \begin{tabular}{p{0.23\textwidth}p{0.25\textwidth}p{0.26\textwidth}p{0.16\textwidth}}
+  \begin{tabular}{p{0.21\textwidth}p{0.36\textwidth}p{0.33\textwidth}}
     \hline\hline
-    Design issue & Adopted direction & Rationale & Main risk \\
+    Field or object & Meaning & Source \\
     \hline
-    Resolve simple relative expressions & Deterministic parser anchored to session or query timestamp & Reduces brittle date arithmetic for the Synthesizer & Rule coverage is incomplete \\
-    Preserve original phrase and span & Keep phrase-level temporal metadata & Lets the model see both wording and resolved date & Extra prompt complexity \\
-    Treat time as retrieval signal & Use temporal hints in the Synthesizer and cue-level \texttt{hard\_mention} filtering in GRPO retrieval & Reduces candidate noise after the Planner exposes a time span & May drop sessions whose mention time differs from event time \\
-    Let event time enter later search & Use Synthesizer event times as loop state & Makes indirect evidence addressable & Wrong event time can drift search \\
-    Unknown time & Preserve text and use \texttt{unknown} when needed & Avoids fabricating precision & Downstream reasoning receives weaker evidence \\
+    Event text & Concise statement of a query-relevant event or fact & Synthesizer output \\
+    \texttt{session\_id} & Identifier of the single source session supporting the event & Retriever/session metadata \\
+    \texttt{session\_time} & Timestamp of the cited source session & Session metadata \\
+    \texttt{event\_time} & Time or interval when the described event happened or was valid & Temporal normalization and Synthesizer reasoning \\
+    \texttt{verdict} & Binary sufficiency decision: \texttt{sufficient} or \texttt{insufficient} & Synthesizer output \\
+    Temporal hints & Phrase-level parser aids such as a relative expression and its resolved span & Deterministic normalization \\
+    Temporal Evidence Pool $H_t$ & Cross-round set of source-grounded evidence records & Accumulated Synthesizer events \\
     \hline\hline
   \end{tabular}
 \end{table}
+
+This design turns part of temporal reasoning into lexical and semantic
+matching over explicit time spans. If a session says ``next week'' and the query
+says ``two weeks ago,'' both expressions may normalize to the same absolute
+interval. BM25 and dense retrieval can then exploit a cue that was absent from
+the original surface text. At the same time, NanoMem avoids treating
+normalization as a complete temporal reasoner: complex event interpretation and
+sufficiency judgment remain the Synthesizer's responsibility.
 
 \section{Planner--Retriever--Synthesizer Loop}
 \label{sec:methods-loop}
 
-At retrieval round $t$, the Planner produces a set of cues $C_t$. In the first
-round, the cues are generated from the query. In later rounds, they are
-generated from the query, previous cues, and the previous Synthesizer reasoning:
+At round $t$, the Planner produces a set of retrieval cues $C_t$. In the first
+round it uses the normalized query; in later rounds it also receives previous
+cues, the previous Synthesizer reasoning, and the current pool:
 \[
-  C_t =
-  \begin{cases}
-    P(q), & t=0,\\
-    P(q,C_{<t},r_{t-1}), & t>0.
-  \end{cases}
+C_t=
+\begin{cases}
+P(\widetilde{q}), & t=0,\\
+P(\widetilde{q},C_{<t},r_{t-1},H_t), & t>0.
+\end{cases}
+\label{eq:planner}
 \]
-The Planner is not responsible for answering. Its output is a retrieval plan in
-the form of cue text and temporal phrase annotations.
+The inclusion of $H_t$ is deliberate. The Planner needs to know not only what is
+missing, but also what has already been established. An anchor event, event
+time, location, person, or state in the pool can become the address for the next
+retrieval query.
 
-The Retriever searches the indexed memory database for each cue. The NanoMem
-codebase supports dense embeddings, query preprocessing, stateful retrieval,
-index search, reranking, and budget-based pruning. In the GRPO rollout path,
-the active L0 index search combines normalized BM25 and dense retrieval scores
-with weights $0.25$ and $0.75$, respectively. The training path disables
-temporal boost and reranking, applies cue-level hard mention filtering when
-temporal spans are available, keeps the top seven pre-reranker sessions per
-cue, merges results across cues, removes duplicate sessions, and trims complete
-sessions until the Synthesizer input fits the token budget. These details are
-method choices for the reported training/evaluation interface, not merely
-appendix hyperparameters, because they define which evidence the Synthesizer can
-see.
-
-The Synthesizer then receives the query, temporal hints, retrieved sessions, and
-the current state. It emits XML in the following shape:
+The Retriever searches the indexed memory database for the generated cues:
 \[
-\begin{array}{l}
-\texttt{<reasoning>}~r_t~\texttt{</reasoning>}\\
-\texttt{<events>}~\mathcal{E}_t~\texttt{</events>}\\
-\texttt{<verdict>}~v_t~\texttt{</verdict>.}
-\end{array}
+  \widetilde{\mathcal{S}}_t
+  =\mathrm{Ret}(C_t,\widetilde{q};\mathcal{B}),
+  \qquad
+  \widetilde{\mathcal{S}}_{\le t}
+  =\bigcup_{k=0}^{t}\widetilde{\mathcal{S}}_k.
+  \label{eq:retrieval}
 \]
-Each event has a single \texttt{session\_id}, a \texttt{session\_time}, an
-\texttt{event\_time}, and text. The verdict is binary:
-\texttt{sufficient} stops the loop and passes the evidence to the answer model;
-\texttt{insufficient} continues retrieval. This binary schema is the
-method-level schema used by the current parser. Earlier design variants exposed
-an \texttt{inferred} event attribute and an \texttt{indicative} verdict. In the
-current method, the inference boundary is represented differently: event
-records are treated as source-grounded claims tied to one cited session, while
-cross-session or uncertain reasoning should remain in the \texttt{reasoning}
-field or be decomposed into separate source-grounded events. Thus RQ1's concern
-with inference markers is addressed as an attribution and reasoning-boundary
-requirement rather than as a separate XML attribute in the final parser.
+The method is compatible with lexical, dense, or hybrid retrieval; concrete
+top-$k$, reranking, and model settings are reported in Chapter~\ref{chap:results}
+when they are needed to interpret experiments.
 
+The Synthesizer policy $\pi_\theta$ consumes the normalized query, cumulative
+retrieved sessions, the current evidence pool, and the deterministic temporal
+hints rendered in the prompt:
 \[
-  (r_t,\mathcal{E}_t,v_t)
-  \sim \pi_\theta(\cdot \mid q,\widetilde{\mathcal{S}}_{\le t},H_t).
+  (r_t,\mathcal{E}_t,\hat{v}_t)
+  \sim
+  \pi_{\theta}
+  \bigl(\cdot\mid
+  \widetilde{q},\widetilde{\mathcal{S}}_{\le t},H_t,\Gamma_q,\Gamma_{\le t}
+  \bigr).
+  \label{eq:synthesizer}
 \]
-If $v_t=\texttt{sufficient}$, the loop terminates. Otherwise, the reasoning
-$r_t$ and prior cues are fed back into the Planner. This is what allows
-evidence discovered in one round to become the search condition for a later
-round.
+When temporal hints are not written explicitly, they should be understood as
+part of the normalized query and normalized session representation. The output
+contains reasoning $r_t$, events $\mathcal{E}_t$, and the verdict $\hat{v}_t$.
+If $\hat{v}_t=\texttt{sufficient}$, the system stops and passes $H_{t+1}$ to
+the answerer. If $\hat{v}_t=\texttt{insufficient}$, the reasoning and updated
+pool condition the next Planner call. Other terminal reasons, such as malformed
+XML, no new evidence, context budget exhaustion, or maximum rounds, are recorded
+as trajectory outcomes rather than discarded.
 
-\begin{figure}[H]
-  \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned dynamic
-    loop figure. It should show two rounds: first finding a temporal anchor,
-    then using that event time to retrieve the answer-bearing session.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{Dynamic Planner--Retriever--Synthesizer loop. The loop is useful
-  when the first evidence found is not the final answer but a bridge that makes
-  the next retrieval query possible.}
-  \label{fig:methods-loop}
-\end{figure}
-
-\begin{table}[H]
-  \centering
-  \caption{Synthesizer XML fields and constraints.}
-  \label{tab:methods-xml}
-  \scriptsize
-  \begin{tabular}{p{0.18\textwidth}p{0.26\textwidth}p{0.25\textwidth}p{0.21\textwidth}}
-    \hline\hline
-    XML part & Required content & Meaning & Failure risk \\
-    \hline
-    \texttt{reasoning} & Non-empty text & Explains current evidence and missing information & Unhelpful reasoning gives poor cues for next round \\
-    \texttt{events} & Zero or more event records & Structured evidence extracted from retrieved sessions & Missing events reduce answerability \\
-    \texttt{event} attributes & \texttt{session\_id}, \texttt{session\_time}, \texttt{event\_time} & Source and temporal grounding & Missing or multi-session IDs break attribution \\
-    Event text & Non-empty concise statement & Evidence statement for the answer model & Hallucinated or bloated evidence harms downstream answering \\
-    \texttt{verdict} & \texttt{sufficient} or \texttt{insufficient} & Stop-or-continue control signal & Premature stop or unnecessary search \\
-    \hline\hline
-  \end{tabular}
-\end{table}
-
-\section{Training the Synthesizer with GRPO}
+\section{GRPO Training of the Synthesizer}
 \label{sec:methods-training}
 
-NanoMem trains the Synthesizer because it performs the hardest query-time
-operation: extracting event-level evidence, assigning event times, and judging
-whether the current evidence is enough. The Planner, Retriever, downstream
-answer model, judge, and reference policy are treated as frozen environment
-components during GRPO training. This keeps the credit assignment focused on
-the Synthesizer. If both Planner and Synthesizer were updated at once, a failed
-answer could be caused by a bad cue, a missed retrieval, a bad event, or a bad
-verdict, making the training signal less interpretable.
+NanoMem trains only the Synthesizer/Compressor policy. The Planner, temporal
+preprocessor, Retriever, answerer, judge, and reference policy are frozen. This
+choice keeps credit assignment focused: a failed final answer is treated as a
+signal about the Synthesizer's event construction and sufficiency behavior,
+rather than being confounded with simultaneous Planner or Retriever updates.
 
-For a query $q$, the training environment samples a group of rollout
-trajectories. A trajectory contains one or more search rounds, online retrieval,
-Synthesizer XML generation, verdict-based termination, and terminal answer
-evaluation. Let
+Let
 \[
-  h_t = (q,\widetilde{\mathcal{S}}_{\le t},C_{\le t},H_t)
+  h_t=(\widetilde{q},\widetilde{\mathcal{S}}_{\le t},C_{\le t},H_t)
 \]
-be the retrieval context at round $t$. The Synthesizer action is
+be the retrieval context at round $t$. The trainable action is the
+Synthesizer's structured XML output,
 \[
-  z_t=(r_t,\mathcal{E}_t,v_t)\sim\pi_\theta(\cdot\mid h_t).
+  z_t=(r_t,\mathcal{E}_t,\hat{v}_t)
+  \sim \pi_\theta(\cdot\mid h_t).
+  \label{eq:training-action}
 \]
-Only Synthesizer-generated XML tokens are part of the policy action. Planner
-outputs, retrieved sessions, prompts, and other environment text are masked out
-from the policy loss. The implementation records this distinction with a
-response mask over rollout tokens.
+A rollout trajectory is
+\[
+  \tau=\{(h_1,z_1),(h_2,z_2),\ldots,(h_T,z_T)\}.
+\]
+Only the tokens generated by the Synthesizer are optimized. Planner outputs,
+retrieved sessions, prompts, and other environment text are masked out from the
+policy loss.
 
-NanoMem uses Group Relative Policy Optimization (GRPO) \cite{shao2024deepseekmath}.
-For each query, a group of $G$ trajectories
-$\mathcal{T}=\{\tau^i\}_{i=1}^G$ receives scalar rewards. The advantage for a
-trajectory is normalized within the group:
+For each query, GRPO samples a group of $G$ trajectories
+\[
+  \mathcal{T}=\{\tau^i\}_{i=1}^{G}
+  \sim \pi_{\theta_{\mathrm{old}}}(\cdot\mid q),
+\]
+assigns a scalar reward $R(\tau^i)$ to each trajectory, and computes the
+group-normalized advantage
 \[
   \hat{A}^i =
   \frac{R(\tau^i)-\mathrm{mean}_{j=1}^{G}R(\tau^j)}
   {\mathrm{std}_{j=1}^{G}R(\tau^j)+\epsilon}.
+  \label{eq:grpo-advantage}
 \]
-The objective applies the clipped policy update to the unmasked Synthesizer
-tokens and includes a KL penalty against the reference policy. This makes the
-training closer to multi-step agent learning than to single-turn instruction
-tuning: the model is rewarded for producing evidence that works inside a search
-environment.
+The clipped GRPO objective over unmasked Synthesizer tokens is
+\[
+\begin{aligned}
+J_{\mathrm{GRPO}}(\theta)
+&=
+\mathbb{E}_{q\sim\mathcal{D},\,
+\mathcal{T}\sim\pi_{\theta_{\mathrm{old}}}(\cdot\mid q)}
+\Bigg[
+\frac{1}{G}\sum_{i=1}^{G}
+\frac{1}{|\mathcal{Y}^i|}
+\sum_{y\in\mathcal{Y}^i}
+\Big[
+\min\big(
+\rho_y(\theta)\hat{A}^i,
+\mathrm{clip}(\rho_y(\theta),1-\epsilon_c,1+\epsilon_c)\hat{A}^i
+\big)
+\\
+&\qquad\qquad
+-\beta D_{\mathrm{KL}}\!\left[
+\pi_\theta(\cdot\mid\mathrm{ctx}_y)
+\;\|\;
+\pi_{\mathrm{ref}}(\cdot\mid\mathrm{ctx}_y)
+\right]
+\Big]
+\Bigg],
+\end{aligned}
+\label{eq:grpo-objective}
+\]
+where $\mathcal{Y}^i$ is the set of unmasked Synthesizer tokens in trajectory
+$\tau^i$ and
+\[
+  \rho_y(\theta)=
+  \frac{\pi_\theta(y\mid\mathrm{ctx}_y)}
+       {\pi_{\theta_{\mathrm{old}}}(y\mid\mathrm{ctx}_y)}.
+\]
+This objective trains the Synthesizer inside an online memory-search
+environment. Non-ideal trajectories are intentionally retained. A rollout that
+ends because of no new evidence, invalid XML, maximum rounds, or an
+\texttt{insufficient} terminal state still enters reward computation. Filtering
+such trajectories away would teach the model only what successful retrieval
+looks like, not how to behave when evidence is missing, noisy, or malformed.
+
+The high-level GRPO computation is shown in
+\autoref{fig:methods-grpo-rollout}. GRPO was introduced in the DeepSeekMath
+line of work as a group-relative alternative to value-model-based policy
+optimization \cite{shao2024deepseekmath}. The figure uses
+\emph{DeepSeek-R1-Zero} as the policy model because it comes from that family of
+reasoning-model training illustrations; in this thesis, that label should be
+read structurally rather than literally. The corresponding policy model is the
+NanoMem Synthesizer. For the same input $q$, the policy samples a group of
+outputs, a reward model or reward computation scores them, group computation
+normalizes these scores into advantages, and a KL term regularizes the policy
+against a frozen reference model. In NanoMem, the ``outputs'' are complete
+multi-round evidence-construction trajectories rather than single responses,
+and the reward model is the task reward defined in \autoref{sec:methods-reward}.
 
 \begin{figure}[H]
   \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned GRPO rollout
-    and token-masking figure. It should show several trajectories for the same
-    query, environment tokens masked out, and Synthesizer XML tokens optimized.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{GRPO rollout and token masking. NanoMem optimizes the Synthesizer's
-  XML output while treating planning, retrieval, and answer evaluation as the
-  environment.}
-  \label{fig:methods-grpo}
+  \includegraphics[width=0.98\textwidth]{figure/GRPO.jpg}
+  \caption{GRPO group-relative training signal. For each query, the current
+  Synthesizer policy samples $G$ evidence-construction trajectories. The reward
+  computation scores each trajectory, group computation normalizes these scores
+  into advantages, and a KL term regularizes the policy against the frozen
+  reference model.}
+  \label{fig:methods-grpo-rollout}
 \end{figure}
 
 \section{Reward Design}
 \label{sec:methods-reward}
 
-The reward is designed for evidence construction rather than direct answer
-generation. The design separates four desired signals: format validity, source
-faithfulness, outcome usefulness, and length. \textcolor{red}{NOTSURE: The
-final thesis reward contract remains unresolved at this escalation point. The
-current text cannot yet make a single defensible claim about whether reported
-GRPO training optimizes format/outcome/length only, or a synchronized
-format/faithfulness/outcome/length objective. This must be decided from the
-final implementation and experiment records before Chapter~4 reports GRPO
-results.} The current code artifact does not yet support all four as a
-synchronized, executable reward contract. The parser schema exposes event
-fields for \texttt{session\_id}, \texttt{session\_time},
-\texttt{event\_time}, and text, while the faithfulness reward path still
-expects the older \texttt{inferred} attribute when selecting direct events.
-Consequently, this chapter treats source faithfulness as a method requirement
-and planned reward component, not as a verified active component for reported
-GRPO training unless the implementation is first synchronized.
-\textcolor{red}{TODO: Before reporting GRPO training results, choose one final
-reward version and make Methods and Results use only that version: either
-update the reward path so faithfulness checks parsed source-grounded events
-under the current schema and report its active weight, or report the run as
-using only the executable format, outcome, and length components and move
-faithfulness/verdict supervision to diagnostics or limitations.}
-
-The verdict remains central to the method, but it is not a separate additive
-reward component in the active reward total. Instead, it controls whether a
-trajectory is terminal and therefore whether terminal outcome evaluation is
-available.
-
-\textbf{Format reward.} The Synthesizer output must be parseable XML with
-\texttt{reasoning}, \texttt{events}, required event attributes, non-empty event
-text, and a valid binary verdict. Format validity is necessary because the rest
-of the pipeline depends on structured evidence. A malformed output cannot be
-reliably attributed, evaluated, or passed downstream.
-
-\textbf{Source faithfulness requirement.} Each emitted event is supposed to be
-directly supported by its cited session. This requirement is needed because a
-compact evidence pool is useful only if compression preserves attribution.
-Under the current parser schema, every parsed event should be treated as a
-source-grounded claim: evidence that depends on cross-session inference should
-be expressed through separate cited events and the \texttt{reasoning} field
-rather than as a single unsupported event. The intended faithfulness reward
-would check event text against the corresponding session with a frozen verifier
-and reward the proportion of supported events. In the present artifact, though,
-that reward path has not been reconciled with the current parser because it
-still filters on the removed \texttt{inferred} field. It should therefore be
-used only after the schema mismatch is fixed and recorded.
-
-\textbf{Outcome reward.} When the loop terminates, the evidence is provided to
-a frozen answer model. A judge compares the answer to the gold answer. This
-reward connects the memory artifact to task usefulness, but it does not make
-NanoMem a final answer agent. The trained policy is still the evidence
-Synthesizer.
-
-\textbf{Length reward.} Compactness is part of the evidence-provider objective:
-the answer model should receive enough evidence, not an unbounded transcript.
-The implemented length term is a penalty,
-$R_{\mathrm{len}}=-\min(1,\mathrm{tokens}/2048)$, so adding it with a positive
-weight encourages shorter Synthesizer outputs. It must not dominate outcome or
-verdict quality, because a trivially short but uninformative evidence pool is
-not useful memory.
-
-The unresolved planned full reward, after the faithfulness path is synchronized,
-would be
+The final reward follows the NeurIPS reward contract. It contains a trajectory
+format gate, a round-level verdict reward, a terminal outcome reward, and a
+compactness term. Let a trajectory be abstracted as
 \[
-  R(\tau)=
-  w_f R_{\mathrm{fmt}}(\tau)
-  + w_s R_{\mathrm{faith}}(\tau)
-  + w_o R_{\mathrm{out}}(\tau)
-  + w_l R_{\mathrm{len}}(\tau),
+  \tau=(f,T,\mathbf{v},o,\ell),
 \]
-with default MVP weights $w_f=0.2$, $w_s=0.2$, $w_o=0.5$, and $w_l=0.1$ in the
-configuration artifact. The intended priority is outcome usefulness first, then
-parseability and source support, then compactness. Verdict quality is evaluated
-through loop behavior and downstream outcome: a premature \texttt{sufficient}
-verdict exposes incomplete evidence to the answer model, while repeated
-\texttt{insufficient} verdicts can terminate by maximum-round or no-new-evidence
-conditions and receive no terminal outcome reward.
+where $f\in\{0,1\}$ is format validity, $T$ is the number of retrieval rounds,
+$\mathbf{v}=(v_1,\ldots,v_T)$ is the sequence of verdict correctness signals,
+$o\in\{0,1\}$ is final answer correctness, and $\ell\in[0,1]$ is compactness.
 
-For any result reported before that synchronization, the faithful description
-would instead be the executable reward subset:
+\subsection{Format Gate}
+\label{subsec:methods-format}
+
+Format validity is a gate rather than an additive per-round score. Let
 \[
-  R_{\mathrm{exec}}(\tau)=
-  w_f R_{\mathrm{fmt}}(\tau)
-  + w_o R_{\mathrm{out}}(\tau)
-  + w_l R_{\mathrm{len}}(\tau),
+  f(\tau)=
+  \prod_{t=1}^{T}\mathbb{I}\!\left[
+    z_t\ \text{is parseable and satisfies the XML schema}
+  \right].
+  \label{eq:format-gate}
 \]
-with source faithfulness evaluated, at most, as a post-hoc diagnostic rather
-than as an optimization signal. This constraint is important for Chapter 4:
-claims about learned source faithfulness or a faithfulness--compactness
-trade-off require a run whose reward implementation and parser schema are
-aligned. \textcolor{red}{NOTSURE: These two formulas are left here only to
-expose the unresolved method fork. The final thesis should keep exactly one
-reported reward objective and delete the alternative before submission.}
+The schema requires a reasoning field, an events block, a binary verdict, and
+for each event a source session id, session time, event time, and non-empty
+event text. If $f(\tau)=0$, the trajectory receives the fixed penalty $c<0$ and
+the remaining reward terms are not evaluated.
 
-\begin{figure}[H]
-  \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned reward
-    signal figure. It should mark format on the Synthesizer artifact, outcome
-    at terminal answer evaluation, compactness as a token penalty, the verdict
-    as the terminal gate, and faithfulness as a planned/source-support check
-    that requires schema synchronization before it can be claimed as active.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{Reward signals in a NanoMem trajectory. Format supervises the
-  structured evidence artifact, outcome and length connect terminal evidence to
-  downstream usefulness and compactness, and the verdict gates whether terminal
-  outcome evaluation is reached. Source faithfulness is a method requirement,
-  but it should be claimed as an active reward only after its implementation is
-  synchronized with the parser schema.}
-  \label{fig:methods-rewards}
-\end{figure}
+\subsection{Verdict Reward}
+\label{subsec:methods-verdict}
 
-\begin{table}[H]
-  \centering
-  \caption{Reward components and their roles.}
-  \label{tab:methods-rewards}
-  \scriptsize
-  \begin{tabular}{p{0.18\textwidth}p{0.21\textwidth}p{0.19\textwidth}p{0.23\textwidth}p{0.09\textwidth}}
-    \hline\hline
-    Component & Measures & Timing & Failure mode addressed & Risk \\
-    \hline
-    Format & XML parseability and required fields & Each Synthesizer output & Unusable evidence artifact & Models may learn shallow formatting \\
-    Faithfulness & Direct support between event text and cited session & Planned reward or post-hoc diagnostic until schema is synchronized & Unsupported compressed evidence & Current reward path still expects removed \texttt{inferred} field \\
-    Outcome & Answer correctness from terminal evidence & Terminal only & Evidence that is well formed but not useful & Can hide which component failed \\
-    Length & Compactness of Synthesizer output & Usually terminal or trajectory aggregate & Passing bloated evidence to answer model & Must not reward empty evidence \\
-    \hline\hline
-  \end{tabular}
-\end{table}
+Verdict reward supervises the stop-or-continue decision using the objective
+retrieval state, not the sessions selected by the Synthesizer. Let
+$\mathcal{G}_q$ be the gold evidence session set for query $q$, and let
+$\mathcal{S}^{\mathrm{ret}}_{\le t}$ be the sessions retrieved up to round $t$.
+The round-level verdict reward is
+\[
+R_{\mathrm{ver}}
+(\hat{v}_t;\mathcal{S}^{\mathrm{ret}}_{\le t},\mathcal{G}_q)=
+\begin{cases}
++1, & \mathcal{G}_q\subseteq\mathcal{S}^{\mathrm{ret}}_{\le t}
+\ \text{and}\ \hat{v}_t=\texttt{sufficient},\\
++1, & \mathcal{G}_q\not\subseteq\mathcal{S}^{\mathrm{ret}}_{\le t}
+\ \text{and}\ \hat{v}_t=\texttt{insufficient},\\
+-1, & \text{otherwise}.
+\end{cases}
+\label{eq:verdict-reward}
+\]
+The trajectory-level verdict score is accumulated:
+\[
+  V(\tau)=\sum_{t=1}^{T}
+  R_{\mathrm{ver}}
+  (\hat{v}_t;\mathcal{S}^{\mathrm{ret}}_{\le t},\mathcal{G}_q).
+  \label{eq:verdict-sum}
+\]
+Using retrieved sessions rather than Synthesizer-cited sessions prevents the
+policy from ignoring already retrieved gold evidence merely to justify another
+round.
 
-\section{ChainMem Benchmark Construction}
-\label{sec:methods-chainmem}
+\subsection{Outcome Reward}
+\label{subsec:methods-outcome}
+
+Outcome reward is computed once after the trajectory terminates. The frozen
+answerer consumes the final accumulated Temporal Evidence Pool and returns
+\[
+  \hat{a}=A(q,H_{T+1}).
+\]
+A frozen judge compares $\hat{a}$ with the gold answer $a^\star$:
+\[
+  R_{\mathrm{out}}(\tau)=o(\tau)
+  =
+  \mathbb{I}\!\left[J(\hat{a},a^\star)=1\right].
+  \label{eq:outcome-reward}
+\]
+This term measures whether the constructed evidence is useful for answering; it
+does not make NanoMem itself an answer generator.
+
+\subsection{Length and Compactness Reward}
+\label{subsec:methods-length}
+
+Compactness is rewarded only among correct trajectories. Let $m(z_t)$ be the
+token length of the Synthesizer output at round $t$, and let $B$ be a length
+budget. A compactness score can be written as
+\[
+  \ell(\tau)
+  =
+  o(\tau)\cdot
+  \left[
+  1-\min\left(
+      1,\frac{1}{BT}\sum_{t=1}^{T}m(z_t)
+    \right)
+  \right].
+  \label{eq:length-reward}
+\]
+The factor $o(\tau)$ is important: without it, the model could learn to produce
+short but useless evidence. With this gate, compactness means ``shorter among
+the trajectories that already answer correctly.''
+
+\subsection{Total Reward}
+\label{subsec:methods-total-reward}
+
+The total reward is
+\[
+R(\tau)
+=
+\begin{cases}
+c, & f(\tau)=0,\\
+w_o o(\tau)
++w_v\displaystyle\sum_{t=1}^{T}
+R_{\mathrm{ver}}(\hat{v}_t;\mathcal{S}^{\mathrm{ret}}_{\le t},\mathcal{G}_q)
++w_l\ell(\tau), & f(\tau)=1.
+\end{cases}
+\label{eq:total-reward}
+\]
+The final coefficient setting is
+\[
+  (w_o,w_v,w_l)=(0.50,0.10,0.05),
+  \qquad c=-0.20.
+  \label{eq:reward-weights}
+\]
+The hierarchy is intentional: answer correctness is the dominant task-level
+signal, verdict correctness provides process-level supervision, and length
+optimizes compactness only after usefulness is achieved. NanoMem does not use a
+separate event-time reward. If the Synthesizer infers the wrong event time, the
+error can mislead later retrieval and reduce final answer correctness, which is
+captured through the outcome reward.
+
+For clarity, the coefficient logic can be summarized by the margin conditions
+used in the final reward analysis. With maximum round count $T_{\max}=3$, the
+worst format-valid wrong-answer trajectory has reward $-3w_v$, and the best
+wrong-answer trajectory has reward $3w_v$. Outcome dominance requires
+\[
+  -3w_v+w_o>3w_v
+  \quad\Longrightarrow\quad
+  w_o>6w_v.
+\]
+A single verdict correction changes the cumulative verdict score by $2$, so
+its reward change is
+\[
+  \Delta_{\mathrm{ver}}=2w_v.
+\]
+To keep verdict quality more important than the full compactness range, the
+design requires
+\[
+  2w_v>w_l.
+\]
+Finally, the format-failure penalty is placed below the worst valid trajectory:
+\[
+  c<3w_v-w_o.
+\]
+The chosen values satisfy these inequalities and keep the reward aligned with
+the intended preference ordering.
+
+\section{TimeMemEval Construction}
+\label{sec:methods-timememeval}
 
 LoCoMo and LongMemEval evaluate long-term memory and multi-session reasoning
-\cite{maharana2024locomo,wu2024longmemeval}, but many examples remain solvable
-when the answer-bearing session is directly retrievable. NanoMem therefore uses
-ChainMem as a diagnostic benchmark for indirectly addressable evidence. The
-benchmark targets cases where the system must first retrieve or synthesize a
-bridge before it can search for the final evidence.
+\cite{maharana2024locomo,wu2024longmemeval}, but many questions can still be
+solved by one high-recall retrieval step. TimeMemEval is designed as a
+diagnostic stress test for hidden-dependency temporal search. Its key invariant
+is that the answer-bearing evidence becomes addressable only after an
+intermediate temporal bridge has been recovered.
 
-Each ChainMem example contains a source event, a bridge relation, and a
-destination event. The query makes the source event locatable, but the answer
-is stored in the destination event. A valid system must recover the source
-event time, derive the target window or condition, retrieve the destination
-event, and then synthesize evidence for the answer model. Distractors are
-included so that surface matching alone is not enough.
+Each TimeMemEval example contains a source event $e_s$, a bridge temporal window
+$W_b$, a destination event $e_d$, and distractors $\mathcal{D}_{\mathrm{dist}}$:
+\[
+  x=(q,e_s,W_b,e_d,\mathcal{D}_{\mathrm{dist}},a^\star).
+\]
+The query makes $e_s$ retrievable, but the answer is stored in $e_d$. The bridge
+window is derived from the event time of the source event:
+\[
+  W_b=g(t_{\mathrm{event}}(e_s),\delta),
+\]
+where $g$ applies the sampled temporal relation or offset $\delta$. A successful
+memory system must recover $e_s$, infer $W_b$, retrieve $e_d$, and synthesize a
+sufficient evidence pool for the answerer.
 
-The construction process can be understood as event-graph-first generation.
-First, a persona or theme and source event are sampled. Second, a bridge scope
-and temporal offset determine the target window. Third, a destination event and
-answer are placed inside or around that window. Fourth, hard distractors are
-added, such as near-window events, answer aliases, or semantically similar
-activities. Fifth, the event graph is realized as multi-turn sessions with
-relative or indirect temporal expressions. Finally, automatic checks filter
-invalid generations, temporal inconsistencies, split leakage, and non-unique
-answers.
+The construction process is event-graph-first. A persona or theme is sampled,
+then a source event is generated. A temporal offset defines the bridge window,
+and a destination event containing the gold answer is placed relative to that
+window. Hard distractors are added near the same topic, time period, entity, or
+answer type. The event graph is then realized as multi-session dialogue with
+calendar-based, relative, or indirect temporal phrasing. Automatic checks remove
+invalid generations, temporal inconsistencies, answer ambiguity, and split
+leakage.
 
-ChainMem is not intended to cover all long-term memory behavior. It is a stress
-test for temporal-bridge retrieval. Public long-memory benchmarks remain
-necessary for evaluating generality, while ChainMem isolates the failure mode
-that motivates the iterative evidence-state design.
-
-\begin{figure}[H]
-  \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned ChainMem
-    construction figure. It should show source event, bridge window,
-    destination event, distractors, and realization into sessions.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{ChainMem construction. The benchmark creates questions whose final
-  evidence becomes retrievable only after an intermediate temporal bridge has
-  been recovered.}
-  \label{fig:methods-chainmem}
-\end{figure}
-
-\begin{table}[H]
-  \centering
-  \caption{ChainMem construction variables and validation checks.}
-  \label{tab:methods-chainmem}
-  \scriptsize
-  \begin{tabular}{p{0.24\textwidth}p{0.34\textwidth}p{0.32\textwidth}}
-    \hline\hline
-    Variable or check & Meaning & Why it matters \\
-    \hline
-    Source event & Event named or implied by the query & Provides the first retrieval target \\
-    Bridge window & Temporal interval derived from the source event & Creates the hidden retrieval cue \\
-    Destination event & Event containing the answer & Tests whether the system can continue search \\
-    Distractor mode & Similar events, near times, aliases, or confusable activities & Prevents trivial surface matching \\
-    Temporal style & Relative, calendar-based, or indirect phrasing & Tests event-time grounding \\
-    Temporal consistency check & Ensures generated dates and intervals agree & Prevents invalid samples \\
-    Answer uniqueness check & Ensures one answer is supported & Makes automatic evaluation meaningful \\
-    Split leakage check & Prevents train/evaluation contamination & Protects benchmark validity \\
-    \hline\hline
-  \end{tabular}
-\end{table}
-
-\section{Implementation Boundary}
-\label{sec:methods-implementation}
-
-The NanoMem implementation is organized around a service-style memory pipeline.
-Core runtime code lives under \texttt{src/nanomem}. The time utilities implement
-relative temporal expression resolution and canonicalization. Storage and vector
-store modules provide memory persistence and retrieval indexes. Operator modules
-implement query preprocessing, read-path retrieval, compression, extraction,
-and write-path behavior. The server and service modules expose the memory
-pipeline for evaluation and training.
-
-Training code is organized under \texttt{training/grpo}. The schema parser
-defines the final Synthesizer event fields and valid verdicts. The rollout code
-connects Planner prompts, online retrieval, Synthesizer generation, token
-masking, and reward computation inside a GRPO agent loop. Evaluation code under
-\texttt{evals} provides benchmark-specific runners for LoCoMo, LongMemEval,
-ChainMem, and related baselines.
-
-The implementation boundary used in this chapter is therefore concrete. The
-reported GRPO retrieval path uses BM25/dense index search with the $0.25/0.75$
-combined score, cue-level \texttt{hard\_mention} temporal filtering when cue
-spans exist, disabled reranking, top-seven pre-reranker session retention per
-cue, complete-session token-budget pruning, and up to three retrieval rounds by
-default. \textcolor{red}{TODO: Resolve the reward boundary before writing
-Chapter~4. The implementation boundary must name the exact active reward
-objective used by the reported GRPO run, including whether faithfulness was
-fixed and enabled or excluded from optimization.} The reward boundary is less
-settled. Format, outcome, and length are
-traceable in the current reward pipeline, with length implemented as a negative
-token-ratio penalty. The source-faithfulness reward is not yet a reliable
-active method claim because the parser no longer exposes the older
-\texttt{inferred} attribute while the reward code still reads that field. A
-reported training run must therefore either document a synchronized
-faithfulness implementation or exclude faithfulness from the claimed
-optimization objective. Chapter 4 should still report run-specific model
-identities, data splits, group size, checkpoint selection, and any
-configuration overrides, and it must align its GRPO claims with whichever
-reward path was actually executable.
-
-\begin{table}[H]
-  \centering
-  \caption{Mapping from method components to implementation areas.}
-  \label{tab:methods-implementation}
-  \scriptsize
-  \begin{tabular}{p{0.22\textwidth}p{0.27\textwidth}p{0.20\textwidth}p{0.21\textwidth}}
-    \hline\hline
-    Method component & Main implementation area & Input/output & Method-relevant setting or check \\
-    \hline
-    Temporal normalization & \texttt{src/nanomem/time\_utils.py} & Text plus timestamp to resolved spans & Phrase coverage and date format \\
-    Query cues & \texttt{src/nanomem/operators/query.py}; prompt cue schema & Query to structured cues & Planner cues are enriched with temporal spans before retrieval \\
-    Retrieval & \texttt{src/nanomem/operators/read\_path.py}; vector stores & Cues to candidate sessions & BM25/dense $0.25/0.75$, \texttt{hard\_mention}, reranker off, top-seven per cue \\
-    Synthesizer schema & \texttt{training/grpo/trainer/schemas.py} & XML to structured events and verdict & \texttt{session\_id}, \texttt{session\_time}, \texttt{event\_time}, text, binary verdict \\
-    GRPO rollout & \texttt{training/grpo/trainer/rollout.py} & Query trajectory to masked policy tokens & Maximum three rounds by default; terminal on \texttt{sufficient} \\
-    Reward pipeline & \texttt{training/grpo/trainer/rewards.py}; reward weights config & XML and terminal answer to scalar reward & Format/outcome/length executable; faithfulness requires schema synchronization before active-use claims \\
-    Benchmarks & \texttt{evals/locomo}, \texttt{evals/longmemeval}, \texttt{evals/chainmem} & Dataset records to evaluation results & Split sizes and filtering rules \\
-    \hline\hline
-  \end{tabular}
-\end{table}
-
-\section{Chapter Summary}
-\label{sec:methods-summary}
-
-This chapter defined NanoMem as an evidence-state construction system. The
-Temporal Evidence Pool answers RQ1 by representing long-term memory as
-source-grounded events with separate session-time and event-time fields. The
-Planner--Retriever--Synthesizer loop answers RQ2 by allowing evidence found in
-one round to guide retrieval in the next round. GRPO training and the reward
-design align the Synthesizer with parseable, compact, useful, and
-sufficiency-aware evidence construction, while source faithfulness remains a
-required evidence property that must be either synchronized in the reward
-implementation or evaluated diagnostically. \textcolor{red}{NOTSURE: The
-Chapter~4 interface is not final until the reward contract is fixed; Results
-must not claim learned source faithfulness, verdict correctness, or a reward
-ablation unless the corresponding active objective is verified from the final
-training run.} Chapter 4 evaluates whether these design choices improve answer
-quality, temporal grounding, compactness, and hidden-dependency retrieval on
-public memory benchmarks and ChainMem.
+TimeMemEval is not intended to model every real memory failure. It isolates the
+case where a system must use a temporal bridge to make the final evidence
+retrievable. That makes it especially useful for evaluating whether the
+Temporal Evidence Pool and iterative loop solve a problem that ordinary
+one-shot retrieval does not directly target.
