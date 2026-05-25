@@ -1,0 +1,46 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.0pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llcccccccccccc@{}}
+\toprule
+Group & Method
+& \multicolumn{2}{c}{SSU}
+& \multicolumn{2}{c}{SSA}
+& \multicolumn{2}{c}{KU}
+& \multicolumn{2}{c}{TR}
+& \multicolumn{2}{c}{MR}
+& \multicolumn{2}{c}{Overall} \\
+\cmidrule(lr){3-4}
+\cmidrule(lr){5-6}
+\cmidrule(lr){7-8}
+\cmidrule(lr){9-10}
+\cmidrule(lr){11-12}
+\cmidrule(l){13-14}
+& & Acc. & Tok. & Acc. & Tok. & Acc. & Tok. & Acc. & Tok. & Acc. & Tok. & Acc. & Tok. \\
+\midrule
+Full Context & GPT-5.1 & 95.7 & 30.8 & 96.4 & 47.9 & 84.6 & 29.1 & 39.8 & 52.2 & 44.4 & 51.6 & 63.6 & 42.3 \\
+Full Context & Qwen3.5-9B & 97.1 & 76.2 & 100.0 & 74.0 & 79.5 & 147.4 & 39.8 & 254.7 & 45.1 & 189.0 & 63.6 & 172.3 \\
+\midrule
+Write & Mem0 & 82.3 & 209 & 89.5 & 207 & 47.4 & 220 & 54.2 & 220 & 46.2 & 220 & 59.2 & 217 \\
+Write & A-Mem & 95.0 & 18.7k & 95.0 & 15.7k & 75.0 & 18.7k & 45.0 & 18.6k & 50.0 & 18.7k & 72.0 & 18.1k \\
+\midrule
+Search & MemR$^3$ & 90.0 & 50.4 & 95.0 & 86.2 & 50.0 & 101.7 & 55.0 & 175.2 & 50.0 & 140.4 & 68.0 & 110.8 \\
+Search & Search-R1 & 38.6 & 28.6 & 28.6 & 19.3 & 33.3 & 13.6 & 10.5 & 24.9 & 3.0 & 26.7 & 22.8 & 22.6 \\
+\midrule
+Temporal & Memory-T1-Qwen & 64.3 & 49.7 & 64.3 & 55.0 & 44.9 & 49.9 & 27.1 & 62.2 & 24.8 & 63.9 & 45.1 & 56.1 \\
+\midrule
+\rowcolor{black!10}
+\textbf{Ours} & \textbf{\sys-Vanilla} & 94.3 & 104 & 94.6 & 245 & 71.8 & 357 & 75.8 & 417 & 70.7 & 462 & 78.7 & 353 \\
+\addlinespace[1pt]
+\rowcolor{black!10}
+\textbf{Ours} & \textbf{\sys-GRPO} & 95.7 & 81 & 98.2 & 94 & 79.5 & 109 & 86.4 & 124 & 71.4 & 149 & 83.8 & 119 \\
+\bottomrule
+\end{tabular}
+}
+\caption{LongMemEval results. SSU/SSA: single-session user/assistant; KU:
+knowledge update; TR: temporal reasoning; MR: multi-session reasoning; k: thousands.}
+\label{tab:longmemeval-main}
+\vspace{-1.2em}
+\end{table*}

@@ -12,41 +12,35 @@ University of Gothenburg\\
 \thispagestyle{plain}			% Supress header 
 \setlength{\parskip}{0pt plus 1.0pt}
 \section*{Abstract}
-Long-term memory is becoming a central component of large language model agents,
-yet existing memory systems often struggle to provide compact and reliable
-evidence for temporally grounded questions. In multi-session dialogue histories,
-the information needed to answer a query may not be directly named in the query
-itself. It can be hidden behind relative temporal expressions, causal
-predecessors, or intermediate facts that must first be retrieved and interpreted.
-This thesis studies this evidence addressability problem through NanoMem, a
-memory framework that treats memory retrieval as iterative evidence synthesis
-rather than one-shot context selection or direct answer generation.
-
-NanoMem separates the role of memory from the role of the downstream answer
-model. At search time, a Planner rewrites the user query into targeted retrieval
-cues, while a Synthesizer compresses retrieved sessions into structured evidence
-events. Each event records its source session, the session timestamp, an inferred
-event time, and whether the statement is directly supported or inferred. A
-verdict signal determines whether the current evidence is sufficient,
-indicative, or insufficient; insufficient evidence is fed back to the Planner to
-drive another retrieval round. The framework is trained and evaluated with
-signals that reward temporal grounding, evidence faithfulness, sufficiency
-judgement, and downstream answer quality.
-
-The thesis adapts the completed NanoMem research project and its conference-paper
-version into a broader degree-project report. It explains the motivation,
-system design, implementation, training signals, benchmark construction, and
-experimental evaluation in greater detail than a conference paper permits.
-Experiments on long-term memory benchmarks including LoCoMo, LongMemEval, and
-ChainMem show that iterative evidence synthesis can improve temporal and
-multi-hop memory reasoning while reducing the amount of evidence passed to the
-downstream model. The results support the view that agent memory should provide
-faithful, source-grounded evidence rather than unstructured retrieved context or
-opaque final answers.
+Temporal-causal reasoning over multi-session dialogues is a critical capability
+for memory-augmented LLM agents. However, existing memory systems suffer from
+two coupled weaknesses: they conflate session time with event occurrence time,
+and they cannot propagate temporal inferences across retrieval rounds to locate
+indirectly addressable evidence. We introduce \sys{}, an RL-trained memory
+evidence synthesis framework, which reformulates temporal memory search as
+iterative evidence synthesis. The core mechanism is a Temporal Evidence Pool
+that accumulates structured event records with separate event-time and
+session-time fields. At ingestion, \sys{} applies lightweight deterministic
+normalization to resolve relative temporal expressions; at search time, a
+Planner decomposes the query into retrieval cues, and a trainable Synthesizer
+extracts temporally grounded events from retrieved sessions and judges whether
+the pool is sufficient to answer the query. If not, the inferred events feed
+back to the Planner to drive the next retrieval round. Since the Synthesizer's
+extraction and sufficiency decisions cannot be reliably elicited through
+prompting alone, we train it with GRPO using multi-level rewards covering output
+format, evidence compactness, and answer correctness. In particular, a
+per-round verdict reward supervises the sufficiency decision at each retrieval
+step, providing dense process supervision for the stop-or-continue choice. We
+evaluate \sys{} on LoCoMo, LongMemEval, and \bench{}, a new benchmark for
+temporal-causal reasoning in conversational memory. \sys{} achieves
+state-of-the-art performance across all three benchmarks, improving over the
+strongest prior memory methods by 12.5, 11.8, and 31.0 percentage points on
+LoCoMo, LongMemEval, and \bench{}, respectively, while using 74.0\% fewer
+evidence tokens than Mem0 on average over LoCoMo and LongMemEval.
 
 % KEYWORDS (MAXIMUM 10 WORDS)
 \vfill
-Keywords: agent memory, large language models, evidence synthesis, temporal reasoning, retrieval, faithfulness, NanoMem.
+Keywords: agent memory, large language models, retrieval, RAG, reinforcement learning, GRPO, temporal reasoning, NanoMem.
 
 \newpage				% Create empty back of side
 \thispagestyle{empty}

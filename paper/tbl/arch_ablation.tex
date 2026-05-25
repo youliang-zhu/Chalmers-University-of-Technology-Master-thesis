@@ -1,0 +1,26 @@
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4.5pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Variant
+& LoCoMo-MH
+& LoCoMo-Temp
+& LME-TR
+& \bench
+& Avg. Rounds \\
+\midrule
+\rowcolor{black!10}
+\textbf{Full \sys-Vanilla} & 84.0 & 76.6 & 75.8 & 43.0 & 1.25 \\
+w/o text normalization & 82.3 & 71.3  & 64.9 & 33.5 & 1.29 \\
+w/o temporal evidence pool & 77.0 & 67.6& 60.6 & 25 & 1.45 \\
+Single-round retrieval & 78.0 & 78.5 & 78.0 & 32.0 & 1.0 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Architectural ablation of \sys. MH, Temp, TR, and Avg. Rounds denote
+multi-hop, temporal, temporal reasoning, and mean retrieval rounds.}
+\label{tab:arch-ablation}
+\end{table}

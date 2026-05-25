@@ -294,6 +294,7 @@ group-normalized advantage
   \label{eq:grpo-advantage}
 \]
 The clipped GRPO objective over unmasked Synthesizer tokens is
+{\small
 \[
 \begin{aligned}
 J_{\mathrm{GRPO}}(\theta)
@@ -321,6 +322,7 @@ J_{\mathrm{GRPO}}(\theta)
 \end{aligned}
 \label{eq:grpo-objective}
 \]
+}
 where $\mathcal{Y}^i$ is the set of unmasked Synthesizer tokens in trajectory
 $\tau^i$ and
 \[
@@ -363,9 +365,9 @@ and the reward model is the task reward defined in \autoref{sec:methods-reward}.
 \section{Reward Design}
 \label{sec:methods-reward}
 
-The final reward follows the NeurIPS reward contract. It contains a trajectory
-format gate, a round-level verdict reward, a terminal outcome reward, and a
-compactness term. Let a trajectory be abstracted as
+The final reward used in this thesis contains a trajectory format gate, a
+round-level verdict reward, a terminal outcome reward, and a compactness term.
+Let a trajectory be abstracted as
 \[
   \tau=(f,T,\mathbf{v},o,\ell),
 \]

@@ -1,3 +1,245 @@
-% CREATED BY MAGNUS GUSTAVER, 2020
-\chapter{Appendix 1}
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\chapter{Supplementary Experimental Details}
+\label{app:experimental-details}
+
+This appendix records the experimental details that are compressed in
+Chapter~\ref{chap:experiment-analysis}. The goal is to make the benchmark
+construction, model configuration, training setup, and baseline adaptations
+explicit enough for the results to be audited and reproduced.
+
+\section{Training and Evaluation Split}
+\label{app:training-evaluation-split}
+
+The GRPO training data is constructed from three sources. LoCoMo and
+LongMemEval provide public multi-session dialogue-memory questions with gold
+answers and evidence-session annotations. The diagnostic \bench{} benchmark
+contributes temporal-bridge records whose final answer evidence is not directly
+addressable from the original query.
+
+We start from 1,986 LoCoMo questions, 500 LongMemEval questions, and 500 raw
+\bench{} candidates. For LoCoMo, category-5 adversarial questions are excluded.
+For LongMemEval, single-session preference questions are excluded. For
+\bench{}, the generation pipeline removes invalid attempts, duplicates, split
+leakage, incomplete metadata, temporal inconsistencies, and non-unique answers.
+This produces 1,536 LoCoMo questions, 469 LongMemEval questions, and 374
+\bench{} records in the filtered candidate pool.
+
+The final GRPO training set contains 500 examples. To avoid conversation-level
+leakage, LoCoMo is partitioned by dialogue rather than by individual question:
+six conversations form the LoCoMo training pool, and four conversations are
+reserved for evaluation. LongMemEval is not used for GRPO training; all 469
+filtered LongMemEval questions are used for zero-shot evaluation. For
+\bench{}, 99 filtered records are sampled for training, and the remaining 275
+records are used for evaluation. The evaluation partitions are not used for
+checkpoint selection.
+
+\begin{table}[H]
+  \centering
+  \caption{Training and evaluation split used for GRPO training and reporting.}
+  \label{tab:training-evaluation-split}
+  \scriptsize
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{p{0.24\textwidth}rrrrp{0.24\textwidth}}
+    \hline\hline
+    Data stage & LoCoMo & LongMemEval & \bench{} & Total & Use \\
+    \hline
+    Original questions & 1,986 & 500 & 500 & 2,986 & Source pool \\
+    Filtered questions & 1,536 & 469 & 374 & 2,379 & Candidate pool \\
+    Training & 401 & 0 & 99 & 500 & GRPO training \\
+    Evaluation & 655 & 469 & 275 & 1,399 & Reporting only \\
+    \hline\hline
+  \end{tabular}
+  }
+\end{table}
+
+Each training example stores lightweight supervision and metadata: the user
+query, gold answer, gold evidence sessions, source identifier, user or speaker
+metadata, source bucket, difficulty label, and evaluation mode. It does not
+store fixed retrieved memories or precomputed rollout traces. During GRPO, the
+sample metadata is used to call the corresponding online memory-search
+environment, retrieve sessions, synthesize events, produce verdicts, and score
+the final answer. The policy is therefore trained on online memory-search
+behavior rather than on a static retrieved context.
+
+\section{Model and Baseline Configurations}
+\label{app:model-combo}
+
+Table~\ref{tab:model-combo} reports the model configuration used by each method
+in the main result tables. Every method has a model that produces the final
+answer. The distinction is whether the memory component returns evidence to a
+separate downstream answerer, as \sys{}, Mem0, and A-Mem do, or whether the
+same model directly produces the answer as part of the method, as in
+full-context prompting and direct-answerer retrieval agents. GPT-5.1 is used as
+the fixed judge for all methods and is not the answerer unless the row
+explicitly names GPT-5.1 as the final-answer model.
+
+\begin{table}[H]
+  \centering
+  \caption{Model combinations used in the main evaluation tables. The
+  final-answer model is the model whose output is judged for answer accuracy.
+  GPT-5.1 is the fixed judge for all methods, not the answerer for all methods.}
+  \label{tab:model-combo}
+  \scriptsize
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{p{0.14\textwidth}p{0.17\textwidth}p{0.18\textwidth}p{0.25\textwidth}p{0.18\textwidth}}
+    \hline\hline
+    Group & Method & Output mode & Memory/search or policy model & Final-answer model \\
+    \hline
+    Full context & GPT-5.1 & Direct answer & Full history prompt & GPT-5.1 \\
+    Full context & Qwen3.5-9B & Direct answer & Full history prompt & Qwen3.5-9B \\
+    Write-time memory & Mem0 & Evidence provider & Qwen3.5-9B & Qwen3.5-9B \\
+    Write-time memory & A-Mem & Evidence provider & Qwen3.5-9B & Qwen3.5-9B \\
+    Search-time retrieval & MemR$^3$ & Direct answer & Qwen3.5-9B & Qwen3.5-9B \\
+    Search-time retrieval & Search-R1 & Direct answer & Public checkpoint & Public checkpoint \\
+    Temporal memory & Memory-T1-Qwen & Direct answer & Qwen3.5-9B & Qwen3.5-9B \\
+    Ours & \sys{}-Vanilla & Evidence provider & Qwen3.5-9B & Qwen3.5-9B \\
+    Ours & \sys{}-GRPO & Evidence provider & Qwen3.5-9B GRPO & Qwen3.5-9B \\
+    \hline\hline
+  \end{tabular}
+  }
+\end{table}
+
+\section{Training Implementation Details}
+\label{app:training-hyperparameters}
+
+\textbf{Policy and rollout.}
+The trainable policy is the Qwen3.5-9B Synthesizer, trained with
+full-parameter GRPO using VERL/HybridFlow \cite{sheng2024hybridflow}. The
+Planner, \sys{} retriever, Qwen3.5-9B answerer, GPT-5.1 judge, and reference
+policy are frozen environment components. For each prompt, the actor samples
+\(K=8\) trajectories with at most three retrieval rounds. At inference time,
+\sys{} uses the same maximum of three retrieval rounds and retrieves the top-7
+memories in each round. The rollout context allows 49,152 prompt tokens, 2,048
+response tokens, and a 65,536-token SGLang model context
+\cite{zheng2023sglang}.
+
+\textbf{Optimization.}
+We optimize with AdamW using learning rate \(2{\times}10^{-6}\), weight decay
+0.01, betas \((0.9,0.999)\), and Adam epsilon \(10^{-8}\). The learning-rate
+schedule is constant with a 3\% warmup, corresponding to 9 warmup steps over
+300 global steps. Each GRPO update uses one prompt and eight rollout
+trajectories, with PPO mini-batch size 1 and micro-batch size 1. We use PPO
+clipping ratio 0.2, actor KL loss coefficient 0.001 with low-variance KL,
+gradient clipping 1.0, bf16 training, and FSDP parameter and optimizer
+offload. The final run resumes from global step 170 and continues to step 300,
+saving checkpoints every 10 steps. Training is conducted on four NVIDIA GH200
+96GB GPUs.
+
+\textbf{Reward setting.}
+The final run uses reward weights
+\[
+  (w_o,w_v,w_l)=(0.50,0.10,0.05),
+  \qquad c=-0.20.
+\]
+Appendix~\ref{app:reward-design} defines the reward components, and
+Appendix~\ref{app:reward-design-coefficients} analyzes the coefficient choice.
+
+\section{Evaluation Protocol}
+\label{app:evaluation-protocol}
+
+The main metric is answer accuracy. In all experiments, GPT-5.1 is used as the
+fixed LLM judge for automatic evaluation, and the judge prompt is kept
+unchanged across compared methods. BLEU and token-level F1 are not used as
+primary metrics because many long-term memory answers are semantically
+equivalent despite surface variation, especially for dates, event descriptions,
+and short natural-language answers.
+
+LoCoMo is a two-speaker conversational memory benchmark. The evaluation follows
+the conversation-memory setting and searches the relevant speaker histories as
+required by each question. LongMemEval and \bench{} are treated as single-user
+query settings; each query is evaluated independently over its associated
+history or generated session set.
+
+Token counts are output-side compactness metrics and are not identical to full
+serving cost. For direct-answerer methods, tokens denote final answer-output
+tokens. For evidence-provider methods, tokens denote the retrieved evidence or
+memory context returned downstream. \sys{}-specific diagnostics additionally
+include retrieval rounds and verdict accuracy. Retrieval rounds measure how
+often the loop is used, while verdict accuracy measures whether the
+Synthesizer's \texttt{sufficient}/\texttt{insufficient} decision agrees with
+gold evidence coverage.
+
+\section{Baseline Implementation Notes}
+\label{app:baseline-implementation-notes}
+
+This section records implementation adaptations and caveats not captured by
+Table~\ref{tab:model-combo}. For stateful memory systems, users and benchmark
+files are isolated to avoid cross-example leakage. Local Qwen baselines use
+SGLang \cite{zheng2023sglang} with thinking disabled. Embedding-based
+baselines use \texttt{text-embedding-3-large} with hidden dimension 3072 unless
+otherwise noted. The intended evidence retrieval budget is top-\(k=7\), except
+for method-specific budgets or implementation caveats below.
+
+\textbf{Full context.}
+Full context does not call a memory system. LoCoMo uses each conversation file
+as one full-history prefix. LongMemEval uses each query-specific haystack, and
+\bench{} provides all sessions in a sample as context. This is a strong
+reference baseline but not a deployable memory system.
+
+\textbf{Mem0.}
+We run a local OSS Mem0 codebase \cite{chhikara2025mem0} with lightweight
+server/client adaptations. Histories are ingested at the session level, and
+Mem0 internally extracts fact-style memory notes; search therefore returns
+Mem0 notes rather than raw transcripts. The local backend uses pgvector without
+graph-store retrieval and adds synchronous ingestion, JSON repair and retry,
+custom fact/update prompts, and top-\(k\) search fixes required by the local
+evaluation harness.
+
+\textbf{A-Mem.}
+We evaluate A-Mem \cite{xu2025amem} with the released codebase. Each session
+is inserted through one \texttt{add\_note()} call with a timestamped header, so
+the stored \texttt{MemoryNote.content} is the full transcript rather than an
+extracted atomic fact. The vector store is ChromaDB, and the wrapper keeps the
+released add/search/evolution path intact. A-Mem evolution updates tags,
+context, and links, but does not rewrite the stored transcript into compact
+facts; its evidence token counts therefore reflect transcript-level evidence.
+
+\textbf{MemR\(^3\).}
+We evaluate MemR\(^3\) \cite{du2025memr3} with the released codebase and its
+original retrieve/generate/reflect/answer workflow. Each benchmark item is
+converted into MemR\(^3\)'s conversation-plus-QA format: the conversation is
+flattened as timestamped speaker text, chunked, embedded, and queried by the
+multi-step retrieval loop. The configuration uses chunk size 256, top-\(k=7\),
+maximum 5 iterations, and no reranker. We do not train MemR\(^3\). Disabling
+the reranker may understate its best retrieval performance, and its score
+reflects retrieval plus answer generation rather than pure retrieval accuracy.
+
+\textbf{Search-R1.}
+We evaluate Search-R1 \cite{jin2025searchr1} with the public Hugging Face
+checkpoint \texttt{PeterJinGo/SearchR1-nq\_hotpotqa\_train-qwen2.5-7b-em-ppo}.
+The model is used as a direct answerer with the original
+\texttt{<think>}/\texttt{<search>}/\texttt{<answer>} protocol. It can issue up
+to three search calls, receives retrieved memory text in \texttt{<information>}
+blocks, and the final text inside \texttt{<answer>} is used as the benchmark
+response. The checkpoint was trained for open-domain search QA rather than
+timestamped long-term conversational memory; the adapter does not fine-tune it
+or extract atomic memory facts during ingestion.
+
+\textbf{Memory-T1-Qwen.}
+We do not run an official trained Memory-T1 checkpoint because public weights
+were not available for the trained model at the time of the experiments. We
+therefore report a Memory-T1-style baseline using Qwen3.5-9B rather than
+official Memory-T1 checkpoint performance. Session-level SimpleBM25 retrieves
+candidate session transcripts; the prompt asks Qwen to select memory IDs and
+produce a JSON answer. The retrieval budget is top-\(k=7\), the prompt budget
+is 15,500 tokens, temperature is 0, and malformed JSON outputs receive at most
+two retries. Session-level BM25 can miss one endpoint of a temporal bridge, and
+Qwen3.5-9B is not trained for Memory-T1-style long-term temporal dialogue
+reasoning.
+
+\chapter{Algorithm and Reward Details}
+\label{app:algorithm-reward-details}
+
+\section{Algorithm Details}
+\input{include/backmatter/appendix_neurips/algorithm_details}
+
+\chapter{Dataset Details}
+\label{app:dataset-details}
+
+\section{Dataset Construction}
+\input{include/backmatter/appendix_neurips/dataset_details}
+
+\chapter{Prompt Templates and Case Study}
+\label{app:prompt-templates-and-case-study}
+
+\section{Prompt Templates}
+\input{include/backmatter/appendix_neurips/prompt_templates}

@@ -30,16 +30,6 @@ before the prompt is sent to the LLM. The goal is not only to shorten the
 prompt, but also to make the historical context more focused for downstream
 answering.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.95\textwidth]{figure/intro_memory.png}
-  \caption{Naive long-context prompting compared with memory-augmented
-  prompting. Long-context prompting sends the message history directly to the
-  LLM, whereas memory-augmented prompting first uses a memory system to select
-  relevant information for the current query.}
-  \label{fig:intro-memory}
-\end{figure}
-
 This thesis focuses on conversational agent memory. Unlike a static document
 collection, a conversation history is incremental, personal, and time-sensitive.
 The same user may mention a future plan in one session, revise it later, and
@@ -58,6 +48,17 @@ information to decide which part of the history should be inspected. Prior work
 and benchmarks show that LLMs remain brittle on temporal reasoning tasks,
 including event ordering, relative dates, and long conversational histories
 \cite{chu2024timebench,fatemi2025testoftime,maharana2024locomo}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figure/intro_memory.png}
+  \caption[Long-context prompting versus memory-augmented prompting]{Naive
+  long-context prompting compared with memory-augmented prompting. Long-context
+  prompting sends the message history directly to the LLM, whereas
+  memory-augmented prompting first uses a memory system to select relevant
+  information for the current query.}
+  \label{fig:intro-memory}
+\end{figure}
 
 The position of this thesis is that long-term agent memory should be studied as
 an evidence-providing component. The memory module should not simply return all
@@ -218,3 +219,14 @@ procedure, and evaluation are presented in the following chapters.
 
 \section{Thesis Outline}
 \label{sec:intro-outline}
+
+Chapter~\ref{chap:related-work} reviews the literature on LLM agents,
+long-term agent memory, retrieval-augmented generation, temporal reasoning, and
+reinforcement learning for agent memory. Chapter~\ref{chap:methods} formulates
+the memory evidence construction problem and presents the NanoMem architecture,
+including temporal evidence representation, the Planner--Retriever--Synthesizer
+loop, GRPO training, reward design, and the construction of TimeMemEval.
+Chapter~\ref{chap:experiment-analysis} reports the experimental setup, main
+benchmark results, comparative analysis, architecture ablations, and reward
+ablations. Chapter~\ref{chap:conclusion} answers the research questions and
+discusses implications, limitations, future work, and ethical considerations.

@@ -1,0 +1,44 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llcccccccccc@{}}
+\toprule
+Group & Method
+& \multicolumn{2}{c}{Single-hop}
+& \multicolumn{2}{c}{Multi-hop}
+& \multicolumn{2}{c}{Temporal}
+& \multicolumn{2}{c}{Open}
+& \multicolumn{2}{c}{Overall} \\
+\cmidrule(lr){3-4}
+\cmidrule(lr){5-6}
+\cmidrule(lr){7-8}
+\cmidrule(lr){9-10}
+\cmidrule(l){11-12}
+& & Acc. & Tok. & Acc. & Tok. & Acc. & Tok. & Acc. & Tok. & Acc. & Tok. \\
+\midrule
+Full Context & GPT-5.1 & 94.2 & 25.0 & 88.7 & 32.1 & 76.0 & 26.8 & 67.7 & 36.0 & 87.7 & 27.4 \\
+Full Context & Qwen3.5-9B & 92.2 & 18.2 & 84.0 & 23.6 & 55.5 & 15.5 & 56.2 & 39.4 & 80.8 & 19.9 \\
+\midrule
+Write & Mem0 & 79.5 & 675 & 79.3 & 650 & 43.0 & 650 & 67.1 & 675 & 71.0 & 650 \\
+Write & A-Mem & 81.0 & 12.5k & 78.4 & 12.4k & 65.1 & 11.9k & 63.5 & 12.0k & 76.1 & 12.3k \\
+\midrule
+Search & MemR$^3$ & 82.5 & 94.8 & 67.4 & 118.2 & 64.8 & 182.8 & 41.7 & 168.5 & 73.4 & 122.2 \\
+Search & Search-R1 & 52.9 & 5.2 & 47.2 & 4.1 & 23.1 & 2.8 & 35.4 & 3.1 & 44.5 & 4.4 \\
+\midrule
+Temporal & Memory-T1-Qwen & 86.3 & 44.6 & 75.2 & 49.0 & 52.6 & 43.1 & 44.8 & 48.7 & 74.7 & 45.4 \\
+\midrule
+\rowcolor{black!10}
+\textbf{Ours} & \textbf{\sys-Vanilla} & 90.5 & 234 & 84.0 & 364 & 76.6 & 225 & 67.4 & 375 & 85.0 & 264 \\
+\addlinespace[1pt]
+\rowcolor{black!10}
+\textbf{Ours} & \textbf{\sys-GRPO} & 91.4 & 99 & 89.0 & 138 & 87.5 & 88 & 65.2 & 152 & 88.6 & 107 \\
+\bottomrule
+\end{tabular}
+}
+\caption{LoCoMo results by category. Acc. is LLM-judge accuracy (\%), Tok. is
+output tokens, and k denotes thousands.}
+\label{tab:locomo-main}
+\vspace{-1.2em}
+\end{table*}

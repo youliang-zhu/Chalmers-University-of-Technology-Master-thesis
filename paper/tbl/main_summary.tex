@@ -1,0 +1,42 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llccccccccc@{}}
+\toprule
+Group & Method
+& \multicolumn{3}{c}{LoCoMo}
+& \multicolumn{3}{c}{LongMemEval}
+& \multicolumn{3}{c}{\bench} \\
+\cmidrule(lr){3-5}
+\cmidrule(lr){6-8}
+\cmidrule(l){9-11}
+& & Multi-hop & Temporal & Overall
+& TR & MR & Overall
+& Normal & Hard & Overall \\
+\midrule
+Full Context & GPT-5.1 & 88.7 & 76.0 & 87.7 & 39.8 & 44.4 & 63.6 & 25.0 & 7.0 & 16.0 \\
+Full Context & Qwen3.5-9B & 84.0 & 55.5 & 80.8 & 39.8 & 45.1 & 63.6 & 25.0 & 16.0 & 20.5 \\
+\midrule
+Write & Mem0 & 79.3 & 43.0 & 71.0 & 54.2 & 46.2 & 59.2 & 2.0 & 1.0 & 1.5 \\
+Write & A-Mem & 78.4 & 65.1 & 76.1 & 45.0 & 50.0 & 72.0 & 5.0 & 10.0 & 7.5 \\
+\midrule
+Search & MemR$^3$ & 67.4 & 64.8 & 73.4 & 55.0 & 50.0 & 68.0 & 13.0 & 11.0 & 12.0 \\
+Search & Search-R1 & 47.2 & 23.1 & 44.5 & 10.5 & 3.0 & 22.8 & -- & -- & \XX \\
+\midrule
+Temporal & Memory-T1-Qwen & 75.2 & 52.6 & 74.7 & 27.1 & 24.8 & 45.1 & 3.0 & 4.0 & 3.5 \\
+\midrule
+\rowcolor{black!10}
+\textbf{Ours} & \textbf{\sys-Vanilla} & 84.0 & 76.6 & 85.0 & 75.8 & 70.7 & 78.7 & 47.0 & 39.0 & 43.0 \\
+\addlinespace[1pt]
+\rowcolor{black!10}
+\textbf{Ours} & \textbf{\sys-GRPO} & 89.0 & 87.5 & 88.6 & 86.4 & 71.4 & 83.8 & 57.0 & 47.0 & 51.5 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Summary of main benchmark accuracy. All entries are accuracy
+percentages; detailed category-level results and token counts are reported in
+\autoref{app:main-benchmark-results}.}
+\label{tab:main-summary}
+\end{table*}

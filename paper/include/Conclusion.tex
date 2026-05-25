@@ -1,485 +1,335 @@
 % CREATED BY MAGNUS GUSTAVER, 2020
-\chapter{Discussion and Conclusion}
+\chapter{Conclusion}
+\label{chap:conclusion}
 \label{chap:discussion}
 
-This chapter returns from the experimental results to the thesis questions.
-NanoMem was designed around the evidence addressability gap: in long-term
-agent memory, the evidence needed by a future query is often hidden behind a
-time, condition, entity, or causal predecessor that is not named in the query
-itself. The results in Chapter~\ref{chap:results} support the central claim
-that this problem is better treated as iterative evidence synthesis than as
-one-shot retrieval or direct memory answering. At the same time, the same
-results expose clear limits. NanoMem improves the construction of compact,
-temporally grounded evidence, but it remains bounded by retrieval recall,
-temporal normalization, structured-output reliability, reward synchronization,
-and privacy-sensitive deployment constraints.
+This chapter closes the thesis by returning to the research questions introduced
+in Chapter~\ref{chap:introduction}. Chapter~\ref{chap:experiment-analysis}
+showed that \sys{} improves accuracy and returned-evidence compactness on
+LoCoMo, LongMemEval, and \bench{}, with the largest relative gain on the
+diagnostic temporal-bridge setting. The role of this chapter is not to repeat
+those tables, but to explain what the results imply for long-term conversational
+agent memory, where the current method remains limited, and what ethical and
+deployment issues remain before such a system can be used as personal memory
+infrastructure.
 
-The chapter is organized as follows. Section~\ref{sec:discussion-rqs}
-summarizes what the results imply for the research questions.
-Section~\ref{sec:discussion-design-lessons} draws design lessons for agent
-memory systems. Section~\ref{sec:discussion-limitations} analyzes failure
-modes and system limitations. Section~\ref{sec:discussion-validity} discusses
-threats to validity. Sections~\ref{sec:discussion-deployment}
-and~\ref{sec:discussion-ethics} consider deployment, privacy, safety, and
-sustainability.
-Section~\ref{sec:discussion-future-work} outlines future work, and
-Section~\ref{sec:discussion-conclusion} concludes the thesis.
+\section{RQ1}
+\label{sec:conclusion-rq1}
 
-\section{Answers to the Research Questions}
-\label{sec:discussion-rqs}
+\textbf{RQ1.} How can a long-term conversational memory system construct
+evidence at query time while preserving the original memory structure and
+avoiding heavy query-agnostic interpretation during ingestion?
 
-The first research question asked how long-term conversational memory can be
-represented as source-grounded structured evidence rather than only as raw
-retrieved sessions or final answers. NanoMem answers this by making the memory
-module produce a Temporal Evidence Pool. Each event records a concise evidence
-statement, a source session identifier, the session time, and the event time.
-This representation is not only a formatting choice. It changes the interface
-between memory and answering: the downstream answer model receives an
-inspectable evidence artifact instead of a noisy history dump or an opaque
-memory-side answer. The final schema also clarifies what the phrase
-``inference markers'' means in the thesis. Earlier variants contained a
-separate \texttt{inferred} event attribute, but the parser used in the final
-method removes that field. NanoMem instead marks inference boundaries through
-attribution and decomposition: each event is tied to a single source session,
-cross-session conclusions should be represented as multiple source-grounded
-events, and uncertain or bridge reasoning remains in the \texttt{reasoning}
-field and verdict boundary rather than being presented as a direct observation.
-Thus RQ1 is satisfied in the final method as a source-attribution and
-reasoning-boundary requirement, not as a standalone XML attribute.
+\sys{} answers this question by treating memory access as query-time evidence
+construction rather than write-time memory rewriting. The system does not rely
+on a single precomputed memory record as the final representation of a past
+conversation. Instead, it keeps the original session structure available, uses
+lightweight indexing and temporal support at ingestion time, and delays the
+main interpretation step until a concrete user query is available. This design
+is important because the future question determines which part of a memory is
+evidence. A detail that looks unimportant at write time may become the key
+bridge for a later temporal or multi-hop question.
 
-The second research question asked how an iterative Planner--Synthesizer loop
-can recover evidence that is not named in the original query. The main lesson
-is that iteration is useful when the loop state contains information that can
-become a new retrieval address. The Temporal Evidence Pool allows a first
-retrieval round to expose a bridge event, such as the week of a promotion or
-the place where a habit began, and lets the next round search with that newly
-available cue. The architecture ablations in
-Section~\ref{sec:results-architecture} support this interpretation: removing
-the pool or forcing single-round retrieval damages hidden-dependency settings,
-especially ChainMem, more than directly addressable temporal questions.
+The Temporal Evidence Pool is the main mechanism that makes this answer
+concrete. It stores compact events rather than raw sessions. Each event is tied
+to a source session and carries both session time and event time. The memory
+module therefore returns an inspectable evidence state to the downstream answer
+model instead of a long, noisy history dump. This preserves source attribution
+while reducing the burden on the answerer: the downstream model no longer has
+to perform retrieval validation, evidence selection, temporal grounding,
+compression, and final answer generation all at once.
 
-The third research question asked how NanoMem performs relative to long-term
-memory baselines and full-context answering. Across the comparable cells in
-Chapter~\ref{chap:results}, NanoMem-GRPO improves most strongly on multi-hop,
-temporal, and bridge-heavy tasks. It reaches 88.6\% overall accuracy on
-LoCoMo, 83.8\% on LongMemEval, and 51.5\% on ChainMem, while reducing the
-evidence passed downstream relative to NanoMem-Vanilla. These results should
-be interpreted carefully. They show that evidence synthesis can be more useful
-than returning more context in the evaluated settings, not that all long-term
-memory has been solved. ChainMem remains far from saturated, and several
-reported rows depend on synchronized local artifacts with explicit caveats.
+The experimental results support this design. Compared with
+\sys{}-Vanilla, \sys{}-GRPO improves accuracy while reducing the amount of
+returned evidence on all three benchmarks. On LoCoMo, returned evidence drops
+from 264 to 107 tokens; on LongMemEval, from 353 to 119 tokens; and on
+\bench{}, from 287 to 234 tokens. These numbers should be interpreted as
+returned-evidence compactness rather than full serving cost, but they show that
+query-time evidence synthesis can improve answer usefulness without simply
+passing more context downstream.
 
-\section{Design Lessons for Agent Memory}
-\label{sec:discussion-design-lessons}
+The answer to RQ1 is therefore that a long-term conversational memory system can
+preserve the original memory structure by keeping ingestion lightweight and
+moving the main interpretation into a query-time evidence provider. The memory
+module should not be forced to choose, at write time, a single permanent
+summary of what a session means. It can instead construct source-grounded,
+temporally grounded evidence when the user query makes the relevant relation
+visible.
 
-The first design lesson is that the output boundary of a memory module matters.
-When a memory system returns raw sessions, a downstream answer model must
-perform retrieval validation, temporal reasoning, evidence selection,
-compression, and answer generation at once. When a memory system returns only a
-final answer, the evidence construction process becomes difficult to audit.
-NanoMem uses a narrower boundary: memory constructs evidence and a sufficiency
-verdict, while final answer generation remains outside the memory module. This
-boundary makes failures easier to classify as retrieval misses, temporal
-grounding errors, premature sufficiency, evidence bloat, or downstream answerer
-errors.
+\section{RQ2}
+\label{sec:conclusion-rq2}
 
-The second design lesson is that event time should be treated as search state,
-not just as metadata. Session time records when a user mentioned something.
-Event time records when the described event happened or was valid. In temporal
-memory questions, these two times often diverge. If time is used only as a
-session-level filter, the system can miss sessions where a later conversation
-mentions an earlier event. If time is left only as unstructured text, the
-answer model carries too much of the reasoning burden. NanoMem's evidence
-events preserve both fields, so an inferred event time can become a retrieval
-cue in later rounds.
+\textbf{RQ2.} How can a memory agent recover temporally grounded and multi-hop
+evidence when the retrieval cue needed for the answer is not directly present
+in the original query?
 
-The third design lesson is that stop-or-continue behavior is a core memory
-decision. A retrieved session may be relevant but insufficient. In that case,
-the correct memory behavior is not to answer early, but to keep the partial
-evidence and search again. The verdict field exposes this decision explicitly.
-The reward diagnostics in Section~\ref{sec:results-reward} are not a final
-causal proof for every named reward component, because the reward boundary is
-still marked as unresolved in Chapter~\ref{chap:methods}. They are nevertheless
-consistent with treating stop-or-continue behavior as an explicit supervised
-or controlled decision, rather than leaving compactness and sufficiency as
-unobserved side effects of answer accuracy.
+The central difficulty behind RQ2 is the evidence addressability gap. In many
+long-term memory questions, the original query does not contain the phrase,
+date, entity, or condition needed to retrieve the final answer-bearing session.
+For example, a question may ask about what happened during the week of another
+event. The system must first find the anchor event, derive a temporal or
+semantic cue from it, and only then search for the destination evidence.
 
-\begin{figure}[H]
-  \centering
-  \fbox{\begin{minipage}{0.92\textwidth}
-    \centering
-    \vspace{0.8em}
-    \textcolor{red}{TODO: Replace this placeholder with the planned diagnostic
-    boundary diagram. It should show query, Planner, Retriever, Synthesizer,
-    Temporal Evidence Pool, downstream answerer, and observable failure points:
-    cue error, retrieval miss, event-time error, premature sufficient verdict,
-    evidence bloat, and answerer error.}
-    \vspace{0.8em}
-  \end{minipage}}
-  \caption{Diagnostic boundary of NanoMem as a memory evidence provider. The
-  architecture separates memory-side evidence construction from downstream
-  answer generation, which makes different failure sources visible.}
-  \label{fig:discussion-diagnostic-boundary}
-\end{figure}
+The system addresses this problem through an iterative
+Planner--Retriever--Synthesizer loop. The important point is not merely that it
+performs multiple retrieval rounds. The important point is that each round
+updates the evidence state. Synthesized events from earlier rounds enter the
+Temporal Evidence Pool, and the following round can use this pool as part of
+the search state. This turns intermediate evidence into a new retrieval
+address. When the first round finds a bridge event rather than the final
+answer, the system has a structured way to carry that bridge forward.
 
-\section{Failure Modes and System Limitations}
-\label{sec:discussion-limitations}
+Temporal grounding is essential to this process. Long-term conversational
+memory has at least two relevant times: the time when a session occurred and
+the time when the described event happened. These are often different. If a
+user says on April 2 that a trip happened last week, the session time is April
+2, but the event time is the previous week. \sys{} keeps this distinction in
+the evidence state, allowing event time to guide later retrieval rather than
+remaining only as unstructured text for the answer model.
 
-NanoMem's first limitation is retrieval recall. The Synthesizer can only
-construct evidence from sessions that have been retrieved. If the Planner
-generates the wrong cue, the retriever misses the destination session, or the
-candidate budget removes the relevant source, the Temporal Evidence Pool cannot
-recover the missing evidence. This is most visible in the inspected ChainMem
-failure where the system identified a bridge location but did not recover the
-answer-bearing event about the coffee beans.
+The ablation results show that this evidence state is not an optional detail.
+Removing the Temporal Evidence Pool lowers performance across the reported
+tasks, with especially large drops on LongMemEval temporal reasoning and
+\bench{}. Forcing single-round retrieval also hurts settings where the relevant
+answer requires an intermediate bridge. At the same time, the results show that
+iteration is not automatically beneficial for every question. Some questions
+are answerable from first-round evidence, and extra search can introduce noise.
+This is why the binary \texttt{sufficient}/\texttt{insufficient} verdict is a
+core part of the design: the system must learn not only how to continue
+searching, but also when to stop.
 
-The second limitation is temporal normalization coverage. Deterministic
-normalization reduces avoidable date arithmetic errors for expressions such as
-relative days, weeks, months, and some weekday references. It does not cover all
-natural-language time expressions, fuzzy intervals, repeated events, time
-zones, cultural calendars, or changes to future plans. A wrong or missing
-temporal hint can hurt twice: it can make the first retrieval less focused, and
-it can cause later rounds to search around the wrong event time.
+The answer to RQ2 is therefore that temporally grounded multi-hop evidence can
+be recovered by maintaining a structured evidence state across retrieval rounds.
+The memory agent needs to transform partial evidence into the next search cue,
+while using event time and sufficiency judgments to avoid both premature
+stopping and unnecessary over-search.
 
-The third limitation is error propagation through the evidence state. The same
-mechanism that makes NanoMem useful can amplify mistakes. If the Synthesizer
-assigns the wrong event time, confuses session time with event time, or
-compresses a broad interval into an over-specific window, later retrieval
-rounds may follow a false address. Iterative search is therefore not
-unconditionally better than one-shot retrieval. It helps when intermediate
-evidence is correct and informative; it can drift when intermediate evidence is
-wrong.
+\section{RQ3}
+\label{sec:conclusion-rq3}
 
-The fourth limitation is the trade-off between parseability and expressiveness.
-The XML schema makes events and verdicts easy to parse, train, and evaluate,
-but it also narrows what the Synthesizer can express. The final method uses
-source-grounded events and a binary verdict. Earlier schema ideas such as an
-explicit inferred field or an indicative verdict could represent uncertainty
-more directly, but they also increased parser and reward complexity. The
-current design favors a simpler executable interface, leaving richer
-uncertainty modeling to future work.
+\textbf{RQ3.} How can reinforcement learning be used to train the Synthesizer
+to produce useful, compact, temporally grounded evidence and to judge whether
+the current evidence is sufficient for downstream answering?
 
-The fifth limitation is cost. NanoMem reduces the evidence passed to the
-downstream answer model, but the search loop itself may require several model
-calls, retrieval operations, and prompt constructions. The compactness results
-in Chapter~\ref{chap:results} measure returned evidence length, not complete
-end-to-end latency or serving cost. A production system would need explicit
-latency budgets, caching, and fallback behavior before NanoMem could be
-claimed as practically efficient.
+The role of reinforcement learning in \sys{} is to align the Synthesizer with
+the memory-side responsibilities defined by the architecture. The Synthesizer
+does not directly answer the user. It extracts and compresses evidence,
+grounds events in source sessions and event times, and predicts whether the
+current evidence is sufficient. GRPO is used to train this behavior inside the
+same iterative environment in which the Synthesizer will be used at inference
+time.
 
-The sixth limitation is that final answer accuracy is an indirect measure of
-memory quality. If the evidence is correct but the downstream answerer fails,
-the final metric still counts the example as wrong. If the evidence is
-incomplete but a strong answerer guesses the answer, the metric may overstate
-the memory module. This is why evidence-side diagnostics, trace inspection, and
-verdict behavior are necessary complements to answer accuracy.
+The reward design reflects this separation of responsibilities. The outcome
+reward measures whether the accumulated evidence helps a frozen downstream
+answerer produce the correct answer. The verdict reward trains the binary
+sufficiency decision against gold evidence coverage. The length reward
+encourages compactness when the answer outcome is
+correct. The format gate enforces parseability at the trajectory level: if a
+trajectory is malformed, it receives the fixed format penalty and no other
+reward terms are added. This design avoids treating format as just another
+additive preference.
 
-\begin{table}[H]
-  \centering
-  \caption{NanoMem failure modes, observable signals, and mitigation
-  directions.}
-  \label{tab:discussion-failure-modes}
-  \scriptsize
-  \resizebox{\textwidth}{!}{%
-  \begin{tabular}{p{0.18\textwidth}p{0.16\textwidth}p{0.24\textwidth}p{0.18\textwidth}p{0.18\textwidth}}
-    \hline\hline
-    Failure mode & Component & Observable signal & Result impact & Possible mitigation \\
-    \hline
-    Retrieval miss & Planner or Retriever & Gold session absent from candidates or selected sessions & Synthesizer cannot create required evidence & Higher-recall retrieval, trained planner, larger adaptive budget \\
-    Temporal normalization failure & Preprocessing or cue parsing & Missing or wrong resolved span & Search is weakly anchored or wrongly filtered & Broader temporal parser, symbolic temporal checks, uncertainty in spans \\
-    Event-time drift & Synthesizer and pool & Later cues follow wrong event time & Iteration amplifies the initial grounding error & Event-time verifier, multi-cue search, confidence-aware pool updates \\
-    Premature sufficiency & Synthesizer verdict & Verdict is sufficient before gold coverage & Loop stops at a bridge event or partial answer & Direct verdict supervision, coverage diagnostics, conservative stopping \\
-    Over-search or evidence bloat & Loop control and reward & Extra rounds or long redundant evidence & Higher cost and possible answer noise & Length control, duplicate suppression, budget-aware stopping \\
-    Structured parse failure & Synthesizer output & Invalid XML or missing fields & Evidence cannot be consumed reliably & Stronger schema validation, constrained decoding, repair model \\
-    Downstream answerer error & Answer model & Evidence appears correct but answer is wrong & Final accuracy understates memory quality & Separate evidence scoring and answerer ablations \\
-    \hline\hline
-  \end{tabular}
-  }
-\end{table}
+The reward ablation supports the need for these components. Removing the format
+and length rewards causes returned evidence to become much longer, showing that
+compactness does not emerge reliably from answer accuracy alone. Removing the
+verdict reward produces a different failure mode: some temporal categories can
+remain strong, but multi-hop and hidden-bridge settings degrade, verdict
+accuracy drops, and the system tends to search more while returning longer
+evidence. This pattern is consistent with the task structure. When first-round
+evidence is enough, outcome-only training can be effective; when the system
+must decide whether a bridge is still missing, sufficiency supervision becomes
+more important.
 
-\section{Threats to Validity}
-\label{sec:discussion-validity}
+The answer to RQ3 is therefore that reinforcement learning is useful when it is
+matched to the memory interface. GRPO does not replace the need for an
+evidence-state architecture. Instead, it trains the Synthesizer to operate
+within that architecture: produce parseable evidence, keep it compact, preserve
+temporal grounding, and decide whether the accumulated evidence is enough for
+downstream answering.
 
-The main internal-validity threat is dependence on automatic evaluation. The
-reported benchmark results use a fixed answer model and a fixed GPT-5.1 judge
-boundary for synchronized NanoMem rows. This gives consistent comparisons
-within the reported artifacts, but an LLM judge can still prefer certain
-phrasings, miss equivalent answers, or ignore source-grounding mistakes. There
-are also fairness risks when baselines come from different implementations,
-checkpoints, prompts, retrievers, or context budgets.
+\section{Implications}
+\label{sec:conclusion-implications}
 
-The construct-validity threat is that the metrics are proxies for the thesis
-goal. Final answer accuracy measures whether the returned evidence helps a
-downstream answer model, but it does not directly measure source faithfulness,
-event-time correctness, minimality, or coverage. Output tokens measure the
-compactness of returned evidence or memory context, but the meaning of a token
-differs across raw-session, memory-record, evidence, and final-answer outputs.
-Verdict accuracy is valuable only if gold evidence coverage is reliable.
-\textcolor{red}{NOTSURE: The final thesis should keep this threat aligned with
-the resolved reward and verdict-evaluation contract. If verdict accuracy is
-only diagnostic rather than an active training signal, this section should say
-so consistently with Chapters~\ref{chap:methods} and~\ref{chap:results}.}
+The first implication is that long-term agent memory should not be evaluated
+only by storage capacity or context length. A larger context window can expose
+more history to the model, but it does not guarantee that the model will find
+the right evidence, resolve the right time relation, or ignore irrelevant
+sessions. The results on LongMemEval and \bench{} show that full-context
+prompting can fail even when the answer-bearing information is present. The
+hard part is not merely access to history, but construction of usable evidence.
 
-The external-validity threat is benchmark representativeness. LoCoMo and
-LongMemEval are important long-term memory benchmarks
-\cite{maharana2024locomo,wu2024longmemeval}, while ChainMem isolates the
-hidden-dependency temporal-bridge setting targeted by this thesis. None of
-them fully represents all personal assistant, workplace, medical, legal,
-educational, or code-agent memory use cases. ChainMem is especially diagnostic:
-it is useful because it stresses the evidence addressability gap, but its
-constructed nature may differ from organic user histories.
+The second implication is that the output boundary of a memory module matters.
+If the memory module returns raw sessions, the answerer has to solve too many
+subproblems at once. If the memory module directly returns a final answer, the
+evidence construction process becomes hard to inspect. \sys{} takes a narrower
+position: memory returns evidence and a verdict, while final answer generation
+remains outside the memory module. This boundary makes errors easier to
+diagnose. A failure can be attributed more specifically to retrieval recall,
+temporal grounding, premature sufficiency, evidence bloat, or downstream answer
+generation.
 
-The reproducibility threat comes from model versions, API behavior, training
-randomness, index construction, filtering choices, and hardware. GRPO rollouts,
-LLM judging, and downstream answering all depend on external model behavior.
-The thesis therefore needs to preserve run directories, split definitions,
-prompt versions, reward configuration, retrieval settings, and checkpoint
-selection rules. \textcolor{red}{TODO: Before final submission, ensure that
-the appendix or artifact package records the exact synchronized run
-directories, model identifiers, split files, and reward configuration used for
-all quantitative tables.}
+The third implication is that event time should be treated as search state, not
+only as metadata. In conversational memory, time is often the thing that makes a
+hidden dependency addressable. A past event may be mentioned after it occurred,
+or an answer-bearing session may be reachable only through a time window
+derived from another event. Keeping event time in the Temporal Evidence Pool
+allows time to participate in retrieval, rather than appearing only in the
+final prompt as text for the answerer to reason over.
 
-\begin{table}[H]
-  \centering
-  \caption{Validity threats and mitigation measures in this thesis.}
-  \label{tab:discussion-validity-threats}
-  \scriptsize
-  \resizebox{\textwidth}{!}{%
-  \begin{tabular}{p{0.16\textwidth}p{0.25\textwidth}p{0.20\textwidth}p{0.20\textwidth}p{0.13\textwidth}}
-    \hline\hline
-    Threat class & Specific threat & Possible impact & Mitigation in the thesis & Residual risk \\
-    \hline
-    Internal & LLM judge and answer model bias & Accuracy may reflect evaluator preference & Fixed judge and answerer for synchronized rows & Judge errors remain possible \\
-    Internal & Baseline implementation mismatch & Some comparisons may not be fully homogeneous & Captions mark unavailable or audit-only cells & Not all baselines are rerun identically \\
-    Construct & Answer accuracy as memory proxy & Memory and answerer failures can be entangled & Evidence traces, verdicts, compactness, and error taxonomy & Direct evidence scoring is limited \\
-    Construct & Token metric heterogeneity & Compactness may be compared across different output objects & Claims restricted to returned evidence or context length & End-to-end cost is not measured \\
-    External & Benchmark distribution & Results may not transfer to all memory domains & Public benchmarks plus ChainMem diagnostic stress test & Real deployments remain broader \\
-    Reproducibility & Model and run drift & Results may change with external models or reruns & Run artifacts, split tables, and implementation mapping & API model versions may still change \\
-    \hline\hline
-  \end{tabular}
-  }
-\end{table}
+The fourth implication is that query-time and write-time memory methods should
+be seen as complementary rather than mutually exclusive. Write-time memory is
+useful for stable user preferences, profiles, and frequently reused facts. The
+results of this thesis suggest that it is less suitable as the only mechanism
+for questions whose relevance depends on a future query. Query-time evidence
+synthesis gives the system a way to interpret the memory in relation to the
+current information need, while still preserving source grounding.
 
-\section{Deployment and Engineering Implications}
-\label{sec:discussion-deployment}
+\section{Limitations and Future Work}
+\label{sec:conclusion-limitations-future}
 
-NanoMem should be read as a research prototype, not as a complete production
-memory service. Its evidence-provider interface nevertheless points to several
-engineering requirements for practical agent memory.
+\subsection{Limitations}
+\label{subsec:conclusion-limitations}
 
-First, deployment requires budget-aware control. The verdict can decide whether
-the evidence is sufficient, but a deployed system must also consider maximum
-rounds, candidate budgets, model-call cost, timeout behavior, and user urgency.
-In some applications, returning partial evidence with a caveat may be better
-than spending another retrieval round.
+The first limitation is retrieval recall. \sys{} can only synthesize evidence
+from sessions that are retrieved. If the Planner forms the wrong cue, the
+retriever misses the answer-bearing session, or the candidate budget excludes a
+relevant memory, the Temporal Evidence Pool cannot recover information that was
+never observed. This is a general upper bound for search-based memory systems.
 
-Second, a memory evidence provider should preserve an audit trail.
-NanoMem's source session identifiers, session times, and event times make it
-possible to inspect why an answer model received particular evidence. This is a
-substantial advantage over answer-only memory interfaces. However, auditability
-also creates obligations: the system must avoid exposing irrelevant private
-source material, and access control must apply before retrieval, during
-synthesis, and when evidence is displayed.
+The second limitation is temporal normalization and event-time grounding.
+Deterministic temporal normalization helps with common relative-time
+expressions, but it does not cover all natural language time references, fuzzy
+intervals, recurring events, time zones, cultural calendars, or changing future
+plans. The Synthesizer can also make grounding errors by confusing session time
+with event time or by compressing a broad interval into a narrow date. Because
+event time is used as search state, these errors can propagate into later
+retrieval rounds.
 
-Third, real memory systems need lifecycle governance. NanoMem focuses on
-read-time evidence construction. A deployed assistant also needs mechanisms for
-writing, updating, correcting, deleting, expiring, and isolating memories across
-users, agents, and applications. The NanoMem codebase includes service-style
-memory infrastructure, but the thesis contribution is not a full governance
-solution for memory lifecycle management.
+The third limitation is the expressiveness of the structured schema. The final
+schema uses source-grounded events and a binary verdict. This makes parsing,
+training, and evaluation more stable, but it gives limited room for
+uncertainty, conflict, partial support, negative evidence, or multi-source
+inference. The schema is therefore a pragmatic research interface, not a final
+representation for all personal memory systems.
 
-Fourth, schema stability matters. XML is convenient for research because it is
-human-readable and parseable, but a production service may need a typed JSON
-schema, protocol buffers, constrained decoding, strict validation, and schema
-versioning. The evidence API should make source, time, uncertainty, and access
-policy explicit enough that downstream systems do not silently reinterpret the
-memory artifact.
+The fourth limitation is evaluation dependence. Final answer accuracy measures
+whether the evidence helps a fixed downstream answerer produce the right
+answer, but it is not a direct measure of evidence faithfulness. A correct
+evidence state can still lead to a wrong answer, and a strong answerer can
+sometimes compensate for incomplete evidence. The GPT-5.1 judge provides a
+consistent automatic evaluation boundary, but any LLM judge may prefer certain
+wordings, miss equivalent answers, or fail to detect source-grounding errors.
 
-\begin{table}[H]
-  \centering
-  \caption{Engineering requirements for moving from NanoMem as a research
-  prototype to a deployed memory service.}
-  \label{tab:discussion-deployment}
-  \scriptsize
-  \resizebox{\textwidth}{!}{%
-  \begin{tabular}{p{0.20\textwidth}p{0.23\textwidth}p{0.23\textwidth}p{0.24\textwidth}}
-    \hline\hline
-    Requirement & Current support in NanoMem & Gap & Possible implementation direction \\
-    \hline
-    Budget control & Maximum rounds and candidate budgets in evaluation paths & No full latency or cost policy & Cost-aware controller, cache, timeout, fallback evidence \\
-    Audit trail & Source IDs, session times, event times & User-facing inspection is not designed & Evidence viewer with source access checks \\
-    Access control & Outside the evaluated memory-side method & Retrieval and display policies are not integrated & Policy-aware retrieval and evidence filtering \\
-    Deletion and update & Memory service infrastructure exists outside the core claim & Read-time evidence does not solve lifecycle governance & Versioned memory store with user controls \\
-    Schema validation & Parseable XML schema & Limited uncertainty and production hardening & Typed schema, constrained decoding, repair and monitoring \\
-    Monitoring & Trace artifacts in experiments & No production drift monitoring & Metrics for retrieval misses, parse failures, verdict behavior, and privacy incidents \\
-    Human feedback & Not part of reported loop & Users cannot correct evidence in the method & Feedback channel that updates source records or retrieval policy \\
-    \hline\hline
-  \end{tabular}
-  }
-\end{table}
+The fifth limitation is benchmark coverage. LoCoMo and LongMemEval are
+important public long-term memory benchmarks, and \bench{} isolates the
+temporal-bridge problem targeted by this thesis. However, these benchmarks do
+not cover every realistic personal memory scenario. Real assistants must handle
+user correction, memory deletion, stale preferences, cross-application data,
+privacy policies, adversarial queries, and long-term drift. The present work
+should therefore be read as a research prototype and diagnostic evaluation, not
+as a complete deployed memory service.
 
-\section{Ethics, Safety, and Sustainability}
-\label{sec:discussion-ethics}
+The sixth limitation is cost. \sys{} reduces the evidence passed to the
+downstream answerer, but the loop itself may require multiple retrieval rounds,
+Synthesizer calls, and answerer or judge calls during evaluation. The token
+compactness results in Chapter~\ref{chap:experiment-analysis} measure returned
+evidence length, not full end-to-end latency, cost, or energy use.
 
-Long-term agent memory is privacy sensitive by design. A system that stores
-conversation histories may accumulate information about health, finances,
-relationships, work plans, location patterns, beliefs, and vulnerable moments.
-The risk is not limited to storage. Query-time evidence synthesis can connect
-facts across sessions and reveal information that was never stated in a single
-place.
+\subsection{Future Work}
+\label{subsec:conclusion-future-work}
 
-NanoMem's compact evidence interface can reduce unnecessary exposure compared
-with passing entire histories downstream. It can also improve accountability by
-showing source identifiers and time fields. These benefits depend on the
-Synthesizer being faithful and on the service enforcing access policies. If a
-memory module returns irrelevant private evidence, assigns the wrong source, or
-compresses a speculative inference into a source-grounded event, the structured
-format may create false confidence rather than safety.
+One direction is to train the Planner and Retriever. This thesis focuses on
+training the Synthesizer while keeping the rest of the environment fixed.
+Future work could train a planner to generate better temporal and multi-hop
+cues, or train a retrieval policy that dynamically allocates budget across
+dense retrieval, lexical retrieval, temporal constraints, and source
+constraints.
 
-Users need control over the memory lifecycle. A deployed system should support
-consent, inspection, correction, deletion, retention limits, and clear
+A second direction is to extend the evidence schema. Future systems could add
+uncertainty, conflict, negative evidence, relation type, source confidence, and
+multi-source support. Such fields should be added only when matching
+supervision and evaluation are available; otherwise, the schema may become more
+complex without becoming more reliable.
+
+A third direction is stronger temporal reasoning. Rule-based normalization can
+be expanded to more languages, time zones, fuzzy intervals, recurring events,
+and calendar constraints. More robust variants could combine LLM-based
+evidence synthesis with symbolic temporal reasoning or constraint checking, so
+that generated event times are verified before they influence later retrieval.
+
+A fourth direction is direct evidence evaluation. Future work should measure
+source faithfulness, event-time correctness, evidence coverage, minimality,
+verdict reliability, and uncertainty calibration directly. This would separate
+retrieval success, evidence synthesis success, and downstream answer success
+more cleanly than final answer accuracy alone.
+
+A fifth direction is real longitudinal deployment evaluation. A realistic
+personal memory system must support update, inspection, correction, deletion,
+retention, and user control. Long-running user studies or high-fidelity
+simulated agent environments are needed to test whether users can understand,
+trust, and correct structured memory evidence over time.
+
+A final direction is multilingual and cross-domain memory. The current
+evaluation is centered on English benchmarks. Relative time, reference, and
+calendar conventions differ across languages and domains. Testing Chinese,
+Swedish, multilingual conversations, workplace agents, educational tutors, code
+agents, and research assistants would clarify which parts of the evidence
+addressability gap are general and which are domain-specific.
+
+\section{Ethics}
+\label{sec:conclusion-ethics}
+
+Long-term conversational memory is privacy-sensitive by design. A system that
+stores and searches user histories can accumulate information about health,
+finances, relationships, work plans, location patterns, beliefs, and personal
+vulnerabilities. The risk is not limited to storing individual sessions.
+Query-time evidence synthesis can connect information across sessions and
+reveal patterns that were never stated in one place.
+
+Source-grounded evidence has both benefits and risks. On the positive side,
+NanoMem makes memory use more auditable by returning source identifiers,
+session times, and event times. This can help users and developers inspect why
+an answer was produced. On the negative side, returning evidence can expose
+private material if access control is weak or if the Synthesizer includes
+irrelevant details. Compact evidence reduces exposure compared with raw history
+injection, but it does not replace consent, access control, or policy-aware
+retrieval.
+
+Users should be able to control the memory lifecycle. A deployed system should
+support consent, inspection, correction, deletion, retention limits, and clear
 explanations of when memory is used. This is especially important because
-personal memories can become stale. A preference, relationship, address, or
-medical detail may change, and an agent that retrieves old evidence without
-temporal qualification can give harmful advice.
+personal memory can become stale. A preference, relationship, address, medical
+detail, or work plan may change, and an agent that retrieves old evidence
+without temporal qualification can give misleading or harmful advice.
 
 High-risk domains require additional safeguards. In medical, legal, financial,
 employment, or mental-health settings, memory evidence should be treated as
 supporting context rather than authoritative truth. Premature sufficiency,
-event-time drift, or source-attribution errors can lead to real harm. Systems
-using NanoMem-like evidence synthesis in such settings should require human
+event-time drift, and source-attribution errors can cause real harm. Systems
+using \sys{}-like evidence synthesis in such settings should require human
 verification, domain-specific policies, and conservative refusal or escalation
 behavior when evidence is incomplete.
 
-Benchmark success should therefore not be confused with safe deployment.
-LoCoMo, LongMemEval, and ChainMem test answer quality and temporal bridge
-search. They do not fully evaluate privacy leakage, adversarial memory queries,
-cross-user contamination, retention compliance, or consent. These are necessary
-evaluations for any production memory system built on similar ideas.
+Sustainability is also part of responsible deployment. \sys{} can reduce the
+evidence tokens passed downstream, but this does not prove lower end-to-end
+energy use. Training with GRPO, multi-round retrieval, LLM-based answering, and
+automatic judging all consume computational resources. A deployed system should
+therefore use budget-aware control, caching where appropriate, smaller or local
+models for low-risk steps when possible, and transparent reporting of model
+calls and evaluation costs.
 
-The ecological and sustainability dimension is also part of the deployment
-boundary. NanoMem can reduce the evidence tokens passed to the downstream
-answer model, but this does not prove end-to-end energy or carbon efficiency.
-The system may spend additional computation in multi-round retrieval,
-Planner prompts, Synthesizer calls, GRPO rollouts, LLM-judge evaluation,
-GPT-5.1 downstream answering, and benchmark reruns. These costs are especially
-important because memory systems are invoked repeatedly in long-running agents:
-a small per-query overhead can become substantial when applied to every user
-interaction or every regression run.
+AI tools were used during the preparation of this thesis for drafting support,
+language editing, code-oriented checking, and consistency review. The author
+remains responsible for the final text, claims, citations, experimental
+descriptions, and conclusions. The reported experiments, tables, and method
+descriptions were checked against the project artifacts and the completed
+NanoMem research paper before inclusion in this thesis.
 
-The experiments in this thesis do not report direct energy, carbon, or
-hardware-utilization measurements. This is a limitation, not a basis for an
-efficiency claim. The more defensible conclusion is that NanoMem improves the
-compactness of the evidence artifact under the reported metric, while the full
-environmental cost of training, evaluation, and serving remains unmeasured.
-Future artifact reporting should therefore include model-call boundaries,
-hardware or API settings, run directories, retry policies, and the number of
-judge and answer-model calls used for each benchmark table.
-
-Practical mitigations follow from this boundary. A deployed NanoMem-like
-service should cache retrieval and synthesis traces where consent and freshness
-allow it, enforce maximum rounds and candidate budgets, avoid unnecessary
-benchmark reruns, use smaller or local models for low-risk steps when accuracy
-permits, and report which parts of the system require external frontier-model
-calls. These measures do not remove the environmental cost of agent memory, but
-they make that cost visible and controllable instead of hidden behind output
-compactness.
-
-\section{Future Work}
-\label{sec:discussion-future-work}
-
-The most immediate future direction is stronger retrieval and planning. In the
-current design, the Synthesizer is the main trained component, while the
-Planner and Retriever are largely treated as environment components. Future
-systems could train a planner to generate better multi-hop cues, allocate
-budget across dense retrieval, lexical retrieval, temporal hints, and source
-constraints, and decide when to broaden or narrow the search.
-
-A second direction is a richer evidence schema. The current event schema keeps
-the interface executable and inspectable, but it has limited room for
-uncertainty, conflicting sources, negative evidence, multi-source support,
-confidence, and relation types. Adding such fields should be done only with
-matching supervision and evaluation. Otherwise, a richer schema may increase
-output burden without improving trust.
-
-A third direction is more reliable temporal and causal reasoning. Rule-based
-normalization could cover more languages, time zones, fuzzy intervals,
-recurring events, and calendar constraints. More ambitious variants could
-combine NanoMem with symbolic temporal reasoning or constraint solvers, so that
-LLMs generate candidate events while a separate component checks temporal
-consistency.
-
-A fourth direction is direct evidence-quality evaluation. Final answer accuracy
-is useful but indirect. Future evaluation should measure source faithfulness,
-event-time correctness, evidence minimality, coverage, uncertainty calibration,
-and verdict reliability directly. This would make it easier to separate
-retrieval success, synthesis success, and answer-model success.
-
-A fifth direction is longitudinal user evaluation. NanoMem is evaluated on
-benchmarks and generated diagnostic tasks. Real assistants need continuous
-memory updates, user corrections, deletion requests, trust calibration, access
-control, and latency-aware interaction design. Longitudinal studies could test
-whether users understand, trust, and correct structured memory evidence.
-
-A final direction is multilingual and cross-domain memory. The current thesis
-is centered on English benchmarks and technical memory settings. Relative time,
-politeness, reference, and calendar conventions differ across languages and
-domains. Testing Chinese, Swedish, multilingual conversations, workplace
-agents, educational tutors, code agents, and research assistants would show
-which parts of the evidence addressability gap are general and which are
-domain-specific.
-
-\begin{table}[H]
-  \centering
-  \caption{Future work roadmap.}
-  \label{tab:discussion-future-work}
-  \scriptsize
-  \resizebox{\textwidth}{!}{%
-  \begin{tabular}{p{0.18\textwidth}p{0.24\textwidth}p{0.24\textwidth}p{0.24\textwidth}}
-    \hline\hline
-    Direction & Current limitation & Needed method & Needed evaluation \\
-    \hline
-    Trainable planning and retrieval & Planner and retriever are mostly fixed environment components & Policy learning for cue generation and budget allocation & Recall, latency, bridge recovery, and query diversity tests \\
-    Richer evidence schema & Binary verdict and simple event fields limit uncertainty expression & Fields for uncertainty, conflict, relation type, and confidence & Human or verifier-based evidence scoring \\
-    Temporal and causal reasoning & Rule coverage and LLM date reasoning remain brittle & Symbolic temporal checks and constraint-aware retrieval & Event-time correctness and consistency benchmarks \\
-    Direct evidence evaluation & Answer accuracy entangles memory and answerer errors & Faithfulness, coverage, minimality, and verdict metrics & Evidence-level annotation or reliable automatic judges \\
-    Longitudinal deployment & Benchmarks omit lifecycle and interaction dynamics & Update, deletion, feedback, and audit workflows & Long-running user or simulated-agent studies \\
-    Multilingual and cross-domain memory & Current evidence comes mainly from English benchmark settings & Language-aware time parsing and domain-specific schemas & Multilingual and domain-specific memory tasks \\
-    \hline\hline
-  \end{tabular}
-  }
-\end{table}
-
-\section{Conclusion}
-\label{sec:discussion-conclusion}
-
-This thesis argued that long-term agent memory should be evaluated not only by
-how much history it can store or retrieve, but by whether it can construct the
-right evidence for a future query. The evidence addressability gap captures the
-core difficulty: the useful retrieval cue may be hidden behind a temporal
-bridge, a causal predecessor, a remembered attribute, or an intermediate event
-that is only discovered after an earlier retrieval round.
-
-NanoMem addresses this gap by treating memory as an iterative evidence
-synthesis problem. Its Planner--Retriever--Synthesizer loop builds a Temporal
-Evidence Pool with source identifiers, session times, event times, and a
-sufficiency verdict. This design keeps final answer generation outside the
-memory module, making the memory artifact more compact, inspectable, and
-diagnosable than raw retrieved histories or answer-only memory interfaces.
-
-The empirical results show that this boundary is useful. NanoMem-GRPO improves
-over NanoMem-Vanilla on LoCoMo, LongMemEval, and ChainMem while returning
-shorter evidence to the answer model. Its gains are concentrated in the
-multi-hop, temporal reasoning, and hidden-dependency cases that motivated the
-method. The system still has important limitations: retrieval recall remains an
-upper bound, temporal normalization is incomplete, evidence-state errors can
-propagate, the reward contract requires final synchronization, output
-compactness is not full serving efficiency, and personal memory deployment
-requires strong privacy governance.
-
-The broader conclusion is therefore measured. NanoMem is not a complete
-solution to long-term agent memory. It demonstrates a useful direction: design,
-train, and evaluate memory systems as source-grounded, temporally grounded,
-iterative evidence providers. Future work should make that evidence more
-reliable, easier to audit, safer to deploy, and better integrated with the full
-lifecycle of personal and collaborative memory.
+Overall, this thesis shows that long-term agent memory can be designed as
+query-time evidence construction rather than raw history injection or opaque
+answer generation. \sys{} makes progress toward compact, source-grounded, and
+temporally grounded memory access, especially for temporal and multi-hop
+queries. At the same time, reliable personal memory requires more than
+benchmark accuracy. It also requires stronger retrieval, better evidence
+verification, user control, privacy governance, and careful deployment in
+settings where memory errors can affect real decisions.

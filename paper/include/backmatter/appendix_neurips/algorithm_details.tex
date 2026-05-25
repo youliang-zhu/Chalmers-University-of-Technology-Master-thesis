@@ -1,0 +1,364 @@
+\subsection{NanoMem Training Procedure}
+\label{app:nanomem-training-procedure}
+
+This subsection summarizes the online GRPO training loop used to optimize only
+the Synthesizer/Compressor policy in \sys. Planner, preprocessor, retriever,
+answerer, judge, and reference policy are frozen throughout training.
+
+\begin{tcolorbox}[
+  enhanced jigsaw,
+  breakable,
+  colback=white,
+  colframe=black,
+  boxrule=0pt,
+  borderline north={0.7pt}{0pt}{black},
+  borderline south={0.7pt}{0pt}{black},
+  sharp corners,
+  left=0pt,
+  right=0pt,
+  top=2pt,
+  bottom=2pt,
+  before skip=0.6em,
+  after skip=0.8em,
+]
+\scriptsize
+\noindent\textbf{Algorithm 1} GRPO Training for Multi-turn Memory Evidence Synthesis
+
+\vspace{0.15em}
+\hrule
+\vspace{0.45em}
+
+\noindent\textbf{Input:}\\
+\hspace*{1.5em}Training set $\mathcal{D}_{\mathrm{train}}$; each sample contains query $q$, gold answer $a^\star$,\\
+\hspace*{1.5em}gold evidence sessions $\mathcal{E}^\star$, source DB path, user id, and analysis metadata\\
+\hspace*{1.5em}Trainable compressor policy $\pi_\theta$ initialized from Qwen3.5-9B\\
+\hspace*{1.5em}Frozen planner, retriever, answerer, judge, and reference policy $\pi_{\mathrm{ref}}$\\
+\hspace*{1.5em}Rollout group size $G=8$, maximum search rounds $R_{\max}=3$
+
+\vspace{0.25em}
+\noindent\textbf{Ensure:}\\
+\hspace*{1.5em}Optimized compressor policy $\pi_{\theta'}$
+
+\vspace{0.35em}
+\begin{tabular}{@{}r@{\quad}p{0.84\linewidth}@{}}
+1: & \textbf{for each} training step \textbf{do} \\
+2: & \hspace*{1em}Sample one training example $x=(q,a^\star,\mathcal{E}^\star,\mathrm{DB},u,\mathrm{meta})$ from $\mathcal{D}_{\mathrm{train}}$ \\
+3: & \hspace*{1em}\textbf{Stage 1: Input and initialization} \\
+4: & \hspace*{2em}Load the sample-specific memory DB and user id; keep planner, retriever, answerer, judge, and $\pi_{\mathrm{ref}}$ frozen \\
+5: & \hspace*{1em}\textbf{Stage 2--3: Online multi-turn group rollout} \\
+6: & \hspace*{2em}\textbf{for} rollout $g=1,\ldots,G$ \textbf{do} \\
+7: & \hspace*{3em}Initialize previous events $\mathcal{M}^{(0)}\leftarrow\emptyset$, previous cues $\mathcal{C}^{(0)}\leftarrow\emptyset$, and terminal flag $\mathrm{stop}\leftarrow\mathrm{false}$ \\
+8: & \hspace*{3em}\textbf{for} round $r=1,\ldots,R_{\max}$ \textbf{do} \\
+9: & \hspace*{4em}Use the frozen planner to generate retrieval cues $\mathcal{C}^{(r)}$ from $q$, $\mathcal{C}^{(r-1)}$, and compressor reasoning when available \\
+10: & \hspace*{4em}Use the frozen retriever to search sessions $\mathcal{S}^{(r)}$ from the sample-specific memory DB \\
+11: & \hspace*{4em}Construct temporal hints online from the query and retrieved sessions \\
+12: & \hspace*{4em}Sample compressor XML $z_g^{(r)}\sim\pi_\theta(\cdot\mid q,\mathrm{hints},\mathcal{M}^{(r-1)},\mathcal{S}^{(r)})$ \\
+13: & \hspace*{4em}Parse $z_g^{(r)}$ into reasoning, events $\mathcal{M}^{(r)}$, and verdict $v^{(r)}$ \\
+14: & \hspace*{4em}\textbf{if} $v^{(r)}=\mathrm{sufficient}$, no new evidence is found, or XML is invalid \textbf{then} set $\mathrm{stop}\leftarrow\mathrm{true}$ and break \\
+15: & \hspace*{3em}\textbf{end for} \\
+16: & \hspace*{3em}Use the frozen answerer to generate final answer $\hat{a}_g$ from $q$ and terminal events $\mathcal{M}^{(r)}$ \\
+17: & \hspace*{3em}Store rollout trace $\tau_g$: retrieved sessions, compressor XML, reasoning, events, verdicts, terminal reason, and answer \\
+18: & \hspace*{2em}\textbf{end for} \\
+19: & \hspace*{1em}\textbf{Stage 4: Reward computation} \\
+20: & \hspace*{2em}\textbf{for} rollout $g=1,\ldots,G$ \textbf{do} \\
+21: & \hspace*{3em}Compute format reward from XML validity and schema compliance \\
+22: & \hspace*{3em}Compute verdict reward by comparing sufficient/insufficient decisions with gold evidence coverage $\mathcal{E}^\star$ \\
+23: & \hspace*{3em}Use the frozen judge to compare $\hat{a}_g$ with $a^\star$ and assign outcome reward \\
+24: & \hspace*{3em}Compute length reward from compressor output compactness, mainly active when the outcome is correct \\
+25: & \hspace*{3em}Combine format, verdict, outcome, and length rewards into scalar reward $R_g$ \\
+26: & \hspace*{2em}\textbf{end for} \\
+27: & \hspace*{1em}\textbf{Stage 5: GRPO policy update} \\
+28: & \hspace*{2em}Compute group-relative advantages from $\{R_g\}_{g=1}^{G}$ for the same query \\
+29: & \hspace*{2em}Increase likelihood of higher-reward compressor outputs and decrease likelihood of lower-reward outputs \\
+30: & \hspace*{2em}Apply KL regularization against frozen reference policy $\pi_{\mathrm{ref}}$ \\
+31: & \hspace*{2em}Update only compressor policy parameters $\theta$ \\
+32: & \textbf{end for} \\
+33: & Select the final checkpoint using training reward only; held-out sets are used for reporting \\
+34: & \textbf{return} optimized compressor policy $\pi_{\theta'}$
+\end{tabular}
+\end{tcolorbox}
+
+\subsection{Reward Design}
+\label{app:reward-design}
+
+We define the reward over a complete rollout trajectory
+$\tau=\{(h_1,z_1),\ldots,(h_T,z_T)\}$, where $h_t$ is the retrieval context and
+$z_t=(r_t,\mathcal{E}_t,\hat{v}_t)$ is the Synthesizer action at round $t$. For
+coefficient analysis, the same trajectory is abstracted as
+$\tau=(f,T,\mathbf{v},o,\ell)$, where $f$ is format validity, $T$ is the number
+of retrieval rounds, $\mathbf{v}$ is the sequence of verdict correctness
+signals, $o$ is final answer correctness, and $\ell$ is evidence compactness.
+
+\noindent\textbf{Format reward.}
+Let $f(\tau)\in\{0,1\}$ indicate whether all Synthesizer outputs in the rollout
+are parseable under the required XML schema. Format validity acts as a gate:
+if $f(\tau)=0$, all other reward terms are not evaluated and the trajectory
+receives the fixed reward $c<0$. Equivalently, the format-failure penalty
+magnitude is $-c>0$.
+
+\noindent\textbf{Length reward.}
+Let $m(z_t)$ be the token length of the Synthesizer output at round $t$.
+The compactness score $\ell(\tau)\in[0,1]$ is activated only when the final
+answer is correct:
+\[
+\ell(\tau)
+=
+\mathbb{I}\{R_{\mathrm{out}}(\tau)=1\}
+\cdot
+\mathrm{clip}\!\left(
+1-\frac{1}{Tm_{\max}}\sum_{t=1}^{T}m(z_t),
+0,1
+\right),
+\]
+where $m_{\max}$ is the length threshold. This term prefers shorter evidence
+among trajectories that already solve the task.
+
+\noindent\textbf{Verdict reward.}
+The Synthesizer must decide whether the current retrieved evidence covers the
+query or whether a missing evidence gap remains. Let $\mathcal{G}_q$ denote the
+gold evidence session set for query $q$, and let
+$\mathcal{S}^{\mathrm{ret}}_{\le t}$ denote the session identifiers covered by
+the accumulated retrieved sessions $\widetilde{\mathcal{S}}_{\le t}$. The
+round-level verdict reward is
+\[
+v_t=
+\begin{cases}
++1, & \mathcal{G}_q\subseteq\mathcal{S}^{\mathrm{ret}}_{\le t}
+\ \text{and}\ \hat{v}_t=\texttt{sufficient},\\
++1, & \mathcal{G}_q\not\subseteq\mathcal{S}^{\mathrm{ret}}_{\le t}
+\ \text{and}\ \hat{v}_t=\texttt{insufficient},\\
+-1, & \text{otherwise}.
+\end{cases}
+\]
+This term evaluates whether the policy correctly decides to stop or continue
+under the objective retrieval state. Since it is computed independently at each
+round, the trajectory-level verdict score is $V=\sum_{t=1}^{T}v_t$, providing
+fine-grained process supervision for multi-round search.
+
+\noindent\textbf{Outcome reward.}
+The outcome reward ties the final Temporal Evidence Pool to task success. Let
+$H_{T+1}$ be the Temporal Evidence Pool after the final round. The frozen answer
+model generates $\hat{a}=\mathrm{Ans}(q,H_{T+1})$, and the evaluator checks
+semantic equivalence with the gold answer $a^\star$:
+\[
+o(\tau)=\mathbb{I}\{\mathrm{Eval}(\hat{a},a^\star)=1\}.
+\]
+This component measures whether the constructed evidence state is sufficient
+for answering the original query.
+
+Combining these components, the total reward is
+\[
+R(\tau)
+=
+\begin{cases}
+c, & f(\tau)=0,\\
+w_o o(\tau)+w_v\sum_{t=1}^{T}v_t+w_l\ell(\tau), & f(\tau)=1,
+\end{cases}
+\]
+where $w_o,w_v,w_l>0$ are the weights for outcome, verdict, and compactness.
+Thus, $o$ and $\ell$ are trajectory-level signals, while $v_t$ is accumulated
+over retrieval rounds and format validity gates the whole trajectory. We do not
+introduce a separate event-time reward: incorrect event-time reasoning is
+reflected in $o(\tau)$ through retrieval drift and final answer failure.
+
+\subsection{Reward Coefficient Analysis}
+\label{app:reward-design-coefficients}
+
+\noindent\textbf{Problem Definition.}
+We abstract a rollout trajectory as
+$\tau=(f,T,\mathbf{v},o,\ell)$, where $f\in\{0,1\}$ denotes whether the
+Synthesizer output is parseable under the required XML schema,
+$T\in\{1,\ldots,T_{\max}\}$ is the number of retrieval rounds, and
+$\mathbf{v}=(v_1,\ldots,v_T)$ records round-level verdict correctness with
+$v_t\in\{-1,+1\}$. The final answer correctness is $o\in\{0,1\}$, and
+$\ell\in[0,1]$ measures evidence compactness, with $\ell=0$ when $o=0$ because
+compactness is only rewarded for correct outcomes. Let
+$V=\sum_{t=1}^{T}v_t$ be the cumulative verdict score. Format acts as a gate:
+if $f=0$, verdict, outcome, and length terms are not evaluated and the rollout
+receives a fixed penalty $c$. Otherwise, the reward is:
+\[
+R(\tau)=
+\begin{cases}
+c, & f=0,\\
+w_vV+w_o o+w_l\ell, & f=1,
+\end{cases}
+\]
+where $c\in\mathbb{R}$ is the format-failure penalty and
+$w_v,w_o,w_l>0$ are reward weights for verdict correctness, answer correctness,
+and compactness, respectively. With $T_{\max}=3$, the wrong-outcome reward range
+under format success is $[-3w_v,3w_v]$, while the correct-outcome reward range
+is $[-3w_v+w_o,3w_v+w_o+w_l]$.
+
+We require this reward to satisfy six ordering goals. (G1) \textit{Format
+gate}: every format-valid trajectory should exceed format failure. (G2)
+\textit{Outcome dominance}: any correct-outcome trajectory should exceed any
+wrong-outcome trajectory, regardless of verdict history or compactness. (G3)
+\textit{Verdict discrimination}: for fixed outcome and compactness, a larger
+cumulative verdict score should receive larger reward. (G4) \textit{Multi-round
+credit}: a trajectory with more correct verdict rounds should receive more
+verdict credit. (G5) \textit{Compactness preference}: for fixed outcome and
+verdict, greater compactness should receive larger reward. (G6)
+\textit{Verdict over length}: a single verdict correction should dominate the
+full compactness range, so process supervision cannot be overridden by the
+length term.
+
+We also define four guaranteed margins to express the intended priority among
+learning signals. $\Delta_1$ is the \emph{format-gate margin}: it asks how far
+the worst format-success trajectory remains above format failure. Format
+failure receives the fixed reward $c$, while the worst parseable trajectory has
+all other signals minimized, namely $V=-3$, $o=0$, and $\ell=0$:
+\[
+R^{\inf}_{f=1}=w_v(-3)+w_o\cdot 0+w_l\cdot 0=-3w_v,
+\]
+\[
+\Delta_1=R^{\inf}_{f=1}-c=-3w_v-c.
+\]
+Thus, $\Delta_1>0$ guarantees that any parseable output is preferred to a
+format failure. $\Delta_2$ is the \emph{outcome-discrimination margin}: under
+format success, it compares the worst correct-answer trajectory with the best
+wrong-answer trajectory. The former has $V=-3$ and $\ell=0$, while the latter
+has $V=3$:
+\[
+R^{\inf}_{o=1}=-3w_v+w_o,\quad
+R^{\sup}_{o=0}=3w_v,
+\]
+\[
+\Delta_2=R^{\inf}_{o=1}-R^{\sup}_{o=0}=w_o-6w_v.
+\]
+The term $6w_v$ is the maximal swing introduced by cumulative verdict scoring;
+$\Delta_2>0$ means that answering correctly remains better than answering
+incorrectly even under this extreme verdict contrast. $\Delta_3$ is the
+\emph{single-step verdict signal}: changing one round-level verdict from
+incorrect to correct changes $v_t$ from $-1$ to $+1$, increasing $V$ by $2$:
+\[
+w_v(V+2)-w_vV=2w_v,
+\]
+\[
+\Delta_3=2w_v.
+\]
+This margin is independent of $T$, $o$, and $\ell$. Finally, $\Delta_4$ is the
+\emph{compactness range}: since $\ell\in[0,1]$ and the length term is
+$w_l\ell$, the maximum reward variation induced by compactness is
+\[
+w_l\cdot 1-w_l\cdot 0=w_l,
+\]
+\[
+\Delta_4=w_l.
+\]
+We require $\Delta_1>\Delta_2>\Delta_3>\Delta_4>0$ so that the guaranteed
+discrimination decreases along the intended priority order: format validity,
+answer correctness, verdict quality, and evidence compactness. This ordering
+ensures that GRPO receives policy-gradient signals aligned with the desired
+learning hierarchy.
+
+\noindent\textbf{Constraint Derivation.}
+We first derive constraints directly from the six design goals.
+
+\noindent\emph{C1
+(Format gate).} The worst format-valid trajectory has $o=0$ and
+$V=-T_{\max}=-3$, so Goal 1 requires it to beat the format-failure penalty:
+\[
+-3w_v>c.
+\]
+\emph{C2 (Outcome dominance).} The worst correct trajectory must beat the
+best wrong trajectory:
+\[
+R^{\inf}_{o=1}>R^{\sup}_{o=0}
+\quad\Longrightarrow\quad
+-3w_v+w_o>3w_v
+\quad\Longrightarrow\quad
+w_o>6w_v.
+\]
+\emph{C3 (Verdict discrimination and multi-round credit).} Since the reward
+is linear in $V$ with slope $w_v$, verdict ordering and cumulative multi-round
+credit require
+\[
+w_v>0.
+\]
+\emph{C4 (Compactness preference).} Since compactness only affects correct
+trajectories through $w_l\ell$, compactness preference requires
+\[
+w_l>0.
+\]
+\emph{C5 (Verdict over length).} A single verdict correction changes
+$V$ by $2$, so it must dominate the entire compactness range:
+\[
+2w_v>w_l.
+\]
+
+\noindent\textbf{Gap-Ordering Constraints.}
+We next derive constraints from the desired hierarchy
+$\Delta_1>\Delta_2>\Delta_3>\Delta_4>0$.
+
+\noindent\emph{G1} follows from
+$\Delta_1>\Delta_2$:
+\[
+-3w_v-c>w_o-6w_v
+\quad\Longrightarrow\quad
+c<3w_v-w_o.
+\]
+\emph{G2} follows from $\Delta_2>\Delta_3$:
+\[
+w_o-6w_v>2w_v
+\quad\Longrightarrow\quad
+w_o>8w_v.
+\]
+\emph{G3} follows from $\Delta_3>\Delta_4$:
+\[
+2w_v>w_l.
+\]
+\emph{G4} follows from $\Delta_4>0$:
+\[
+w_l>0.
+\]
+
+Combining the six ordering goals with the gap hierarchy gives the feasible
+coefficient region:
+\[
+\mathcal{W}=
+\left\{(c,w_v,w_o,w_l)\in\mathbb{R}\times\mathbb{R}_{>0}^{3}\;\middle|\;
+\begin{aligned}
+&w_v>0,\\
+&w_o>8w_v,\\
+&c<3w_v-w_o,\\
+&2w_v>w_l
+\end{aligned}
+\right\}.
+\]
+This region keeps outcome correctness as the dominant task-level signal,
+preserves verdict correctness as process-level supervision, and treats format
+and length terms as stabilizing constraints rather than primary task objectives.
+
+\noindent\textbf{Coefficient Selection.}
+We select coefficients in three steps. First, we instantiate the design goals
+as a four-level priority structure: answer correctness is the primary objective,
+verdict correctness provides process-level control over stopping and continued
+search, compactness improves efficiency, and format validity acts as a hard
+gate. Second, this priority induces ratio constraints among weights: $w_o$
+should dominate $w_v$, while the single-step verdict signal $2w_v$ should cover
+the full length range $w_l$, preventing the policy from sacrificing verdict
+quality for shorter evidence. Third, we choose the default setting
+$(w_o,w_v,w_l)=(0.50,0.10,0.05)$. This makes outcome the dominant signal in our
+rollout distribution, gives a verdict-step margin $2w_v=0.20$ larger than the
+length range $w_l=0.05$, and sets the format penalty by
+$c=3w_v-w_o=-0.20$ so that format failure remains below the worst valid output.
+
+\noindent\textbf{Effectiveness Analysis.}
+Our construction can be viewed as an expressibility argument for a desired
+trajectory ordering. Following the perspective of
+Abel et al.~\citep{abel2021expressivity}, reward design is not merely assigning
+heuristic scalar scores: it asks whether a reward function can express a
+task-level preference relation. In our case, the six design goals define a
+partial order over rollout trajectories for temporal-causal evidence synthesis.
+For example, outcome dominance requires every correct-answer trajectory to
+outrank every wrong-answer trajectory, while the verdict and length goals impose
+finer preferences within trajectory subsets. The feasible region $\mathcal{W}$
+then gives a constructive certificate that this ordering is expressible by our
+multi-level reward family. Moreover, the gap hierarchy
+$\Delta_1>\Delta_2>\Delta_3>\Delta_4>0$ strengthens strict preference by
+requiring larger guaranteed margins for higher-priority distinctions, echoing
+the range-based view that acceptable behaviors should be separated from
+unacceptable ones by reward margins. This explains why the coefficient design is
+effective: it aligns the scalar GRPO learning signal with the intended
+trajectory-level preference hierarchy, rather than relying on unstructured
+reward mixing.

@@ -11,12 +11,15 @@
 \usepackage{amsmath}								% Mathematical expressions (American mathematical society)
 \usepackage{amssymb}								% Mathematical symbols (American mathematical society)
 \usepackage{xcolor}								% Colors and visible TODO/NOTSURE markers
+\usepackage{colortbl}								% Row colors in reused NeurIPS tables
+\usepackage{booktabs}								% Professional rules in reused NeurIPS tables
 \usepackage{graphicx}								% Figures
 \usepackage{subfig}									% Enables subfigures
 \numberwithin{equation}{chapter}					% Numbering order for equations
 \numberwithin{figure}{chapter}						% Numbering order for figures
 \numberwithin{table}{chapter}						% Numbering order for tables
 \usepackage{listings}								% Enables source code listings
+\usepackage{fvextra}								% Robust verbatim blocks in reused appendix prompts
 \usepackage{chemfig}								% Chemical structures
 \usepackage[top=3cm, bottom=3cm,
 			inner=3cm, outer=3cm]{geometry}			% Page margin lengths			
@@ -27,6 +30,8 @@
 	\centering
 	\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{#3}}}}
 \usepackage{float} 									% Enables object position enforcement using [H]
+\usepackage[most]{tcolorbox}						% Appendix algorithm boxes
+\usepackage{xspace}								% Spacing for paper macros
 \usepackage{parskip}								% Enables vertical spaces correctly 
 
 % DEFINE THESIS TYPE
@@ -111,6 +116,11 @@
 % Tag command (invisible)
 \newcommand{\tagtemp}{\textcolor{white}{, template by Kyriaki Antoniadou-Plytaria}}
 
+% Paper macros used by reused NanoMem result tables and appendix material
+\newcommand{\sys}{\textsc{NanoMem}\xspace}
+\newcommand{\bench}{\textsc{TimeMemEval}\xspace}
+\newcommand{\XX}{6.5}
+\providecommand{\citep}[1]{\cite{#1}}
+
 % Allow a table to split
 \usepackage{longtable}
-

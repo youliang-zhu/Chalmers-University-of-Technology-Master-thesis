@@ -1,0 +1,294 @@
+\tcbset{
+  appendixexample/.style={
+    enhanced jigsaw,
+    breakable,
+    width=\linewidth,
+    colback=black!4,
+    colframe=black!60,
+    colbacktitle=black!65,
+    coltitle=white,
+    fonttitle=\small\rmfamily,
+    boxrule=0.8pt,
+    arc=2pt,
+    left=8pt,
+    right=8pt,
+    top=6pt,
+    bottom=6pt,
+    before skip=0.45em,
+    after skip=0.55em,
+  }
+}
+
+\subsection{Prompt Template of Initial Planner}
+\label{app:planner-initial-prompt}
+
+\begin{tcolorbox}[appendixexample,title={Prompt Template of Initial Planner: $P_{\mathrm{plan}}^{(0)}$}]
+\begin{Verbatim}[fontsize=\scriptsize,formatcom=\linespread{0.82}\selectfont,breaklines=true,breakanywhere=true]
+You are a memory retrieval planner. Given a user query, decompose it into
+targeted retrieval cues for searching the user's conversation history.
+
+## Output format (XML only)
+
+<cues>
+  <cue>
+    <text>retrieval query text</text>
+  </cue>
+</cues>
+
+---
+
+## Query
+
+{query}
+
+---
+
+## Rules
+
+Cue text:
+- Decompose the query into one or more focused retrieval cues.
+- Each cue should target a distinct aspect or entity of the query.
+- Always generate at least one `<cue>`. If not sure what to generate,
+  copy the original user query.
+- Preserve named entities, dates, locations, event types, quantities, and
+  temporal semantics.
+- Preserve the user's intent as closely as possible. Do not broaden a
+  specific question into a generic summary query.
+- For questions asking "when", keep the cue as a "when" query about the
+  same event.
+- For dependent temporal questions, emit the original standalone cue plus
+  support cues for the anchor event and target fact.
+- For count, comparison, ordering, or duration questions, emit support cues
+  that retrieve the underlying items, quantities, event times, or start/end
+  anchors.
+- Keep the original standalone intent as the first cue, then add supporting
+  cues.
+- Do not annotate temporal phrases. Temporal extraction is handled by
+  deterministic preprocessing after cue generation.
+
+Return XML only, no markdown fences, no text outside the tags.
+\end{Verbatim}
+\end{tcolorbox}
+\captionof{figure}{Prompt template used by the initial planner to decompose the user query into targeted retrieval cues.}
+
+\subsection{Prompt Template of Planner Retry}
+\label{app:planner-retry-prompt}
+
+\begin{tcolorbox}[appendixexample,title={Prompt Template of Planner Retry: $P_{\mathrm{plan}}^{(\mathrm{retry})}$}]
+\begin{Verbatim}[fontsize=\scriptsize,formatcom=\linespread{0.82}\selectfont,breaklines=true,breakanywhere=true]
+You are a memory retrieval planner. A previous retrieval round was
+attempted but the synthesizer judged the evidence insufficient.
+Your task is to generate new targeted cues that address the identified gap.
+
+## Output format (XML only)
+
+<cues>
+  <cue>
+    <text>retrieval query text</text>
+  </cue>
+</cues>
+
+---
+
+## Original query
+
+{query}
+
+## Previous cues
+
+{previous_cues}
+
+## Temporal Evidence Pool
+{pool}
+
+## Synthesizer reasoning from previous round
+
+{previous_reason}
+
+---
+
+## Rules
+
+Cue text:
+- Generate 1-3 cues that target the missing evidence gap named in the
+  synthesizer reasoning and its extracted temporal evidences.
+- If reasoning found an anchor/bridge entity/place/time, reuse that entity to
+  guide the new cue generation.
+- Combine the anchor/bridge with the missing target question relation, e.g.
+  added beside, requested from, mailed for, set up through, etc.
+- Do not re-search only for the anchor/source if it was already found in reason;
+  search for the downstream action/object involving the anchor.
+- Turn "no evidence of X near/from/through Y" into a cue for "X
+  near/from/through Y". It is your job to recover missing relations through new
+  cues.
+- Do not repeat previous cues unless the reasoning explicitly asks for
+  the same topic with a different temporal anchor or framing.
+- Preserve the user's intent as closely as possible. Do not broaden a
+  specific question into a generic summary query.
+- Keep cues short and search-like; avoid meta questions such as
+  "is this linked" or "is this the same item".
+- For questions asking "when", keep the cue as a "when" query about the
+  same event.
+- For count, comparison, ordering, or duration questions, emit support cues
+  that retrieve the underlying items, quantities, event times, or start/end
+  anchors.
+- Do not annotate temporal phrases. Temporal extraction is handled by
+  deterministic preprocessing after cue generation.
+
+Return XML only, no markdown fences, no text outside the tags.
+\end{Verbatim}
+\end{tcolorbox}
+\captionof{figure}{Prompt template used by the retry planner to generate new cues from the previous Synthesizer reasoning.}
+
+\subsection{Prompt Template of Synthesizer}
+\label{app:synthesizer-prompt}
+
+\begin{tcolorbox}[appendixexample,title={Prompt Template of Synthesizer: $P_{\mathrm{synth}}$}]
+\begin{Verbatim}[fontsize=\scriptsize,formatcom=\linespread{0.82}\selectfont,breaklines=true,breakanywhere=true]
+You are a memory evidence synthesizer. Given a user query, temporal hints,
+previously extracted events, and retrieved conversation sessions, extract
+structured evidence and judge whether retrieval is sufficient to answer the
+query.
+
+## Output format (XML only, this exact order)
+
+<reasoning>
+Concise verdict justification (<=200 words): what decisive evidence is
+present, what is missing if any, and why the verdict follows.
+
+</reasoning>
+
+<events>
+  <event
+    session_id="source session ID; exactly one session per event"
+    session_time="YYYY-MM-DDTHH:MM:SS.sssZ"
+    event_time="YYYY-MM-DD or 'unknown'">
+    A single self-contained evidence statement. Free text, one paragraph,
+    no nested tags, no markdown.
+  </event>
+</events>
+
+<verdict>sufficient|insufficient</verdict>
+
+---
+
+## Normalized Query
+
+{query}
+
+## Retrieved sessions
+
+{sessions}
+
+Retrieved session text preserves original temporal phrases and may annotate
+them with parenthesized normalized times, such as `last night (during
+2023-05-27 18:00:00 to 2023-05-28 05:59:59)`. These parenthesized values are
+deterministic parser aids for interpreting time; they are not additional facts
+or evidence beyond the session text.
+
+## Temporal Evidence Pool
+
+{previous_events}
+
+Temporal Evidence Pool are evidence already extracted in earlier retrieval rounds.
+They may summarize facts that also appear in the current retrieved sessions.
+Use them as context for sufficiency and deduplication, but do not treat them
+as new evidence or a substitute for facts grounded in retrieved sessions.
+---
+
+## Rules
+
+`Verdict`:
+`insufficient` - critical evidence clearly absent; loop continues.
+`sufficient` - events reliably cover what the query needs; loop ends.
+
+`event_time`: resolve relative expressions using session timestamps and
+temporal hints. Each temporal hint contains the original query phrase and an
+absolute UTC timestamp range in `iso_span`. If no explicit date is
+recoverable, fall back to the session date. Use `unknown` only if even the
+session date is unavailable.
+
+Output rules:
+- The final `<events>` output is cumulative. Include all useful
+  `<previous_events>` first, unchanged when still valid, then append newly
+  extracted events from the current retrieved sessions. Do not delete or
+  rewrite previous events unless you find an error that can be corrected by
+  current sessions.
+- One `<event>` per distinct evidence item, grounded in exactly one session
+  (`session_id` must be a single session ID from the input; one session may
+  yield multiple events). Always emit partial events even when the verdict is
+  `insufficient`. Use `<events/>` only if no useful evidence exists at all.
+- If a fact is already covered by previous events and the current sessions add
+  no new information, do not repeat it as a new event.
+- Preserve temporal relations (before/after/during, duration anchors).
+- Event text: free text, one paragraph, no nested tags, no markdown.
+- Event text should avoid including temporal phrases when possible; represent
+  time in the `event_time` attribute instead.
+- Return XML only, no text outside the tags.
+- All three attributes (`session_id`, `session_time`, `event_time`) are
+  required on every `<event>`.
+- For quantity, state, or collection queries, retain all update events
+  in chronological order; do not drop later increments or corrections.
+
+\end{Verbatim}
+\end{tcolorbox}
+\captionof{figure}{Prompt template used by the Synthesizer to extract temporal evidence and decide whether retrieval is sufficient.}
+
+\subsection{Case Study: Temporal Bridge Retrieval}
+\label{app:case-study-temporal-bridge}
+
+\begin{tcolorbox}[appendixexample,title={Case Study: Temporal Bridge Retrieval}]
+\textbf{Case overview.}
+This case illustrates how \sys recovers an answer when the decisive temporal
+anchor is not stated in the original query but must be inferred from a bridge
+session retrieved in an earlier round.
+
+\smallskip
+\textbf{Query.}
+What did Haruki read 4 months after sorting through old notebooks and setting
+aside pages that could become personal essays?
+
+\smallskip
+\textbf{Round 1.}
+The initial planner issues cues for the original question, the notebook-sorting
+event, and Haruki's reading activities. Retrieval returns several reading
+distractors from February, April, May, September, November, and December,
+together with the bridge session \texttt{S\_E001}. The key bridge evidence is:
+\emph{Haruki: I spent most of the afternoon on the living room floor with old
+notebooks and binders, and 2 months ago I made a separate pile of pages that
+could become personal essays instead of project records.}
+
+\smallskip
+Since \texttt{S\_E001} is timestamped 2024-04-18, the normalized phrase ``2
+months ago'' grounds the sorting event in February 2024. The Synthesizer then
+infers that four months after February 2024 is June 2024. However, because the
+retrieved sessions contain no June reading evidence, it returns
+\texttt{insufficient}.
+
+\smallskip
+\textbf{Retry cues.}
+\begin{Verbatim}[fontsize=\scriptsize,formatcom=\linespread{0.82}\selectfont,breaklines=true,breakanywhere=true]
+What did Haruki read in June 2024 (during 2024-06)?
+What books did Haruki read between May 2024 and September 2024?
+What reading activities did Haruki have in June 2024 (during 2024-06)?
+\end{Verbatim}
+
+\smallskip
+\textbf{Round 2.}
+The second retrieval round finds the target session
+\texttt{S\_H2\_E001\_01}, timestamped 2024-06-08:
+\emph{Haruki: I read The Death and Life of Great American Cities this month,
+and it got me thinking about how to turn my old engineering observations into
+personal essays instead of reports.}
+
+\smallskip
+\textbf{Final synthesis.}
+The final Synthesizer output carries forward the bridge event, appends the June
+reading event, and marks the evidence as \texttt{sufficient}. The final answer
+is \emph{The Death and Life of Great American Cities}, matching the ground-truth
+label. This example highlights the role of Synthesizer reasoning as the
+information bridge between rounds: it converts first-round bridge evidence into
+a concrete temporal cue that the retry planner can use to retrieve the otherwise
+hidden answer session.
+\end{tcolorbox}
+\captionof{figure}{Case study showing how first-round bridge evidence is transformed into a second-round temporal retrieval cue.}

@@ -1,0 +1,166 @@
+\subsection{TimeMemEval Benchmark Construction}
+  \label{app:timememeval-construction}
+
+  \begin{tcolorbox}[
+    enhanced jigsaw,
+    breakable,
+    colback=white,
+    colframe=black,
+    boxrule=0pt,
+    borderline north={0.7pt}{0pt}{black},
+    borderline south={0.7pt}{0pt}{black},
+    sharp corners,
+    left=0pt,
+    right=0pt,
+    top=2pt,
+    bottom=2pt,
+    before skip=0.6em,
+    after skip=0.8em,
+  ]
+  \scriptsize
+  \noindent\textbf{Algorithm 2} \textsc{TimeMemEval} Benchmark Construction Procedure
+
+  \vspace{0.15em}
+  \hrule
+  \vspace{0.45em}
+
+  \noindent\textbf{Require:}\\
+  \hspace*{1.5em}Persona/theme pools, event-family library, bridge scopes
+  $\mathcal{B}$, offset sampler $\Omega$, terminal types $\mathcal{Y}$\\
+  \hspace*{1.5em}Distractor modes $\mathcal{M}$, surface temporal styles $\mathcal{R}$,
+  event/session generators, uniqueness judge $\mathcal{J}$, temporal validator
+  $\mathcal{V}$, retry budgets
+
+  \vspace{0.25em}
+  \noindent\textbf{Ensure:}\\
+  \hspace*{1.5em}\textsc{TimeMemEval} records with \texttt{record.json},
+  \texttt{sessions.json}, generation traces, split metadata, and validation logs
+
+  \vspace{0.25em}
+  \begin{tabular}{@{}r@{\quad}p{0.84\linewidth}@{}}
+  1: & \textbf{function} BuildTimeMemEval$(\mathcal{B},\Omega,\mathcal{Y})$ \\
+  2: & \hspace*{1em}\textbf{for each} requested record \textbf{do} \\
+  3: & \hspace*{2em}Sample persona/theme context and generate a source event $e_s$ with a valid temporal anchor \\
+  4: & \hspace*{2em}Sample bridge scope and offset $(\beta,\delta)$, where $\beta\in\mathcal{B}$ and $\delta\in\Omega$ \\
+  5: & \hspace*{2em}$W^\star \leftarrow$ ComputeTargetWindow$(e_s.\mathrm{event\_time},\beta,\delta)$ \\
+  6: & \hspace*{2em}Sample terminal type $y\in\mathcal{Y}$ and a compatible event family; generate destination event $e_d$ inside $W^\star$ \\
+  7: & \hspace*{2em}Generate probe question $q$ and answer $a$ that require linking $e_s$ to $e_d$ through $W^\star$ \\
+  8: & \hspace*{2em}Generate hard distractors $\mathcal{D}$ using modes in $\mathcal{M}$, including same-activity, answer-alias, near-window, and source-anchor-alias distractors outside $W^\star$ \\
+  9: & \hspace*{2em}Generate filler events $\mathcal{U}$ that add dialogue noise without leaking the answer or temporal bridge \\
+  10: & \hspace*{2em}\textbf{if} $\mathcal{J}(e_s,e_d,\mathcal{D},\mathcal{U},q,a)$ rejects uniqueness or answerability \textbf{then} retry the failed stage \\
+  11: & \hspace*{2em}\textbf{for each} event $e\in\{e_s,e_d\}\cup\mathcal{D}\cup\mathcal{U}$ \textbf{do} \\
+  12: & \hspace*{3em}Sample a surface temporal style $r\in\mathcal{R}$ and generate a multi-turn session $s_e$ with relative, indirect, or calendar-based temporal phrasing \\
+  13: & \hspace*{3em}\textbf{if} $\mathcal{V}(s_e,e,\beta)$ rejects temporal consistency \textbf{then} regenerate $s_e$ or its dependent event \\
+  14: & \hspace*{2em}\textbf{end for} \\
+  15: & \hspace*{2em}Write record, sessions, traces, split metadata, and validation logs \\
+  16: & \hspace*{1em}\textbf{end for} \\
+  17: & \textbf{end function}
+  \end{tabular}
+  \end{tcolorbox}
+
+  \textsc{TimeMemEval} is designed as a controlled benchmark for temporal-bridge
+  retrieval in long-term memory, rather than covering all forms of
+  temporal reasoning. Each instance requires a model to identify a source event,
+  derive a target temporal window, retrieve a destination event in that window,
+  and answer a terminal question about the destination event. This construction
+  intentionally isolates interval-conditioned multi-hop retrieval from ordinary
+  single-hop lookup, while keeping explicit metadata that allows us to analyze the
+  effect of bridge scope, offset, terminal type, distractor type, and surface
+  temporal phrasing.
+
+  To reduce benchmark artifacts, generation is not tied to a single template.
+  Records are sampled from persona/theme contexts, event-family libraries,
+  terminal-question types, bridge scopes, offset ranges, and multiple distractor
+  modes. Distractors are constructed to be semantically and structurally close to
+  the destination event: for example, they may share the same activity, preserve
+  the same object or location skeleton when required by the terminal type, occur
+  near the target window, or introduce competing source-like temporal anchors.
+  The final judge enforces that the question is not answerable from the source
+  alone or the destination alone, but remains uniquely answerable when all source,
+  destination, distractor, and filler sessions are present.
+
+  Session generation is separated from event generation. After the event-level
+  graph passes the uniqueness gate, each event is realized as a multi-turn memory
+  session with a sampled temporal surface form. These forms include deterministic
+  calendar references, relative references such as ``last week'' or ``three months
+  ago'', and less calendar-like user-memory anchors such as life episodes,
+  projects, trips, moves, medical events, habits, or emotionally salient periods.
+  This is intended to make the benchmark less dependent on explicit date strings:
+  the temporal validator checks whether the realized session still supports the
+  intended day, week, or month bucket under the sampled bridge scope.
+
+  We report \textsc{TimeMemEval} as a targeted temporal-bridge retrieval stress
+  test. It does not subsume broader temporal phenomena such as long causal chains,
+  belief revision, recurring habits, partial temporal order, or contradictory
+  memories. To make this limitation explicit, benchmark metadata records the
+  temporal topology of every instance, and evaluation can be stratified by bridge
+  scope, terminal type, distractor mode, surface temporal style, and whether
+  temporal normalization is provided to the model. This allows us to distinguish
+  performance gains from temporal normalization, retrieval policy, and reasoning
+  over the generated memory evidence, and supports held-out splits over event
+  families, surface templates, and temporal relation types.
+
+\subsection{Training and Held-out Evaluation Dataset Construction}
+\label{app:train-valid-data-construction}
+
+We construct the GRPO data from two public long-term memory benchmarks,
+LoCoMo and LongMemEval, together with our generated \bench records. LoCoMo and
+LongMemEval provide real multi-session dialogue questions with gold answers and
+evidence-session annotations, while \bench contributes targeted
+temporal-causal questions whose answer evidence is not directly addressable from
+the original query. These sources play different roles: the public benchmarks
+preserve general long-memory coverage, whereas \bench increases the density of
+training and evaluation cases that require temporal bridge construction.
+
+\textbf{Source filtering.}
+We start from 1,986 LoCoMo questions, 500 LongMemEval questions, and 500 raw
+\bench candidates. For LoCoMo, we exclude category-5 adversarial questions; for
+LongMemEval, we exclude single-session preference questions, yielding 1,536 and
+469 usable public questions, respectively. For \bench, the generation pipeline
+first produces 500 raw candidates and then applies automatic validity checks for
+invalid generation attempts, duplicate examples, split leakage, incomplete
+metadata, temporal inconsistency among target windows, session times and event
+times, and answer non-uniqueness. This leaves 374 filtered \bench records that
+are eligible for training or held-out evaluation. The resulting filtered pool
+contains 2,379 examples.
+
+\textbf{Training and held-out evaluation splits.}
+The final GRPO training set contains 500 examples. To avoid conversation-level
+leakage in LoCoMo, we first partition LoCoMo by dialogue rather than by
+question: six conversations form the LoCoMo training pool and the remaining four
+conversations are reserved for held-out evaluation. We then sample 401 LoCoMo
+questions from the six training conversations. LongMemEval is not used for GRPO
+training; all 469 filtered LongMemEval questions are kept for zero-shot
+held-out evaluation. For \bench, we sample 99 training examples from the 374
+filtered records and use the remaining 275 filtered records for held-out
+evaluation. The held-out evaluation sets are not used for checkpoint selection.
+
+\textbf{Example format.}
+Each training example stores only lightweight supervision and metadata: the user
+query, gold answer, gold evidence sessions, source identifier, user or speaker
+metadata, source bucket, difficulty label, and evaluation mode. It does not store
+fixed retrieved memories or precomputed rollout traces. During GRPO, the system
+uses the sample metadata to dynamically call the corresponding NanoMem search
+environment, generate temporal hints, retrieve sessions, synthesize events,
+produce verdicts, and score the final answer. This ensures that the policy is
+trained on online memory-search behavior rather than a static retrieved context.
+
+\begin{table}[h]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrp{0.23\linewidth}@{}}
+\toprule
+\textbf{Data stage} & \textbf{LoCoMo} & \textbf{LongMemEval} &
+\textbf{TME} & \textbf{Total} & \textbf{Use} \\
+\midrule
+Original questions & 1,986 & 500 & 500 & 2,986 & Source pool \\
+Filtered questions & 1,536 & 469 & 374 & 2,379 & Candidate pool \\
+Train & 401 & 0 & 99 & 500 & GRPO training \\
+Held-out evaluation & 655 & 469 & 275 & 1,399 & Reporting only \\
+\bottomrule
+\end{tabular}
+\caption{Distribution of query pools for GRPO training and held-out evaluation.
+LoCoMo is split by conversation; LME is zero-shot; TME uses filtered records.}
+\label{tab:train-valid-data-distribution}
+\end{table}
